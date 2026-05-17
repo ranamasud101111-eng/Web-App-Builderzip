@@ -1,0 +1,84 @@
+Completely redesign and upgrade the entire website into a highly polished premium online learning platform.
+
+Main goal:
+Create an extremely attractive, world-class educational website with beautiful colors, premium UI/UX, and powerful admin controls.
+
+1. Full UI/UX redesign:
+- redesign front page and all internal pages
+- luxurious modern design
+- visually stunning interface
+- premium SaaS style
+- educational platform aesthetics
+- smooth animations
+- animated hero banners
+- floating shapes/background effects
+- modern cards
+- dashboard widgets
+- elegant loading effects
+
+2. Premium visual style:
+- advanced gradient color palette
+- vibrant but clean colors
+- blue + purple + cyan premium theme
+- beautiful shadows
+- glassmorphism
+- neumorphism touches
+- hover effects
+- animated buttons
+- premium icons
+- modern navbar
+- stylish footer
+- decorative sections
+
+3. Typography:
+- bigger text everywhere
+- beautiful headings
+- clean spacing
+- modern font (Poppins/Inter)
+- strong readability
+- stylish subject/chapter cards
+- professional hierarchy
+
+4. Homepage:
+- hero section
+- featured subjects
+- chapter previews
+- stats counters
+- animated sections
+- testimonials placeholder
+- locked guest previews
+- login CTA
+- premium look
+
+5. Admin notification system:
+Add a complete notification management system.
+
+Admin can:
+- send notification to all users
+- send notification to selected users
+- send notification by class/subject
+- send popup announcement
+- send dashboard alerts
+- mark important notice
+- schedule notification
+- delete/edit notification
+
+Users:
+- receive notification bell icon
+- see unread count
+- open notification list
+- click to view details
+
+6. Test credentials:
+After implementation create and provide test accounts:
+
+Admin test login:
+- email
+- password
+
+Student test login:
+- email
+- password
+
+7. Final:
+Make everything production-ready, responsive, bug-free, visually stunning, and very attractive.
