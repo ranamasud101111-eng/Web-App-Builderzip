@@ -605,14 +605,9 @@ export default function AdminQuestionBank() {
     { to:'/admin/question-bank',icon:<HelpCircle    className="w-4 h-4"/>, label:'Question Bank' },
   ];
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
-      <Loader2 size={32} className="animate-spin text-purple-400"/>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen flex pt-[68px]" style={{ background:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+    <motion.div className="min-h-screen flex pt-[68px]" style={{ background:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
       {/* Sidebar */}
       <div className={`fixed top-[68px] bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen?'translate-x-0':'-translate-x-full'} lg:translate-x-0 lg:relative lg:flex lg:transform-none`}>
         <div className="sidebar w-64 flex flex-col h-full overflow-y-auto">
@@ -672,7 +667,13 @@ export default function AdminQuestionBank() {
           </div>
 
           {/* Levels */}
-          {levels.length === 0 ? (
+          {loading ? (
+            <div className="space-y-3">
+              {[1,2,3].map(i => (
+                <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-pulse" style={{ height: 72 }} />
+              ))}
+            </div>
+          ) : levels.length === 0 ? (
             <div className="text-center py-20 text-white/30">
               <HelpCircle size={40} className="mx-auto mb-3 opacity-30"/>
               <p>No levels yet. Add your first level above.</p>
@@ -889,6 +890,6 @@ export default function AdminQuestionBank() {
           />
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

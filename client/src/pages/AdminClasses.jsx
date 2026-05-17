@@ -7,8 +7,7 @@ import {
   Layers, Plus, X, Edit2, Trash2, ChevronDown, ChevronUp,
   BarChart3, Bell, BookOpen, Home, LogOut, Menu, Shield,
   Brain, GraduationCap, Eye, EyeOff, Youtube, Save, Loader2,
-  Zap,
-  HelpCircle,
+  Zap, FileText, HelpCircle,
 } from 'lucide-react';
 import api from '../api';
 
@@ -276,7 +275,8 @@ export default function AdminClasses() {
 
   /* ════════════════════════════════════════ */
   return (
-    <div className="flex min-h-screen" style={{ background: '#020818', paddingTop: '68px' }}>
+    <motion.div className="flex min-h-screen" style={{ background: '#020818', paddingTop: '68px' }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
 
       {/* ── Desktop sidebar (sticky, starts below navbar) ── */}
       <div className="hidden lg:block w-64 flex-shrink-0">
@@ -346,8 +346,10 @@ export default function AdminClasses() {
         {/* Content */}
         <div className="flex-1 p-4 sm:p-6 space-y-3">
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+            <div className="space-y-3">
+              {[1,2,3].map(i => (
+                <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] animate-pulse" style={{ height: 72 }} />
+              ))}
             </div>
 
           ) : levels.length === 0 ? (
@@ -420,8 +422,8 @@ export default function AdminClasses() {
               <AnimatePresence>
                 {expandedLevels[level.id] && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+                    initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
                     <div className="border-t border-white/[0.06] px-3 sm:px-5 pb-4 pt-3 space-y-2">
 
                       {subjects[level.id] === undefined ? (
@@ -490,8 +492,8 @@ export default function AdminClasses() {
                           <AnimatePresence>
                             {expandedSubjects[subj.id] && (
                               <motion.div
-                                initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+                                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }}>
                                 <div className="border-t border-white/[0.05] px-3 sm:px-4 pt-2 pb-3 space-y-1.5">
 
                                   {chapters[subj.id] === undefined ? (
@@ -819,6 +821,6 @@ export default function AdminClasses() {
           </Modal>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
