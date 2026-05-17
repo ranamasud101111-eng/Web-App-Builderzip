@@ -3,14 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, Eye, EyeOff, GraduationCap, ArrowRight, BookOpen } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle, ChevronRight } from 'lucide-react';
+
+const benefits = [
+  'Access to all CA subjects and chapters',
+  'Unlimited practice with mock tests',
+  'Track your progress with analytics',
+  'Compete on the national leaderboard',
+  'Get instant notifications from teachers',
+];
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', class_level: '' });
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,77 +26,127 @@ export default function Register() {
     setLoading(true);
     try {
       const user = await register(form.name, form.email, form.password, form.class_level);
-      toast.success(`Welcome to LearnHub, ${user.name}!`);
+      toast.success(`Welcome to CA Mock, ${user.name.split(' ')[0]}!`);
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 pt-16 pb-8 relative overflow-hidden">
-      <div className="shape" style={{ width: '500px', height: '500px', top: '-5%', right: '-10%', background: '#8b5cf6', opacity: 0.1 }} />
-      <div className="shape" style={{ width: '350px', height: '350px', bottom: '5%', left: '-5%', background: '#06b6d4', opacity: 0.1, animationDelay: '2s' }} />
+    <div className="min-h-screen flex overflow-hidden pt-16">
+      {/* Left panel */}
+      <div className="hidden lg:flex flex-col justify-between w-[42%] relative overflow-hidden p-12"
+        style={{ background: 'linear-gradient(135deg, #06112e 0%, #0e1a4a 50%, #06112e 100%)' }}>
+        <div className="orb w-80 h-80 top-[-8%] right-[-8%] opacity-25" style={{ background: '#7c3aed' }} />
+        <div className="orb w-60 h-60 bottom-[8%] left-[-5%] opacity-20" style={{ background: '#f59e0b', animationDelay: '3s' }} />
+        <div className="hero-grid absolute inset-0 opacity-40" />
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-2xl glow-purple">
-            <GraduationCap className="w-8 h-8 text-white" />
+        <div className="relative z-10">
+          <Link to="/" className="flex items-center gap-3 mb-16">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-violet-800 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <div className="text-white font-bold text-lg">CA Mock</div>
+              <div className="text-gold-500 text-[9px] font-semibold tracking-widest uppercase">Premium Platform</div>
+            </div>
+          </Link>
+
+          <div className="badge-gold mb-5 w-fit">Free Registration</div>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Join 50,000+<br />
+            <span className="gradient-text-gold">CA Aspirants</span>
+          </h2>
+          <p className="text-white/50 mb-10">Start your CA journey with India's most trusted exam preparation platform.</p>
+
+          <div className="flex flex-col gap-4">
+            {benefits.map((b, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-3.5 h-3.5 text-purple-400" />
+                </div>
+                <span className="text-white/60 text-sm">{b}</span>
+              </div>
+            ))}
           </div>
-          <h1 className="text-3xl font-black text-white mb-2">Join LearnHub</h1>
-          <p className="text-white/50">Start your premium learning journey today</p>
         </div>
 
-        <div className="glass rounded-3xl p-8 border border-white/10">
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input type="text" required placeholder="Full Name" value={form.name}
-                onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="input-field pl-11" />
+        <div className="relative z-10 grid grid-cols-3 gap-3">
+          {[
+            { value: '50K+', label: 'Students' },
+            { value: '5K+', label: 'MCQs' },
+            { value: '98%', label: 'Pass Rate' },
+          ].map((s, i) => (
+            <div key={i} className="glass-navy rounded-2xl p-4 text-center border border-purple-500/10">
+              <div className="text-xl font-black gradient-text-gold">{s.value}</div>
+              <div className="text-white/40 text-xs mt-1">{s.label}</div>
             </div>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input type="email" required placeholder="Email address" value={form.email}
-                onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="input-field pl-11" />
-            </div>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input type={showPassword ? 'text' : 'password'} required placeholder="Password (min 6 chars)" value={form.password}
-                onChange={e => setForm(p => ({ ...p, password: e.target.value }))} className="input-field pl-11 pr-11" />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          ))}
+        </div>
+      </div>
+
+      {/* Right form */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
+        <div className="orb w-80 h-80 bottom-[-5%] left-[-5%] opacity-10" style={{ background: '#7c3aed' }} />
+
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="w-full max-w-md relative z-10">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Create your account</h1>
+            <p className="text-white/45">Free forever. No credit card required.</p>
+          </div>
+
+          <div className="glass-navy rounded-3xl p-7 border border-purple-500/10">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+                <input type="text" required placeholder="Full Name" value={form.name}
+                  onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="input-field pl-11" />
+              </div>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+                <input type="email" required placeholder="Email address" value={form.email}
+                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="input-field pl-11" />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+                <input type={showPwd ? 'text' : 'password'} required placeholder="Password (min. 6 characters)" value={form.password}
+                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))} className="input-field pl-11 pr-11" />
+                <button type="button" onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/60 transition-colors">
+                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="relative">
+                <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
+                <select value={form.class_level} onChange={e => setForm(p => ({ ...p, class_level: e.target.value }))}
+                  className="input-field pl-11 appearance-none"
+                  style={{ color: form.class_level ? 'white' : 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.04)' }}>
+                  <option value="" style={{ background: '#06112e' }}>Select Level (Optional)</option>
+                  <option value="Foundation" style={{ background: '#06112e' }}>CA Foundation</option>
+                  <option value="Intermediate" style={{ background: '#06112e' }}>CA Intermediate</option>
+                  <option value="Final" style={{ background: '#06112e' }}>CA Final</option>
+                  {[6,7,8,9,10,11,12].map(c => <option key={c} value={c} style={{ background: '#06112e' }}>Class {c}</option>)}
+                </select>
+              </div>
+              <button type="submit" disabled={loading}
+                className="btn-primary flex items-center justify-center gap-2 py-3.5 mt-1 disabled:opacity-50">
+                {loading
+                  ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  : <><span>Create Account</span><ArrowRight className="w-4 h-4" /></>}
               </button>
-            </div>
-            <div className="relative">
-              <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <select value={form.class_level} onChange={e => setForm(p => ({ ...p, class_level: e.target.value }))}
-                className="input-field pl-11 appearance-none" style={{ background: 'rgba(255,255,255,0.05)', color: form.class_level ? 'white' : 'rgba(255,255,255,0.3)' }}>
-                <option value="" style={{ background: '#1a1a3e', color: 'white' }}>Select Class (Optional)</option>
-                {[6,7,8,9,10,11,12].map(c => <option key={c} value={c} style={{ background: '#1a1a3e', color: 'white' }}>Class {c}</option>)}
-              </select>
-            </div>
-            <button type="submit" disabled={loading} className="btn-primary flex items-center justify-center gap-2 mt-2 py-3.5 glow-blue disabled:opacity-50">
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <><span>Create Account</span><ArrowRight className="w-4 h-4" /></>
-              )}
-            </button>
-          </form>
-        </div>
+            </form>
+          </div>
 
-        <p className="text-center text-white/50 mt-6 text-sm">
-          Already have an account?{' '}
-          <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">Sign in</Link>
-        </p>
-      </motion.div>
+          <p className="text-center text-white/35 mt-6 text-sm">
+            Already have an account?{' '}
+            <Link to="/login" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+              Sign in <ChevronRight className="w-3 h-3 inline" />
+            </Link>
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }

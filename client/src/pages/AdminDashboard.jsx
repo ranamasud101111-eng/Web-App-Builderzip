@@ -1,125 +1,253 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, Bell, BarChart3, TrendingUp, CheckCircle, ChevronRight, Activity } from 'lucide-react';
+import {
+  Users, BookOpen, Bell, BarChart3, TrendingUp, CheckCircle,
+  ChevronRight, Activity, Shield, Settings, FileText, Trophy,
+  Home, LogOut, Menu, X, Megaphone
+} from 'lucide-react';
 import api from '../api';
+import { useNavigate } from 'react-router-dom';
+
+const SidebarLink = ({ to, icon, label, active, badge }) => (
+  <Link to={to} className={`sidebar-item ${active ? 'active' : ''}`}>
+    <span className="sidebar-icon w-4 h-4 flex-shrink-0">{icon}</span>
+    <span className="flex-1">{label}</span>
+    {badge && <span className="badge-gold">{badge}</span>}
+  </Link>
+);
+
+const StatCard = ({ label, value, icon, color, change, index }) => (
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.07 }}
+    className="card-premium p-5">
+    <div className="flex items-start justify-between mb-4">
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center"
+        style={{ background: `${color}15`, color, border: `1px solid ${color}25` }}>
+        {icon}
+      </div>
+      {change && (
+        <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-lg">{change}</span>
+      )}
+    </div>
+    <div className="text-3xl font-black text-white mb-1">{value}</div>
+    <div className="text-xs text-white/35 font-medium uppercase tracking-wide">{label}</div>
+  </motion.div>
+);
 
 export default function AdminDashboard() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/users/stats'),
-      api.get('/users'),
-    ]).then(([statsRes, usersRes]) => {
-      setStats(statsRes.data);
-      setUsers(usersRes.data.slice(0, 8));
-    }).finally(() => setLoading(false));
+    Promise.all([api.get('/users/stats'), api.get('/users')])
+      .then(([sRes, uRes]) => {
+        setStats(sRes.data);
+        setUsers(uRes.data.slice(0, 10));
+      }).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center pt-16">
-      <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+  const handleLogout = () => { logout(); navigate('/'); };
+
+  const navItems = [
+    { to: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
+    { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
+    { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
+    { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
+  ];
+
+  const statCards = [
+    { label: 'Total Students', value: stats?.total_students || 0, icon: <Users className="w-5 h-5" />, color: '#7c3aed', change: '+12%' },
+    { label: 'Subjects', value: stats?.total_subjects || 0, icon: <BookOpen className="w-5 h-5" />, color: '#f59e0b', change: '+2' },
+    { label: 'Chapters', value: stats?.total_chapters || 0, icon: <FileText className="w-5 h-5" />, color: '#06b6d4', change: '+8' },
+    { label: 'Enrollments', value: stats?.total_enrollments || 0, icon: <TrendingUp className="w-5 h-5" />, color: '#10b981', change: '+18%' },
+    { label: 'Completions', value: stats?.total_completions || 0, icon: <CheckCircle className="w-5 h-5" />, color: '#8b5cf6', change: '+24%' },
+    { label: 'Active Users', value: stats?.total_students || 0, icon: <Activity className="w-5 h-5" />, color: '#f43f5e', change: 'Live' },
+  ];
+
+  const Sidebar = ({ mobile = false }) => (
+    <div className={`sidebar flex flex-col ${mobile ? 'w-full h-full' : 'w-64 min-h-screen'} p-5`}>
+      {/* Logo */}
+      <div className="flex items-center gap-3 mb-8 px-2">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-violet-800 flex items-center justify-center">
+          <BookOpen className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <div className="text-white font-bold text-base leading-tight">CA Mock</div>
+          <div className="text-[9px] text-gold-500 font-semibold tracking-widest uppercase">Admin Panel</div>
+        </div>
+        {mobile && (
+          <button onClick={() => setSidebarOpen(false)} className="ml-auto p-1.5 hover:bg-white/[0.06] rounded-lg transition-colors">
+            <X className="w-4 h-4 text-white/40" />
+          </button>
+        )}
+      </div>
+
+      {/* Admin badge */}
+      <div className="flex items-center gap-2.5 glass-navy rounded-xl px-3 py-2.5 mb-6 border border-purple-500/12">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center">
+          <Shield className="w-4 h-4 text-navy-950" />
+        </div>
+        <div>
+          <p className="text-white text-xs font-semibold">Administrator</p>
+          <p className="text-white/30 text-[10px]">Full access</p>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex flex-col gap-1 flex-1">
+        <p className="text-white/20 text-[10px] font-semibold uppercase tracking-widest px-2 mb-2">Navigation</p>
+        {navItems.map(item => (
+          <SidebarLink key={item.to} {...item} active={location.pathname === item.to} />
+        ))}
+      </div>
+
+      {/* Logout */}
+      <button onClick={handleLogout}
+        className="sidebar-item mt-4 text-red-400/60 hover:text-red-400 hover:bg-red-500/[0.08]">
+        <LogOut className="w-4 h-4 flex-shrink-0" />
+        <span>Sign Out</span>
+      </button>
     </div>
   );
 
-  const statCards = [
-    { label: 'Total Students', value: stats?.total_students || 0, icon: <Users className="w-6 h-6" />, color: '#6366f1', change: '+12%' },
-    { label: 'Subjects', value: stats?.total_subjects || 0, icon: <BookOpen className="w-6 h-6" />, color: '#8b5cf6', change: '+2' },
-    { label: 'Total Chapters', value: stats?.total_chapters || 0, icon: <BarChart3 className="w-6 h-6" />, color: '#06b6d4', change: '+8' },
-    { label: 'Completions', value: stats?.total_completions || 0, icon: <CheckCircle className="w-6 h-6" />, color: '#10b981', change: '+24%' },
-    { label: 'Enrollments', value: stats?.total_enrollments || 0, icon: <TrendingUp className="w-6 h-6" />, color: '#f59e0b', change: '+18%' },
-    { label: 'Avg Progress', value: stats?.total_chapters > 0 ? `${Math.round((stats?.total_completions / (stats?.total_enrollments * stats?.total_chapters || 1)) * 100)}%` : '0%', icon: <Activity className="w-6 h-6" />, color: '#f43f5e', change: '+5%' },
-  ];
-
-  const adminLinks = [
-    { to: '/admin/notifications', label: 'Manage Notifications', desc: 'Send alerts to students', icon: <Bell className="w-5 h-5" />, color: '#6366f1' },
-    { to: '/admin/subjects', label: 'Manage Subjects', desc: 'Add or edit subjects & chapters', icon: <BookOpen className="w-5 h-5" />, color: '#8b5cf6' },
-  ];
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 rounded-full border-2 border-purple-500/20" />
+        <div className="absolute inset-0 rounded-full border-2 border-t-purple-500 border-r-gold-500 border-l-transparent border-b-transparent animate-spin" />
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-          <h1 className="text-4xl font-black text-white mb-2">Admin <span className="gradient-text">Dashboard</span></h1>
-          <p className="text-white/50">Manage your learning platform from one place.</p>
+    <div className="flex min-h-screen pt-[68px]">
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40">
+        <Sidebar />
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="relative w-72 h-full z-10">
+            <Sidebar mobile />
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 lg:ml-64 p-6 lg:p-8 overflow-auto">
+        {/* Mobile header */}
+        <div className="lg:hidden flex items-center justify-between mb-6">
+          <button onClick={() => setSidebarOpen(true)} className="glass p-2.5 rounded-xl">
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="font-bold text-white">Admin Dashboard</span>
+          <div className="w-10" />
+        </div>
+
+        {/* Page title */}
+        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <h1 className="text-3xl font-black text-white mb-1">Overview</h1>
+          <p className="text-white/35 text-sm">Monitor your platform performance at a glance.</p>
         </motion.div>
 
-        {/* Stat Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
-          {statCards.map((s, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-              className="glass rounded-2xl p-4 border border-white/5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: `${s.color}20`, color: s.color }}>
-                {s.icon}
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+          {statCards.map((s, i) => <StatCard key={i} {...s} index={i} />)}
+        </div>
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+            <Link to="/admin/notifications" className="card-premium p-6 flex items-center gap-4 group hover:border-purple-500/35 transition-all duration-200 block">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/12 border border-purple-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Megaphone className="w-5 h-5 text-purple-400" />
               </div>
-              <div className="text-2xl font-black text-white mb-0.5">{s.value}</div>
-              <div className="text-xs text-white/40 leading-tight">{s.label}</div>
-              <div className="text-xs text-green-400 mt-1 font-medium">{s.change}</div>
-            </motion.div>
-          ))}
+              <div className="flex-1">
+                <p className="font-bold text-white text-sm mb-1">Send Notification</p>
+                <p className="text-white/35 text-xs">Alert students with announcements</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+            </Link>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
+            <Link to="/admin/subjects" className="card-premium p-6 flex items-center gap-4 group hover:border-gold-500/35 transition-all duration-200 block">
+              <div className="w-12 h-12 rounded-2xl bg-gold-500/12 border border-gold-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <BookOpen className="w-5 h-5 text-gold-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-white text-sm mb-1">Manage Content</p>
+                <p className="text-white/35 text-xs">Add subjects, chapters & materials</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-gold-400 group-hover:translate-x-1 transition-all" />
+            </Link>
+          </motion.div>
         </div>
 
-        {/* Admin actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          {adminLinks.map((link, i) => (
-            <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}>
-              <Link to={link.to} className="flex items-center gap-4 glass rounded-2xl p-6 card-hover group border border-white/5 block">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: `${link.color}20`, color: link.color }}>
-                  {link.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-bold group-hover:text-indigo-300 transition-colors">{link.label}</h3>
-                  <p className="text-white/40 text-sm">{link.desc}</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-white/70 transition-colors" />
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Recent users */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-          <h2 className="text-xl font-bold text-white mb-4">Recent Students</h2>
-          <div className="glass rounded-2xl border border-white/5 overflow-hidden">
-            <table className="w-full">
+        {/* Students table */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="card-premium rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <Users className="w-4 h-4 text-purple-400" />
+              <h2 className="font-semibold text-white text-sm">Recent Students</h2>
+            </div>
+            <span className="badge-purple">{stats?.total_students || 0} total</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="premium-table">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left px-6 py-4 text-xs text-white/40 font-semibold uppercase tracking-wider">Student</th>
-                  <th className="text-left px-6 py-4 text-xs text-white/40 font-semibold uppercase tracking-wider hidden md:table-cell">Class</th>
-                  <th className="text-left px-6 py-4 text-xs text-white/40 font-semibold uppercase tracking-wider hidden md:table-cell">Enrolled</th>
-                  <th className="text-left px-6 py-4 text-xs text-white/40 font-semibold uppercase tracking-wider">Progress</th>
+                <tr>
+                  <th>Student</th>
+                  <th className="hidden md:table-cell">Level</th>
+                  <th className="hidden md:table-cell">Enrolled</th>
+                  <th>Progress</th>
+                  <th className="hidden md:table-cell">Joined</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((u, i) => (
-                  <tr key={u.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4">
+                {users.filter(u => u.role === 'student').map(u => (
+                  <tr key={u.id}>
+                    <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-700 to-violet-900 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                           {u.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-white font-medium text-sm">{u.name}</p>
-                          <p className="text-white/40 text-xs">{u.email}</p>
+                          <p className="text-white/85 font-medium text-sm">{u.name}</p>
+                          <p className="text-white/30 text-xs">{u.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <span className="text-white/50 text-sm">{u.class_level ? `Class ${u.class_level}` : '-'}</span>
+                    <td className="hidden md:table-cell">
+                      <span className="text-white/40 text-sm">{u.class_level ? (isNaN(u.class_level) ? u.class_level : `Class ${u.class_level}`) : '—'}</span>
                     </td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <span className="text-white/50 text-sm">{u.enrolled_count} subjects</span>
+                    <td className="hidden md:table-cell">
+                      <span className="text-white/40 text-sm">{u.enrolled_count || 0} subjects</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-white/50 text-sm">{u.completed_chapters} chapters</span>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 progress-bar">
+                          <div className="progress-fill" style={{ width: `${Math.min(100, (parseInt(u.completed_chapters) || 0) * 10)}%` }} />
+                        </div>
+                        <span className="text-white/50 text-xs">{u.completed_chapters || 0}</span>
+                      </div>
+                    </td>
+                    <td className="hidden md:table-cell">
+                      <span className="text-white/35 text-xs">{new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                     </td>
                   </tr>
                 ))}
-                {users.length === 0 && (
-                  <tr><td colSpan={4} className="px-6 py-12 text-center text-white/30">No students yet</td></tr>
+                {users.filter(u => u.role === 'student').length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-12 text-white/25 text-sm">No students yet</td></tr>
                 )}
               </tbody>
             </table>
