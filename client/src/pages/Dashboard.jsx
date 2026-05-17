@@ -103,10 +103,10 @@ export default function Dashboard() {
   );
 
   const statCards = [
-    { label: 'Enrolled', value: progress.length, icon: <Layers className="w-5 h-5" />, color: '#7c3aed', sub: 'subjects' },
-    { label: 'Completed', value: totalDone, icon: <CheckCircle className="w-5 h-5" />, color: '#10b981', sub: 'chapters' },
-    { label: 'Total', value: totalChaps, icon: <BookOpen className="w-5 h-5" />, color: '#f59e0b', sub: 'chapters' },
-    { label: 'Progress', value: `${overallPct}%`, icon: <TrendingUp className="w-5 h-5" />, color: '#06b6d4', sub: 'overall' },
+    { label: 'Enrolled', value: progress.length, icon: <Layers className="w-5 h-5" />, color: '#7c3aed', sub: 'subjects', to: '/dashboard' },
+    { label: 'Completed', value: totalDone, icon: <CheckCircle className="w-5 h-5" />, color: '#10b981', sub: 'chapters', to: '/progress' },
+    { label: 'Total Chapters', value: totalChaps, icon: <BookOpen className="w-5 h-5" />, color: '#f59e0b', sub: 'chapters', to: '/progress' },
+    { label: 'Progress', value: `${overallPct}%`, icon: <TrendingUp className="w-5 h-5" />, color: '#06b6d4', sub: 'overall', to: '/progress' },
   ];
 
   return (
@@ -128,16 +128,23 @@ export default function Dashboard() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {statCards.map((s, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-              className="card-premium p-5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}25` }}>
-                {s.icon}
-              </div>
-              <div className="text-2xl font-black text-white mb-0.5">{s.value}</div>
-              <div className="text-[11px] text-white/35 font-medium uppercase tracking-wide">{s.label}</div>
-              <div className="text-[10px] text-white/20 mt-0.5">{s.sub}</div>
-            </motion.div>
+            <Link key={i} to={s.to || '#'} className="block group">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                className="card-premium p-5 h-full cursor-pointer hover:border-white/20 hover:-translate-y-0.5 transition-all duration-200">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200"
+                  style={{ background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}25` }}>
+                  {s.icon}
+                </div>
+                <div className="text-2xl font-black text-white mb-0.5">{s.value}</div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] text-white/35 font-medium uppercase tracking-wide">{s.label}</div>
+                    <div className="text-[10px] text-white/20 mt-0.5">{s.sub}</div>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/45 group-hover:translate-x-0.5 transition-all" />
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
 
@@ -163,7 +170,7 @@ export default function Dashboard() {
             </div>
             <ChevronRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
           </Link>
-          <div className="card-premium p-5 flex items-center gap-4 group cursor-not-allowed">
+          <Link to="/progress" className="card-premium p-5 flex items-center gap-4 hover:border-cyan-500/30 transition-colors group">
             <div className="w-11 h-11 rounded-2xl bg-cyan-500/12 border border-cyan-500/20 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-cyan-400" />
             </div>
@@ -171,8 +178,8 @@ export default function Dashboard() {
               <p className="font-semibold text-white text-sm">Analytics</p>
               <p className="text-white/35 text-xs">Detailed performance report</p>
             </div>
-            <span className="badge-gold">Soon</span>
-          </div>
+            <ChevronRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
+          </Link>
         </div>
 
         {/* Tabs */}
