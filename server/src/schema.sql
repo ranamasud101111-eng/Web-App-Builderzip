@@ -191,6 +191,62 @@ CREATE TABLE IF NOT EXISTS class_settings (
 INSERT INTO class_settings (id, classes_visible) VALUES (1, true)
   ON CONFLICT (id) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS flashcard_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  flashcards_visible BOOLEAN DEFAULT TRUE,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS flashcard_levels (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  icon VARCHAR(10) DEFAULT '🃏',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS flashcard_subjects (
+  id SERIAL PRIMARY KEY,
+  level_id INTEGER REFERENCES flashcard_levels(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  icon VARCHAR(10) DEFAULT '📚',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS flashcard_chapters (
+  id SERIAL PRIMARY KEY,
+  subject_id INTEGER REFERENCES flashcard_subjects(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS flashcards (
+  id SERIAL PRIMARY KEY,
+  chapter_id INTEGER REFERENCES flashcard_chapters(id) ON DELETE CASCADE,
+  front TEXT NOT NULL,
+  back TEXT NOT NULL,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO flashcard_settings (id, flashcards_visible) VALUES (1, true)
+  ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO flashcard_levels (name, description, icon, order_index)
+VALUES
+  ('Certificate',  'Foundation level flash cards', '📜', 1),
+  ('Professional', 'Intermediate level flash cards', '💼', 2),
+  ('Advanced',     'Advanced level flash cards', '🏆', 3)
+ON CONFLICT (name) DO NOTHING;
+
 INSERT INTO class_levels (name, description, icon, order_index, is_visible)
 VALUES
   ('Certificate',   'Foundation level certification courses',         '📜', 1, true),

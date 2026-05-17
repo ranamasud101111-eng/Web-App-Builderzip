@@ -8,7 +8,8 @@ import {
   GraduationCap, Plus, X, Edit2, Trash2, Eye, EyeOff,
   BarChart3, Bell, BookOpen, Home, LogOut, Menu, Brain,
   Clock, Trophy, Target, CheckCircle, AlertCircle,
-  ChevronDown, Shield, FileText, Loader2, Globe, Lock, Layers
+  ChevronDown, Shield, FileText, Loader2, Globe, Lock, Layers,
+  Zap,
 } from 'lucide-react';
 import api from '../api';
 
@@ -53,6 +54,7 @@ export default function AdminExams() {
     { to: '/admin/mcqs', label: 'MCQ Manager', icon: <Brain className="w-4 h-4" /> },
     { to: '/admin/exams', label: 'Exam Manager', icon: <GraduationCap className="w-4 h-4" /> },
     { to: '/admin/classes', label: 'Classes', icon: <Layers className="w-4 h-4" /> },
+    { to: '/admin/flashcards', label: 'Flash Cards', icon: <Zap className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];

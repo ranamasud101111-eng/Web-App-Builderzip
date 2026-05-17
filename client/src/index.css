@@ -456,6 +456,29 @@ body {
 .rank-silver { background: linear-gradient(135deg, #94a3b8, #64748b); }
 .rank-bronze { background: linear-gradient(135deg, #c2410c, #9a3412); }
 
+/* ─── Flash Card flip ─── */
+.fc-scene { perspective: 1200px; }
+.fc-card {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.fc-card.flipped { transform: rotateY(180deg); }
+.fc-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+}
+.fc-back { transform: rotateY(180deg); }
+
 /* ─── Exam card ─── */
 .exam-card {
   background: linear-gradient(135deg, rgba(14,22,74,0.9) 0%, rgba(6,11,36,0.95) 100%);
