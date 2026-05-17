@@ -21,7 +21,6 @@ const storage = multer.diskStorage({
     cb(null, `${uuidv4()}${ext}`);
   },
 });
-
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'application/pdf' || path.extname(file.originalname).toLowerCase() === '.pdf') {
     cb(null, true);
@@ -29,40 +28,34 @@ const fileFilter = (req, file, cb) => {
     cb(new Error('Only PDF files are allowed'), false);
   }
 };
+const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } });
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 },
-});
-
-const bulkUpload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 },
-});
+/* helper: delete a file on disk safely */
+const removeFile = (filename) => {
+  if (!filename) return;
+  try {
+    const fp = path.join(UPLOAD_DIR, filename);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  } catch {}
+};
 
 /* ─── Settings ─── */
 router.get('/settings', async (req, res) => {
   try {
     const r = await pool.query('SELECT * FROM shortnote_settings WHERE id = 1');
     res.json(r.rows[0] || { shortnotes_visible: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch settings' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to fetch settings' }); }
 });
 
 router.put('/settings', authenticate, requireAdmin, async (req, res) => {
   try {
     const { shortnotes_visible } = req.body;
     const r = await pool.query(
-      'UPDATE shortnote_settings SET shortnotes_visible = $1, updated_at = NOW() WHERE id = 1 RETURNING *',
+      'UPDATE shortnote_settings SET shortnotes_visible=$1, updated_at=NOW() WHERE id=1 RETURNING *',
       [shortnotes_visible]
     );
     res.json(r.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update settings' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to update settings' }); }
 });
 
 /* ─── Levels ─── */
@@ -70,20 +63,20 @@ router.get('/levels', async (req, res) => {
   try {
     const r = await pool.query('SELECT * FROM shortnote_levels ORDER BY order_index, created_at');
     res.json(r.rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch levels' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to fetch levels' }); }
 });
 
 router.post('/levels', authenticate, requireAdmin, async (req, res) => {
   try {
     const { name, description, icon, order_index } = req.body;
+    if (!name?.trim()) return res.status(400).json({ error: 'Name is required' });
     const r = await pool.query(
-      'INSERT INTO shortnote_levels (name, description, icon, order_index) VALUES ($1,$2,$3,$4) RETURNING *',
-      [name, description || '', icon || '📝', order_index || 0]
+      'INSERT INTO shortnote_levels (name,description,icon,order_index) VALUES ($1,$2,$3,$4) RETURNING *',
+      [name.trim(), description || '', icon || '📝', order_index || 0]
     );
     res.json(r.rows[0]);
-  } catch (err) {
+  } catch (e) {
+    if (e.code === '23505') return res.status(400).json({ error: 'Level name already exists' });
     res.status(500).json({ error: 'Failed to create level' });
   }
 });
@@ -92,23 +85,28 @@ router.put('/levels/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { name, description, icon, order_index, is_visible } = req.body;
     const r = await pool.query(
-      'UPDATE shortnote_levels SET name=$1, description=$2, icon=$3, order_index=$4, is_visible=$5 WHERE id=$6 RETURNING *',
+      'UPDATE shortnote_levels SET name=$1,description=$2,icon=$3,order_index=$4,is_visible=$5 WHERE id=$6 RETURNING *',
       [name, description || '', icon || '📝', order_index || 0, is_visible !== false, req.params.id]
     );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Level not found' });
+    if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(r.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update level' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to update level' }); }
 });
 
 router.delete('/levels/:id', authenticate, requireAdmin, async (req, res) => {
   try {
+    /* cascade deletes subjects → chapters → notes (DB cascades) but files need manual cleanup */
+    const notes = await pool.query(
+      `SELECT sn.filename FROM short_notes sn
+       JOIN shortnote_chapters sc ON sc.id = sn.chapter_id
+       JOIN shortnote_subjects ss ON ss.id = sc.subject_id
+       WHERE ss.level_id = $1 AND sn.filename IS NOT NULL`,
+      [req.params.id]
+    );
+    notes.rows.forEach(r => removeFile(r.filename));
     await pool.query('DELETE FROM shortnote_levels WHERE id=$1', [req.params.id]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete level' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to delete level' }); }
 });
 
 /* ─── Subjects ─── */
@@ -119,207 +117,229 @@ router.get('/levels/:id/subjects', async (req, res) => {
       [req.params.id]
     );
     res.json(r.rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch subjects' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to fetch subjects' }); }
 });
 
 router.post('/subjects', authenticate, requireAdmin, async (req, res) => {
   try {
     const { level_id, name, description, icon, order_index } = req.body;
+    if (!name?.trim()) return res.status(400).json({ error: 'Name is required' });
     const r = await pool.query(
-      'INSERT INTO shortnote_subjects (level_id, name, description, icon, order_index) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [level_id, name, description || '', icon || '📚', order_index || 0]
+      'INSERT INTO shortnote_subjects (level_id,name,description,icon,order_index) VALUES ($1,$2,$3,$4,$5) RETURNING *',
+      [level_id, name.trim(), description || '', icon || '📚', order_index || 0]
     );
     res.json(r.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create subject' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to create subject' }); }
 });
 
 router.put('/subjects/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { name, description, icon, order_index, is_visible } = req.body;
     const r = await pool.query(
-      'UPDATE shortnote_subjects SET name=$1, description=$2, icon=$3, order_index=$4, is_visible=$5 WHERE id=$6 RETURNING *',
+      'UPDATE shortnote_subjects SET name=$1,description=$2,icon=$3,order_index=$4,is_visible=$5 WHERE id=$6 RETURNING *',
       [name, description || '', icon || '📚', order_index || 0, is_visible !== false, req.params.id]
     );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Subject not found' });
+    if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(r.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update subject' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to update subject' }); }
 });
 
 router.delete('/subjects/:id', authenticate, requireAdmin, async (req, res) => {
   try {
+    const notes = await pool.query(
+      `SELECT sn.filename FROM short_notes sn
+       JOIN shortnote_chapters sc ON sc.id = sn.chapter_id
+       WHERE sc.subject_id=$1 AND sn.filename IS NOT NULL`,
+      [req.params.id]
+    );
+    notes.rows.forEach(r => removeFile(r.filename));
     await pool.query('DELETE FROM shortnote_subjects WHERE id=$1', [req.params.id]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete subject' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to delete subject' }); }
 });
 
 /* ─── Chapters ─── */
 router.get('/subjects/:id/chapters', async (req, res) => {
   try {
     const r = await pool.query(
-      `SELECT sc.*, sf.id as file_id, sf.original_name, sf.filename, sf.file_size, sf.uploaded_at
+      `SELECT sc.*,
+              sn.id          AS note_id,
+              sn.type        AS note_type,
+              sn.text_content,
+              sn.filename,
+              sn.original_name,
+              sn.file_size,
+              sn.is_visible  AS note_visible,
+              sn.updated_at  AS note_updated_at
        FROM shortnote_chapters sc
-       LEFT JOIN shortnote_files sf ON sf.chapter_id = sc.id
-       WHERE sc.subject_id=$1 ORDER BY sc.order_index, sc.created_at`,
+       LEFT JOIN short_notes sn ON sn.chapter_id = sc.id
+       WHERE sc.subject_id=$1
+       ORDER BY sc.order_index, sc.created_at`,
       [req.params.id]
     );
     res.json(r.rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch chapters' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to fetch chapters' }); }
 });
 
 router.post('/chapters', authenticate, requireAdmin, async (req, res) => {
   try {
     const { subject_id, title, description, order_index } = req.body;
+    if (!title?.trim()) return res.status(400).json({ error: 'Title is required' });
     const r = await pool.query(
-      'INSERT INTO shortnote_chapters (subject_id, title, description, order_index) VALUES ($1,$2,$3,$4) RETURNING *',
-      [subject_id, title, description || '', order_index || 0]
+      'INSERT INTO shortnote_chapters (subject_id,title,description,order_index) VALUES ($1,$2,$3,$4) RETURNING *',
+      [subject_id, title.trim(), description || '', order_index || 0]
     );
     res.json(r.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create chapter' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to create chapter' }); }
 });
 
 router.put('/chapters/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { title, description, order_index, is_visible } = req.body;
     const r = await pool.query(
-      'UPDATE shortnote_chapters SET title=$1, description=$2, order_index=$3, is_visible=$4 WHERE id=$5 RETURNING *',
+      'UPDATE shortnote_chapters SET title=$1,description=$2,order_index=$3,is_visible=$4 WHERE id=$5 RETURNING *',
       [title, description || '', order_index || 0, is_visible !== false, req.params.id]
     );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Chapter not found' });
+    if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
     res.json(r.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update chapter' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to update chapter' }); }
 });
 
 router.delete('/chapters/:id', authenticate, requireAdmin, async (req, res) => {
   try {
-    const existing = await pool.query('SELECT * FROM shortnote_files WHERE chapter_id=$1', [req.params.id]);
-    if (existing.rows.length > 0) {
-      const filePath = path.join(UPLOAD_DIR, existing.rows[0].filename);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      await pool.query('DELETE FROM shortnote_files WHERE chapter_id=$1', [req.params.id]);
-    }
+    const note = await pool.query('SELECT filename FROM short_notes WHERE chapter_id=$1', [req.params.id]);
+    if (note.rows.length) removeFile(note.rows[0].filename);
     await pool.query('DELETE FROM shortnote_chapters WHERE id=$1', [req.params.id]);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete chapter' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to delete chapter' }); }
 });
 
-/* ─── File upload for a chapter ─── */
-router.post('/chapters/:id/upload', authenticate, requireAdmin, upload.single('pdf'), async (req, res) => {
+/* ─── Note CRUD ─── */
+
+/* GET /chapters/:id/note */
+router.get('/chapters/:id/note', async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No PDF file provided' });
+    const r = await pool.query('SELECT * FROM short_notes WHERE chapter_id=$1', [req.params.id]);
+    res.json(r.rows[0] || null);
+  } catch { res.status(500).json({ error: 'Failed to fetch note' }); }
+});
+
+/* PUT /chapters/:id/note  →  upsert text note OR update visibility/type */
+router.put('/chapters/:id/note', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { type, text_content, is_visible } = req.body;
     const chapterId = req.params.id;
 
-    const existing = await pool.query('SELECT * FROM shortnote_files WHERE chapter_id=$1', [chapterId]);
-    if (existing.rows.length > 0) {
-      const oldPath = path.join(UPLOAD_DIR, existing.rows[0].filename);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      await pool.query('DELETE FROM shortnote_files WHERE chapter_id=$1', [chapterId]);
+    const existing = await pool.query('SELECT * FROM short_notes WHERE chapter_id=$1', [chapterId]);
+
+    if (existing.rows.length === 0) {
+      /* CREATE */
+      const r = await pool.query(
+        `INSERT INTO short_notes (chapter_id, type, text_content, is_visible, updated_at)
+         VALUES ($1, $2, $3, $4, NOW()) RETURNING *`,
+        [chapterId, type || 'text', text_content || '', is_visible !== false]
+      );
+      return res.json(r.rows[0]);
+    }
+
+    /* UPDATE — only change the columns provided */
+    const current = existing.rows[0];
+    const newType       = type       !== undefined ? type       : current.type;
+    const newText       = text_content !== undefined ? text_content : current.text_content;
+    const newVisibility = is_visible  !== undefined ? is_visible  : current.is_visible;
+
+    /* If switching away from PDF to text, delete the old file */
+    if (newType === 'text' && current.filename) {
+      removeFile(current.filename);
     }
 
     const r = await pool.query(
-      'INSERT INTO shortnote_files (chapter_id, filename, original_name, file_path, file_size) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [chapterId, req.file.filename, req.file.originalname, req.file.path, req.file.size]
+      `UPDATE short_notes
+       SET type=$1, text_content=$2, is_visible=$3,
+           filename = CASE WHEN $1='text' THEN NULL ELSE filename END,
+           original_name = CASE WHEN $1='text' THEN NULL ELSE original_name END,
+           file_size = CASE WHEN $1='text' THEN NULL ELSE file_size END,
+           updated_at=NOW()
+       WHERE chapter_id=$4 RETURNING *`,
+      [newType, newText, newVisibility, chapterId]
     );
     res.json(r.rows[0]);
-  } catch (err) {
-    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    res.status(500).json({ error: 'Failed to upload file' });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Failed to save note' });
   }
 });
 
-/* ─── Delete file from a chapter ─── */
-router.delete('/chapters/:id/file', authenticate, requireAdmin, async (req, res) => {
+/* POST /chapters/:id/note/upload  →  upload / replace PDF */
+router.post('/chapters/:id/note/upload', authenticate, requireAdmin, upload.single('pdf'), async (req, res) => {
   try {
-    const existing = await pool.query('SELECT * FROM shortnote_files WHERE chapter_id=$1', [req.params.id]);
-    if (existing.rows.length === 0) return res.status(404).json({ error: 'No file found' });
-    const filePath = path.join(UPLOAD_DIR, existing.rows[0].filename);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    await pool.query('DELETE FROM shortnote_files WHERE chapter_id=$1', [req.params.id]);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete file' });
-  }
-});
+    if (!req.file) return res.status(400).json({ error: 'No PDF file provided' });
+    const chapterId = req.params.id;
+    const isVisible = req.body.is_visible !== 'false';
 
-/* ─── Bulk upload: create chapters + upload PDFs to a subject ─── */
-router.post('/subjects/:id/bulk-upload', authenticate, requireAdmin, bulkUpload.array('pdfs', 50), async (req, res) => {
-  const subjectId = req.params.id;
-  const results = [];
-
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: 'No PDF files provided' });
-  }
-
-  for (const file of req.files) {
-    const title = path.basename(file.originalname, path.extname(file.originalname));
-    try {
-      const existing = await pool.query(
-        'SELECT sc.*, sf.id as file_id, sf.filename as existing_filename FROM shortnote_chapters sc LEFT JOIN shortnote_files sf ON sf.chapter_id = sc.id WHERE sc.subject_id=$1 AND LOWER(sc.title)=LOWER($2)',
-        [subjectId, title]
-      );
-
-      let chapterId;
-      if (existing.rows.length > 0) {
-        chapterId = existing.rows[0].id;
-        if (existing.rows[0].existing_filename) {
-          const oldPath = path.join(UPLOAD_DIR, existing.rows[0].existing_filename);
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-          await pool.query('DELETE FROM shortnote_files WHERE chapter_id=$1', [chapterId]);
-        }
-      } else {
-        const maxOrder = await pool.query('SELECT MAX(order_index) as m FROM shortnote_chapters WHERE subject_id=$1', [subjectId]);
-        const nextOrder = (maxOrder.rows[0].m || 0) + 1;
-        const newChapter = await pool.query(
-          'INSERT INTO shortnote_chapters (subject_id, title, order_index) VALUES ($1,$2,$3) RETURNING *',
-          [subjectId, title, nextOrder]
-        );
-        chapterId = newChapter.rows[0].id;
-      }
-
-      await pool.query(
-        'INSERT INTO shortnote_files (chapter_id, filename, original_name, file_path, file_size) VALUES ($1,$2,$3,$4,$5)',
-        [chapterId, file.filename, file.originalname, file.path, file.size]
-      );
-
-      results.push({ title, status: 'ok', chapterId });
-    } catch (err) {
-      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-      results.push({ title, status: 'error', error: err.message });
+    const existing = await pool.query('SELECT * FROM short_notes WHERE chapter_id=$1', [chapterId]);
+    if (existing.rows.length > 0 && existing.rows[0].filename) {
+      removeFile(existing.rows[0].filename);
     }
-  }
 
-  res.json({ results, total: req.files.length, success: results.filter(r => r.status === 'ok').length });
+    let r;
+    if (existing.rows.length === 0) {
+      r = await pool.query(
+        `INSERT INTO short_notes (chapter_id, type, filename, original_name, file_size, is_visible, updated_at)
+         VALUES ($1,'pdf',$2,$3,$4,$5,NOW()) RETURNING *`,
+        [chapterId, req.file.filename, req.file.originalname, req.file.size, isVisible]
+      );
+    } else {
+      r = await pool.query(
+        `UPDATE short_notes
+         SET type='pdf', filename=$1, original_name=$2, file_size=$3, text_content=NULL, is_visible=$4, updated_at=NOW()
+         WHERE chapter_id=$5 RETURNING *`,
+        [req.file.filename, req.file.originalname, req.file.size, isVisible, chapterId]
+      );
+    }
+    res.json(r.rows[0]);
+  } catch (e) {
+    if (req.file) removeFile(req.file.filename);
+    res.status(500).json({ error: 'Failed to upload PDF' });
+  }
 });
 
-/* ─── Serve PDF file ─── */
+/* DELETE /chapters/:id/note */
+router.delete('/chapters/:id/note', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const existing = await pool.query('SELECT * FROM short_notes WHERE chapter_id=$1', [req.params.id]);
+    if (!existing.rows.length) return res.status(404).json({ error: 'No note found' });
+    removeFile(existing.rows[0].filename);
+    await pool.query('DELETE FROM short_notes WHERE chapter_id=$1', [req.params.id]);
+    res.json({ success: true });
+  } catch { res.status(500).json({ error: 'Failed to delete note' }); }
+});
+
+/* PATCH /chapters/:id/note/visibility */
+router.patch('/chapters/:id/note/visibility', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { is_visible } = req.body;
+    const r = await pool.query(
+      'UPDATE short_notes SET is_visible=$1, updated_at=NOW() WHERE chapter_id=$2 RETURNING *',
+      [is_visible, req.params.id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'No note found' });
+    res.json(r.rows[0]);
+  } catch { res.status(500).json({ error: 'Failed to update visibility' }); }
+});
+
+/* ─── Serve PDF ─── */
 router.get('/file/:filename', async (req, res) => {
   try {
     const filename = path.basename(req.params.filename);
     const filePath = path.join(UPLOAD_DIR, filename);
     if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found' });
-    const row = await pool.query('SELECT * FROM shortnote_files WHERE filename=$1', [filename]);
+    const row = await pool.query('SELECT original_name FROM short_notes WHERE filename=$1', [filename]);
     const originalName = row.rows[0]?.original_name || filename;
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${originalName}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(originalName)}"`);
     res.sendFile(filePath);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to serve file' });
-  }
+  } catch { res.status(500).json({ error: 'Failed to serve file' }); }
 });
 
 export default router;

@@ -1,345 +1,372 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronRight, ArrowLeft, FileText, Download, Loader2,
-  EyeOff, BookOpen, FileSearch, ExternalLink
+  ChevronRight, ArrowLeft, FileText, Download,
+  Loader2, EyeOff, BookOpen, AlignLeft, ExternalLink,
 } from 'lucide-react';
 import api from '../api';
 
-const LEVEL_COLORS = ['#7c3aed', '#f59e0b', '#06b6d4'];
-const LEVEL_BG = [
-  'from-purple-600/20 to-violet-800/10',
-  'from-amber-600/20 to-yellow-700/10',
-  'from-cyan-600/20 to-sky-700/10',
+/* ─── Colour palette per level index ─── */
+const LEVEL_PALETTE = [
+  { gradient: 'from-purple-600/25 to-violet-800/10', accent: '#a855f7', ring: 'ring-purple-500/30' },
+  { gradient: 'from-amber-600/25 to-yellow-700/10',  accent: '#f59e0b', ring: 'ring-amber-500/30'  },
+  { gradient: 'from-cyan-600/25 to-sky-700/10',      accent: '#06b6d4', ring: 'ring-cyan-500/30'   },
+  { gradient: 'from-emerald-600/25 to-green-700/10', accent: '#10b981', ring: 'ring-emerald-500/30' },
 ];
+const palette = (i) => LEVEL_PALETTE[i % LEVEL_PALETTE.length];
 
+/* ─── Breadcrumb ─── */
+function Breadcrumb({ level, subject, chapter, onLevel, onSubject, onRoot }) {
+  return (
+    <div className="flex items-center gap-1.5 text-sm text-white/40 flex-wrap">
+      <button onClick={onRoot} className="hover:text-white/80 transition-colors">Short Notes</button>
+      {level && <>
+        <ChevronRight size={12} />
+        <button onClick={onLevel} className="hover:text-white/80 transition-colors">{level.name}</button>
+      </>}
+      {subject && <>
+        <ChevronRight size={12} />
+        <button onClick={onSubject} className="hover:text-white/80 transition-colors">{subject.name}</button>
+      </>}
+      {chapter && <>
+        <ChevronRight size={12} />
+        <span className="text-white/70">{chapter.title}</span>
+      </>}
+    </div>
+  );
+}
+
+/* ─── Card ─── */
+const Card = ({ children, onClick, className = '' }) => (
+  <motion.div whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+    onClick={onClick}
+    className={`cursor-pointer p-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/[0.15] transition-all ${className}`}>
+    {children}
+  </motion.div>
+);
+
+/* ────────────────────────────────────────── */
 export default function ShortNotes() {
-  const [loading, setLoading] = useState(true);
-  const [visible, setVisible] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [globalVisible, setGlobalVisible] = useState(true);
   const [levels, setLevels] = useState([]);
 
-  const [currentLevel, setCurrentLevel] = useState(null);
+  /* Navigation state */
+  const [view, setView] = useState('levels');          /* 'levels' | 'subjects' | 'chapters' | 'note' */
+  const [currentLevel,   setCurrentLevel]   = useState(null);
   const [currentSubject, setCurrentSubject] = useState(null);
   const [currentChapter, setCurrentChapter] = useState(null);
 
+  /* Lists */
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
-  const [loadingSub, setLoadingSub] = useState(false);
-  const [loadingCh, setLoadingCh] = useState(false);
 
+  /* Note */
+  const [note,        setNote]        = useState(null);
+  const [noteLoading, setNoteLoading] = useState(false);
+
+  /* Loading spinners */
+  const [loadingSub, setLoadingSub] = useState(false);
+  const [loadingCh,  setLoadingCh]  = useState(false);
+
+  /* ─── Boot ─── */
   useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
+    (async () => {
       try {
         const [settingsRes, levelsRes] = await Promise.all([
           api.get('/shortnotes/settings'),
           api.get('/shortnotes/levels'),
         ]);
-        setVisible(settingsRes.data.shortnotes_visible);
-        setLevels(levelsRes.data.filter(l => l.is_visible));
+        setGlobalVisible(settingsRes.data?.shortnotes_visible !== false);
+        setLevels((levelsRes.data || []).filter(l => l.is_visible));
       } catch {}
-      finally { setLoading(false); }
-    };
-    fetch();
+      finally { setPageLoading(false); }
+    })();
   }, []);
 
+  /* ─── Select level ─── */
   const selectLevel = async (level) => {
     setCurrentLevel(level);
     setCurrentSubject(null);
     setCurrentChapter(null);
+    setSubjects([]);
     setLoadingSub(true);
+    setView('subjects');
     try {
       const r = await api.get(`/shortnotes/levels/${level.id}/subjects`);
-      setSubjects(r.data.filter(s => s.is_visible));
+      setSubjects((r.data || []).filter(s => s.is_visible));
     } catch { setSubjects([]); }
     finally { setLoadingSub(false); }
   };
 
+  /* ─── Select subject ─── */
   const selectSubject = async (subject) => {
     setCurrentSubject(subject);
     setCurrentChapter(null);
+    setChapters([]);
     setLoadingCh(true);
+    setView('chapters');
     try {
       const r = await api.get(`/shortnotes/subjects/${subject.id}/chapters`);
-      setChapters(r.data.filter(c => c.is_visible));
+      setChapters((r.data || []).filter(c => c.is_visible));
     } catch { setChapters([]); }
     finally { setLoadingCh(false); }
   };
 
-  const selectChapter = (chapter) => setCurrentChapter(chapter);
-
-  const goBack = () => {
-    if (currentChapter) { setCurrentChapter(null); return; }
-    if (currentSubject) { setCurrentSubject(null); return; }
-    if (currentLevel) { setCurrentLevel(null); }
+  /* ─── Select chapter → load note ─── */
+  const selectChapter = async (chapter) => {
+    setCurrentChapter(chapter);
+    setNote(null);
+    setNoteLoading(true);
+    setView('note');
+    try {
+      const r = await api.get(`/shortnotes/chapters/${chapter.id}/note`);
+      setNote(r.data || null);
+    } catch { setNote(null); }
+    finally { setNoteLoading(false); }
   };
 
-  const getPdfUrl = (filename) => `/api/shortnotes/file/${filename}`;
+  /* ─── Navigation helpers ─── */
+  const goRoot    = () => { setView('levels');   setCurrentLevel(null);   setCurrentSubject(null); setCurrentChapter(null); };
+  const goLevel   = () => { setView('subjects'); setCurrentSubject(null); setCurrentChapter(null); };
+  const goSubject = () => { setView('chapters'); setCurrentChapter(null); };
 
-  const formatSize = (bytes) => {
-    if (!bytes) return '';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  if (loading) return (
-    <div className="flex items-center justify-center py-24">
-      <Loader2 className="w-7 h-7 text-purple-400 animate-spin" />
+  /* ─── Page loading ─── */
+  if (pageLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+      <Loader2 size={32} className="animate-spin text-purple-400" />
     </div>
   );
 
-  if (!visible) return (
-    <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
-        <EyeOff className="w-7 h-7 text-white/20" />
+  /* ─── Hidden ─── */
+  if (!globalVisible) return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+      <div className="text-center max-w-sm">
+        <EyeOff size={48} className="mx-auto mb-4 text-white/20" />
+        <h2 className="text-xl font-bold text-white/70 mb-2">Short Notes Unavailable</h2>
+        <p className="text-white/40 text-sm">Short Notes are currently not available. Please check back later.</p>
       </div>
-      <p className="text-white/30 font-medium">Short Notes are currently unavailable</p>
-      <p className="text-white/15 text-sm mt-1">Check back later</p>
     </div>
   );
+
+  const bg = 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)';
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <div className="min-h-screen" style={{ background: bg }}>
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-sm mb-6 flex-wrap">
-        <button
-          onClick={() => { setCurrentLevel(null); setCurrentSubject(null); setCurrentChapter(null); }}
-          className={`font-medium transition-colors ${!currentLevel ? 'text-white' : 'text-white/40 hover:text-white/70'}`}>
-          <span className="flex items-center gap-1.5"><FileText className="w-4 h-4" /> Short Notes</span>
-        </button>
-        {currentLevel && (
-          <>
-            <ChevronRight className="w-3.5 h-3.5 text-white/20" />
-            <button onClick={() => { setCurrentSubject(null); setCurrentChapter(null); }}
-              className={`transition-colors ${!currentSubject ? 'text-white font-medium' : 'text-white/40 hover:text-white/70'}`}>
-              {currentLevel.icon} {currentLevel.name}
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+              <BookOpen size={24} className="text-purple-400" />
+              Short Notes
+            </h1>
+            <div className="mt-2">
+              <Breadcrumb
+                level={currentLevel} subject={currentSubject} chapter={currentChapter}
+                onRoot={goRoot} onLevel={goLevel} onSubject={goSubject}
+              />
+            </div>
+          </div>
+          {view !== 'levels' && (
+            <button onClick={() => {
+              if (view === 'note')     goSubject();
+              else if (view === 'chapters') goLevel();
+              else goRoot();
+            }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.06] text-white/60 hover:bg-white/[0.1] hover:text-white transition-all text-sm">
+              <ArrowLeft size={15} />Back
             </button>
-          </>
-        )}
-        {currentSubject && (
-          <>
-            <ChevronRight className="w-3.5 h-3.5 text-white/20" />
-            <button onClick={() => setCurrentChapter(null)}
-              className={`transition-colors ${!currentChapter ? 'text-white font-medium' : 'text-white/40 hover:text-white/70'}`}>
-              {currentSubject.icon} {currentSubject.name}
-            </button>
-          </>
-        )}
-        {currentChapter && (
-          <>
-            <ChevronRight className="w-3.5 h-3.5 text-white/20" />
-            <span className="text-white font-medium truncate max-w-[160px]">{currentChapter.title}</span>
-          </>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Back button */}
-      {currentLevel && (
-        <button onClick={goBack}
-          className="flex items-center gap-2 text-white/40 hover:text-white/70 text-sm mb-5 transition-colors group">
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          Back
-        </button>
-      )}
-
-      {/* VIEW: PDF Viewer */}
-      {currentChapter && (
-        <motion.div key="pdf-view" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="card-premium overflow-hidden">
-            {currentChapter.filename ? (
-              <>
-                {/* PDF toolbar */}
-                <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.07] bg-white/[0.02]">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-4 h-4 text-red-400" />
+        {/* ── Levels view ── */}
+        <AnimatePresence mode="wait">
+          {view === 'levels' && (
+            <motion.div key="levels" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.2 }}
+              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {levels.length === 0 ? (
+                <div className="col-span-full text-center py-16 text-white/30">
+                  <BookOpen size={40} className="mx-auto mb-3 opacity-30" />
+                  <p>No levels available yet.</p>
+                </div>
+              ) : levels.map((level, i) => {
+                const p = palette(i);
+                return (
+                  <Card key={level.id} onClick={() => selectLevel(level)}
+                    className={`bg-gradient-to-br ${p.gradient}`}>
+                    <div className="text-3xl mb-3">{level.icon}</div>
+                    <h3 className="text-lg font-bold text-white">{level.name}</h3>
+                    {level.description && <p className="text-sm text-white/50 mt-1">{level.description}</p>}
+                    <div className="flex items-center gap-1 mt-4 text-xs font-medium" style={{ color: p.accent }}>
+                      Explore subjects <ChevronRight size={12} />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{currentChapter.original_name || currentChapter.title}</p>
-                      {currentChapter.file_size && (
-                        <p className="text-white/30 text-xs">{formatSize(currentChapter.file_size)}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <a
-                      href={getPdfUrl(currentChapter.filename)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-white/60 hover:text-white text-xs font-medium transition-all"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Open</span>
-                    </a>
-                    <a
-                      href={getPdfUrl(currentChapter.filename)}
-                      download={currentChapter.original_name || `${currentChapter.title}.pdf`}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 hover:text-purple-300 text-xs font-semibold transition-all border border-purple-500/20"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Download</span>
-                    </a>
-                  </div>
-                </div>
+                  </Card>
+                );
+              })}
+            </motion.div>
+          )}
 
-                {/* Embedded PDF */}
-                <div className="w-full bg-[#0a0f2e]" style={{ height: '75vh', minHeight: '480px' }}>
-                  <iframe
-                    src={`${getPdfUrl(currentChapter.filename)}#toolbar=1&navpanes=1&view=FitH`}
-                    title={currentChapter.title}
-                    className="w-full h-full border-0"
-                    allow="fullscreen"
-                  />
+          {/* ── Subjects view ── */}
+          {view === 'subjects' && (
+            <motion.div key="subjects" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.2 }}>
+              {loadingSub ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 size={28} className="animate-spin text-purple-400" />
                 </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-24">
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
-                  <FileSearch className="w-7 h-7 text-white/20" />
+              ) : subjects.length === 0 ? (
+                <div className="text-center py-16 text-white/30">
+                  <BookOpen size={36} className="mx-auto mb-3 opacity-30" />
+                  <p>No subjects available for this level yet.</p>
                 </div>
-                <p className="text-white/30 font-medium">No PDF uploaded yet</p>
-                <p className="text-white/15 text-sm mt-1">The admin hasn't uploaded notes for this chapter</p>
-              </div>
-            )}
-
-            {/* Chapter info */}
-            <div className="p-5 border-t border-white/[0.07]">
-              <h1 className="text-white font-bold text-xl mb-1">{currentChapter.title}</h1>
-              {currentChapter.description && (
-                <p className="text-white/45 text-sm leading-relaxed">{currentChapter.description}</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {subjects.map((subject, i) => {
+                    const p = palette(i);
+                    return (
+                      <Card key={subject.id} onClick={() => selectSubject(subject)}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                            style={{ background: `${p.accent}22` }}>
+                            {subject.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-white truncate">{subject.name}</p>
+                            {subject.description && <p className="text-xs text-white/40 truncate mt-0.5">{subject.description}</p>}
+                          </div>
+                          <ChevronRight size={16} className="text-white/30 flex-shrink-0" />
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
               )}
-              <div className="flex items-center gap-2 mt-3">
-                <span className="text-white/25 text-xs">{currentSubject?.icon} {currentSubject?.name}</span>
-                <span className="text-white/15">·</span>
-                <span className="text-white/25 text-xs">{currentLevel?.icon} {currentLevel?.name}</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+            </motion.div>
+          )}
 
-      {/* VIEW: Chapters List */}
-      {currentSubject && !currentChapter && (
-        <motion.div key="chapters-view" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-5">
-            <h2 className="text-white font-bold text-xl">{currentSubject.icon} {currentSubject.name}</h2>
-            {currentSubject.description && <p className="text-white/40 text-sm mt-1">{currentSubject.description}</p>}
-          </div>
-          {loadingCh ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-            </div>
-          ) : chapters.length === 0 ? (
-            <div className="text-center py-16 card-premium">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <FileText className="w-6 h-6 text-white/20" />
-              </div>
-              <p className="text-white/30 font-medium">No chapters yet</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {chapters.map((ch, i) => (
-                <motion.button key={ch.id} onClick={() => selectChapter(ch)}
-                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                  className="w-full card-premium p-4 flex items-center gap-4 text-left group hover:border-purple-500/30 transition-all">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 ${ch.filename ? 'bg-red-500/10 border border-red-500/20' : 'bg-white/[0.04] border border-white/[0.06]'}`}>
-                    <FileText className={`w-5 h-5 ${ch.filename ? 'text-red-400' : 'text-white/20'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white/85 font-semibold text-sm group-hover:text-white transition-colors">{ch.title}</p>
-                    {ch.description && <p className="text-white/35 text-xs truncate mt-0.5">{ch.description}</p>}
-                    {ch.filename ? (
-                      <p className="text-emerald-400/60 text-[10px] mt-0.5 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 inline-block" />
-                        PDF available · {formatSize(ch.file_size)}
-                      </p>
-                    ) : (
-                      <p className="text-white/20 text-[10px] mt-0.5">No PDF uploaded</p>
+          {/* ── Chapters view ── */}
+          {view === 'chapters' && (
+            <motion.div key="chapters" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.2 }}>
+              {loadingCh ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 size={28} className="animate-spin text-purple-400" />
+                </div>
+              ) : chapters.length === 0 ? (
+                <div className="text-center py-16 text-white/30">
+                  <FileText size={36} className="mx-auto mb-3 opacity-30" />
+                  <p>No chapters available for this subject yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {chapters.map((chapter, i) => (
+                    <Card key={chapter.id} onClick={() => selectChapter(chapter)}>
+                      <div className="flex items-center gap-4">
+                        <div className="w-9 h-9 rounded-xl bg-white/[0.05] flex items-center justify-center flex-shrink-0 text-sm font-bold text-white/50">
+                          {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white">{chapter.title}</p>
+                          {chapter.description && <p className="text-xs text-white/40 mt-0.5">{chapter.description}</p>}
+                        </div>
+                        {/* Note type badge */}
+                        {chapter.note_type === 'pdf' && (
+                          <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-rose-500/15 text-rose-300 flex-shrink-0">
+                            <FileText size={11} />PDF
+                          </span>
+                        )}
+                        {chapter.note_type === 'text' && (
+                          <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-blue-500/15 text-blue-300 flex-shrink-0">
+                            <AlignLeft size={11} />Text
+                          </span>
+                        )}
+                        {!chapter.note_type && (
+                          <span className="text-xs text-white/20 flex-shrink-0">No note</span>
+                        )}
+                        <ChevronRight size={15} className="text-white/30 flex-shrink-0" />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ── Note view ── */}
+          {view === 'note' && (
+            <motion.div key="note" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.2 }}
+              className="space-y-4">
+              {/* Chapter header */}
+              <div className="p-5 rounded-2xl border border-white/[0.08] bg-white/[0.03]">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs text-white/40 mb-1">{currentSubject?.name}</p>
+                    <h2 className="text-xl font-bold text-white">{currentChapter?.title}</h2>
+                    {currentChapter?.description && (
+                      <p className="text-sm text-white/50 mt-1">{currentChapter.description}</p>
                     )}
                   </div>
-                  <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                </motion.button>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      )}
-
-      {/* VIEW: Subjects List */}
-      {currentLevel && !currentSubject && (
-        <motion.div key="subjects-view" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-5">
-            <h2 className="text-white font-bold text-xl">{currentLevel.icon} {currentLevel.name}</h2>
-            {currentLevel.description && <p className="text-white/40 text-sm mt-1">{currentLevel.description}</p>}
-          </div>
-          {loadingSub ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-            </div>
-          ) : subjects.length === 0 ? (
-            <div className="text-center py-16 card-premium">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <BookOpen className="w-6 h-6 text-white/20" />
+                  {note?.type === 'pdf' && note.filename && (
+                    <a href={`/api/shortnotes/file/${note.filename}`}
+                      download={note.original_name}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 transition-colors text-sm flex-shrink-0">
+                      <Download size={14} />Download
+                    </a>
+                  )}
+                </div>
               </div>
-              <p className="text-white/30 font-medium">No subjects yet</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {subjects.map((subj, i) => (
-                <motion.button key={subj.id} onClick={() => selectSubject(subj)}
-                  initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                  className="card-premium p-5 text-left group hover:border-purple-500/30 transition-all hover:-translate-y-0.5">
-                  <div className="text-3xl mb-3">{subj.icon}</div>
-                  <h3 className="text-white font-bold text-base group-hover:text-white transition-colors">{subj.name}</h3>
-                  {subj.description && <p className="text-white/35 text-xs mt-1 line-clamp-2">{subj.description}</p>}
-                  <div className="flex items-center gap-1 mt-3 text-purple-400/60 text-xs group-hover:text-purple-400 transition-colors">
-                    <span>View chapters</span>
-                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      )}
 
-      {/* VIEW: Levels (Home) */}
-      {!currentLevel && (
-        <motion.div key="levels-view" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-6">
-            <h1 className="text-white font-bold text-2xl">Short Notes</h1>
-            <p className="text-white/35 text-sm mt-1">Choose your level to access PDF notes</p>
-          </div>
-          {levels.length === 0 ? (
-            <div className="text-center py-20 card-premium">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-7 h-7 text-white/20" />
-              </div>
-              <p className="text-white/30 font-medium">No short notes available yet</p>
-              <p className="text-white/15 text-sm mt-1">Check back soon</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {levels.map((level, i) => (
-                <motion.button key={level.id} onClick={() => selectLevel(level)}
-                  initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-                  className={`card-premium p-6 text-left group hover:-translate-y-1 transition-all bg-gradient-to-br ${LEVEL_BG[i % LEVEL_BG.length]} hover:border-white/20`}>
-                  <div className="text-4xl mb-4">{level.icon}</div>
-                  <h3 className="text-white font-black text-xl mb-1">{level.name}</h3>
-                  {level.description && <p className="text-white/40 text-sm leading-relaxed">{level.description}</p>}
-                  <div className="flex items-center gap-1.5 mt-4 font-semibold text-sm transition-colors"
-                    style={{ color: LEVEL_COLORS[i % LEVEL_COLORS.length] }}>
-                    <span>Open Notes</span>
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              {/* Note content */}
+              {noteLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 size={28} className="animate-spin text-purple-400" />
+                </div>
+              ) : !note ? (
+                <div className="text-center py-16 text-white/30 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+                  <FileText size={36} className="mx-auto mb-3 opacity-30" />
+                  <p>No short note available for this chapter yet.</p>
+                </div>
+              ) : !note.is_visible ? (
+                <div className="text-center py-16 text-white/30 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+                  <EyeOff size={36} className="mx-auto mb-3 opacity-30" />
+                  <p>This note is currently unavailable.</p>
+                </div>
+              ) : note.type === 'pdf' ? (
+                /* PDF viewer */
+                <div className="rounded-2xl border border-white/[0.08] overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-white/[0.04] border-b border-white/[0.06]">
+                    <div className="flex items-center gap-2 text-sm text-white/60">
+                      <FileText size={14} className="text-rose-400" />
+                      {note.original_name}
+                    </div>
+                    <a href={`/api/shortnotes/file/${note.filename}`} target="_blank" rel="noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors">
+                      <ExternalLink size={12} />Open in new tab
+                    </a>
                   </div>
-                </motion.button>
-              ))}
-            </div>
+                  <iframe
+                    src={`/api/shortnotes/file/${note.filename}#toolbar=1&navpanes=1`}
+                    title={note.original_name}
+                    className="w-full bg-white"
+                    style={{ height: 'calc(100vh - 280px)', minHeight: '500px' }}
+                  />
+                </div>
+              ) : (
+                /* Text note */
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
+                  <div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/[0.06]">
+                    <AlignLeft size={16} className="text-blue-400" />
+                    <span className="text-sm font-medium text-white/60">Short Note</span>
+                  </div>
+                  <div className="text-white/85 text-sm leading-relaxed whitespace-pre-wrap font-mono">
+                    {note.text_content || <span className="text-white/30 italic">Empty note</span>}
+                  </div>
+                </div>
+              )}
+            </motion.div>
           )}
-        </motion.div>
-      )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

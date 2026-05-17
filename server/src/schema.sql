@@ -310,3 +310,16 @@ VALUES
   ('Professional', 'Intermediate level short notes', '💼', 2),
   ('Advanced',     'Advanced level short notes', '🏆', 3)
 ON CONFLICT (name) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS short_notes (
+  id SERIAL PRIMARY KEY,
+  chapter_id INTEGER REFERENCES shortnote_chapters(id) ON DELETE CASCADE UNIQUE,
+  type VARCHAR(10) DEFAULT 'pdf' CHECK (type IN ('pdf','text')),
+  text_content TEXT,
+  filename VARCHAR(255),
+  original_name VARCHAR(255),
+  file_size INTEGER,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

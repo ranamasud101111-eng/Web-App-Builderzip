@@ -4,14 +4,15 @@ import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
-  FileText, Plus, X, Edit2, Trash2, ChevronDown, ChevronUp,
+  FileText, Plus, X, Edit2, Trash2, ChevronDown, ChevronRight,
   BarChart3, Bell, BookOpen, Home, LogOut, Menu, Shield,
   Brain, GraduationCap, Eye, EyeOff, Save, Loader2,
-  Zap, Layers, Upload, Download, File, CheckCircle,
-  AlertCircle, RefreshCw, Package,
+  Zap, Layers, Upload, File, CheckCircle, AlertCircle,
+  RefreshCw, Type, FileUp, Pencil, AlignLeft,
 } from 'lucide-react';
 import api from '../api';
 
+/* ─── Sidebar ─── */
 const SidebarLink = ({ to, icon, label, active }) => (
   <Link to={to} className={`sidebar-item ${active ? 'active' : ''}`}>
     <span className="w-4 h-4 flex-shrink-0">{icon}</span>
@@ -19,19 +20,9 @@ const SidebarLink = ({ to, icon, label, active }) => (
   </Link>
 );
 
+/* ─── Icon pickers ─── */
 const LEVEL_ICONS   = ['📝','📜','💼','🏆','⭐','🌟','🔥','💡','🎯','📚'];
 const SUBJECT_ICONS = ['📚','🧮','🔬','🌍','📖','✏️','🎨','💻','⚗️','📐','📊','💡','⚖️','🏛️'];
-
-const emptyLevel   = () => ({ name: '', description: '', icon: '📝', order_index: 0, is_visible: true });
-const emptySubject = () => ({ name: '', description: '', icon: '📚', order_index: 0, is_visible: true });
-const emptyChapter = () => ({ title: '', description: '', order_index: 0, is_visible: true });
-
-const Toggle = ({ value, onChange }) => (
-  <button type="button" onClick={onChange}
-    className={`relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${value ? 'bg-emerald-500' : 'bg-white/10'}`}>
-    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${value ? 'left-5' : 'left-1'}`} />
-  </button>
-);
 
 const IconPicker = ({ icons, value, onChange }) => (
   <div className="flex flex-wrap gap-2">
@@ -44,643 +35,716 @@ const IconPicker = ({ icons, value, onChange }) => (
   </div>
 );
 
-const Modal = ({ onClose, children }) => (
+/* ─── Toggle ─── */
+const Toggle = ({ value, onChange, label }) => (
+  <label className="flex items-center gap-3 cursor-pointer select-none">
+    <button type="button" onClick={onChange}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${value ? 'bg-emerald-500' : 'bg-white/10'}`}>
+      <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${value ? 'left-6' : 'left-1'}`} />
+    </button>
+    {label && <span className="text-sm text-white/70">{label}</span>}
+  </label>
+);
+
+/* ─── Generic Modal wrapper ─── */
+const Modal = ({ onClose, children, wide }) => (
   <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-    <motion.div
-      initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-      className="relative w-full max-w-md rounded-2xl p-6 z-10 overflow-y-auto max-h-[90vh]"
-      style={{ background: 'linear-gradient(135deg,rgba(14,22,74,0.98) 0%,rgba(6,11,36,0.99) 100%)', border: '1px solid rgba(124,58,237,0.25)' }}
+    <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.92, opacity: 0 }} transition={{ duration: 0.18 }}
+      className={`relative bg-[#1a1a2e] rounded-2xl border border-white/10 shadow-2xl overflow-y-auto max-h-[90vh] w-full ${wide ? 'max-w-2xl' : 'max-w-lg'}`}
       onClick={e => e.stopPropagation()}>
       {children}
     </motion.div>
   </div>
 );
 
-const formatSize = (bytes) => {
+/* ─── Form field ─── */
+const Field = ({ label, children }) => (
+  <div className="space-y-1.5">
+    <label className="block text-sm text-white/60 font-medium">{label}</label>
+    {children}
+  </div>
+);
+
+const Input = (props) => (
+  <input {...props} className={`w-full px-3.5 py-2.5 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 text-sm ${props.className || ''}`} />
+);
+
+const Textarea = (props) => (
+  <textarea {...props} className={`w-full px-3.5 py-2.5 bg-white/[0.05] border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 text-sm resize-none ${props.className || ''}`} />
+);
+
+/* ─── Note type badge ─── */
+const NoteBadge = ({ type }) => {
+  if (!type) return <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.04] text-white/30">No note</span>;
+  if (type === 'pdf') return <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300">PDF</span>;
+  return <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">Text</span>;
+};
+
+/* ─── File size formatter ─── */
+const fmtSize = (bytes) => {
   if (!bytes) return '';
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-export default function AdminShortNotes() {
-  const { logout } = useAuth();
-  const navigate   = useNavigate();
-  const location   = useLocation();
+/* ════════════════════════════════════════════════════
+   NOTE MODAL
+═══════════════════════════════════════════════════ */
+function NoteModal({ chapter, subjectId, onClose, onSaved }) {
+  const [note, setNote]           = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [saving, setSaving]       = useState(false);
+  const [deleting, setDeleting]   = useState(false);
+  const [activeTab, setActiveTab] = useState('pdf');
+  const [textContent, setTextContent] = useState('');
+  const [isVisible, setIsVisible] = useState(true);
+  const [pdfFile, setPdfFile]     = useState(null);
+  const [dragOver, setDragOver]   = useState(false);
+  const fileRef = useRef();
 
-  const [sidebarOpen,      setSidebarOpen]      = useState(false);
-  const [loading,          setLoading]          = useState(true);
-  const [saving,           setSaving]           = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await api.get(`/shortnotes/chapters/${chapter.id}/note`);
+        if (r.data) {
+          setNote(r.data);
+          setActiveTab(r.data.type || 'pdf');
+          setTextContent(r.data.text_content || '');
+          setIsVisible(r.data.is_visible !== false);
+        }
+      } catch {}
+      finally { setLoading(false); }
+    })();
+  }, [chapter.id]);
 
-  const [notesVisible,     setNotesVisible]     = useState(true);
-  const [levels,           setLevels]           = useState([]);
-  const [subjects,         setSubjects]         = useState({});
-  const [chapters,         setChapters]         = useState({});
-  const [expandedLevels,   setExpandedLevels]   = useState({});
-  const [expandedSubjects, setExpandedSubjects] = useState({});
-
-  const [levelModal,   setLevelModal]   = useState(null);
-  const [subjectModal, setSubjectModal] = useState(null);
-  const [chapterModal, setChapterModal] = useState(null);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const [uploadingChapter, setUploadingChapter] = useState(null);
-  const [bulkModal,        setBulkModal]        = useState(null);
-  const [bulkFiles,        setBulkFiles]        = useState([]);
-  const [bulkUploading,    setBulkUploading]    = useState(false);
-  const [bulkResults,      setBulkResults]      = useState(null);
-
-  const singleUploadRef = useRef({});
-  const bulkInputRef    = useRef(null);
-
-  /* ── Nav ── */
-  const navItems = [
-    { to: '/admin',              label: 'Dashboard',       icon: <BarChart3     className="w-4 h-4" /> },
-    { to: '/admin/subjects',     label: 'Subjects',        icon: <BookOpen      className="w-4 h-4" /> },
-    { to: '/admin/mcqs',         label: 'MCQ Manager',     icon: <Brain         className="w-4 h-4" /> },
-    { to: '/admin/exams',        label: 'Exam Manager',    icon: <GraduationCap className="w-4 h-4" /> },
-    { to: '/admin/classes',      label: 'Classes',         icon: <Layers        className="w-4 h-4" /> },
-    { to: '/admin/flashcards',   label: 'Flash Cards',     icon: <Zap           className="w-4 h-4" /> },
-    { to: '/admin/shortnotes',   label: 'Short Notes',     icon: <FileText      className="w-4 h-4" /> },
-    { to: '/admin/notifications',label: 'Notifications',   icon: <Bell          className="w-4 h-4" /> },
-    { to: '/dashboard',          label: 'Student View',    icon: <Home          className="w-4 h-4" /> },
-  ];
-
-  /* ── Fetch ── */
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const [sRes, lRes] = await Promise.all([
-        api.get('/shortnotes/settings'),
-        api.get('/shortnotes/levels'),
-      ]);
-      setNotesVisible(sRes.data.shortnotes_visible);
-      setLevels(lRes.data);
-    } catch { toast.error('Failed to load data'); }
-    finally { setLoading(false); }
+      if (activeTab === 'text') {
+        if (!textContent.trim()) { toast.error('Please write some text content'); return; }
+        const r = await api.put(`/shortnotes/chapters/${chapter.id}/note`, {
+          type: 'text', text_content: textContent, is_visible: isVisible,
+        });
+        setNote(r.data);
+        toast.success('Text note saved!');
+        onSaved(subjectId);
+      } else {
+        if (pdfFile) {
+          const fd = new FormData();
+          fd.append('pdf', pdfFile);
+          fd.append('is_visible', isVisible);
+          const r = await api.post(`/shortnotes/chapters/${chapter.id}/note/upload`, fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          setNote(r.data);
+          setPdfFile(null);
+          toast.success('PDF uploaded!');
+          onSaved(subjectId);
+        } else if (note) {
+          /* update visibility/type only */
+          const r = await api.put(`/shortnotes/chapters/${chapter.id}/note`, {
+            type: 'pdf', is_visible: isVisible,
+          });
+          setNote(r.data);
+          toast.success('Note updated!');
+          onSaved(subjectId);
+        } else {
+          toast.error('Please select a PDF file');
+          return;
+        }
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to save note');
+    } finally { setSaving(false); }
+  };
+
+  const handleDelete = async () => {
+    if (!note) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/shortnotes/chapters/${chapter.id}/note`);
+      setNote(null);
+      setPdfFile(null);
+      setTextContent('');
+      toast.success('Note deleted');
+      onSaved(subjectId);
+    } catch { toast.error('Failed to delete note'); }
+    finally { setDeleting(false); }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault(); setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') setPdfFile(file);
+    else toast.error('Only PDF files accepted');
+  };
+
+  return (
+    <Modal onClose={onClose} wide>
+      <div className="p-6 border-b border-white/10 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold text-white">Short Note</h2>
+          <p className="text-sm text-white/50 mt-0.5 truncate max-w-sm">{chapter.title}</p>
+        </div>
+        <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/[0.07] text-white/50 hover:text-white transition-colors flex-shrink-0">
+          <X size={18} />
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 size={28} className="animate-spin text-purple-400" />
+        </div>
+      ) : (
+        <div className="p-6 space-y-5">
+          {/* Type tabs */}
+          <div className="flex gap-2 p-1 bg-white/[0.04] rounded-xl">
+            {[
+              { key: 'pdf',  icon: <FileUp size={15} />,  label: 'PDF File' },
+              { key: 'text', icon: <AlignLeft size={15} />, label: 'Text Note' },
+            ].map(tab => (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key ? 'bg-purple-600 text-white shadow-lg' : 'text-white/50 hover:text-white/80'}`}>
+                {tab.icon}{tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* PDF tab */}
+          {activeTab === 'pdf' && (
+            <div className="space-y-4">
+              {/* Current file info */}
+              {note?.type === 'pdf' && note.filename && !pdfFile && (
+                <div className="flex items-center gap-3 p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                  <File size={18} className="text-rose-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{note.original_name}</p>
+                    <p className="text-xs text-white/40">{fmtSize(note.file_size)} • Currently active</p>
+                  </div>
+                  <a href={`/api/shortnotes/file/${note.filename}`} target="_blank" rel="noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 text-xs hover:bg-rose-500/30 transition-colors">
+                    View
+                  </a>
+                </div>
+              )}
+
+              {/* New file selected */}
+              {pdfFile && (
+                <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <CheckCircle size={18} className="text-emerald-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{pdfFile.name}</p>
+                    <p className="text-xs text-white/40">{fmtSize(pdfFile.size)} • Ready to upload</p>
+                  </div>
+                  <button onClick={() => setPdfFile(null)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              {/* Drop zone */}
+              <div
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragOver ? 'border-purple-400 bg-purple-500/10' : 'border-white/10 hover:border-white/25 bg-white/[0.02] hover:bg-white/[0.04]'}`}>
+                <Upload size={28} className="mx-auto mb-3 text-white/30" />
+                <p className="text-sm text-white/60 font-medium">
+                  {note?.type === 'pdf' ? 'Drop a new PDF to replace' : 'Drop PDF here or click to browse'}
+                </p>
+                <p className="text-xs text-white/30 mt-1">PDF files only · Max 50 MB</p>
+                <input ref={fileRef} type="file" accept=".pdf,application/pdf" className="hidden"
+                  onChange={e => { if (e.target.files[0]) setPdfFile(e.target.files[0]); e.target.value=''; }} />
+              </div>
+            </div>
+          )}
+
+          {/* Text tab */}
+          {activeTab === 'text' && (
+            <div className="space-y-3">
+              <Textarea
+                rows={12}
+                value={textContent}
+                onChange={e => setTextContent(e.target.value)}
+                placeholder="Write your short note content here...&#10;&#10;You can use plain text formatting:&#10;• Use bullet points&#10;• Write formulas&#10;• Add key points and definitions"
+              />
+              <p className="text-xs text-white/30 text-right">{textContent.length} characters</p>
+            </div>
+          )}
+
+          {/* Visibility */}
+          <div className="flex items-center justify-between p-3.5 bg-white/[0.03] rounded-xl border border-white/[0.06]">
+            <div>
+              <p className="text-sm text-white font-medium">Visible to students</p>
+              <p className="text-xs text-white/40 mt-0.5">Students can see this note when enabled</p>
+            </div>
+            <Toggle value={isVisible} onChange={() => setIsVisible(v => !v)} />
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="p-6 border-t border-white/10 flex items-center justify-between gap-3">
+        <div>
+          {note && (
+            <button onClick={handleDelete} disabled={deleting}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors text-sm font-medium disabled:opacity-50">
+              {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              Delete Note
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-white/[0.06] text-white/70 hover:bg-white/[0.1] transition-colors text-sm">
+            Cancel
+          </button>
+          <button onClick={handleSave} disabled={saving || loading}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:opacity-90 transition-opacity text-sm disabled:opacity-50">
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            Save Note
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* ════════════════════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════════════════ */
+export default function AdminShortNotes() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  /* ─── Data ─── */
+  const [notesVisible, setNotesVisible] = useState(true);
+  const [levels,   setLevels]   = useState([]);
+  const [subjects, setSubjects] = useState({});   /* {levelId: [...]} */
+  const [chapters, setChapters] = useState({});   /* {subjectId: [...]} */
+  const [expanded, setExpanded] = useState({ levels: {}, subjects: {} });
+  const [loading,  setLoading]  = useState(true);
+
+  /* ─── Modals ─── */
+  const [levelModal,   setLevelModal]   = useState(null);   /* null | {mode,data} */
+  const [subjectModal, setSubjectModal] = useState(null);   /* null | {mode,levelId,data} */
+  const [chapterModal, setChapterModal] = useState(null);   /* null | {mode,subjectId,data} */
+  const [noteModal,    setNoteModal]    = useState(null);   /* null | {chapter,subjectId} */
+  const [deleteTarget, setDeleteTarget] = useState(null);   /* null | {type,id,label} */
+
+  /* ─── Form state ─── */
+  const emptyLevel   = { name:'', description:'', icon:'📝', order_index:0, is_visible:true };
+  const emptySubject = { name:'', description:'', icon:'📚', order_index:0, is_visible:true };
+  const emptyChapter = { title:'', description:'', order_index:0, is_visible:true };
+
+  const [lf, setLf] = useState(emptyLevel);
+  const [sf, setSf] = useState(emptySubject);
+  const [cf, setCf] = useState(emptyChapter);
+  const [submitting, setSubmitting] = useState(false);
+
+  /* ─── Bootstrap ─── */
+  useEffect(() => {
+    (async () => {
+      try {
+        const [settingsRes, levelsRes] = await Promise.all([
+          api.get('/shortnotes/settings'),
+          api.get('/shortnotes/levels'),
+        ]);
+        setNotesVisible(settingsRes.data.shortnotes_visible !== false);
+        setLevels(levelsRes.data);
+      } catch { toast.error('Failed to load Short Notes data'); }
+      finally { setLoading(false); }
+    })();
   }, []);
 
-  const fetchSubjects = useCallback(async (levelId) => {
+  /* ─── Load subjects for a level ─── */
+  const loadSubjects = useCallback(async (levelId) => {
     try {
       const r = await api.get(`/shortnotes/levels/${levelId}/subjects`);
-      setSubjects(prev => ({ ...prev, [levelId]: r.data }));
+      setSubjects(p => ({ ...p, [levelId]: r.data }));
     } catch { toast.error('Failed to load subjects'); }
   }, []);
 
-  const fetchChapters = useCallback(async (subjectId) => {
+  /* ─── Load chapters for a subject ─── */
+  const loadChapters = useCallback(async (subjectId) => {
     try {
       const r = await api.get(`/shortnotes/subjects/${subjectId}/chapters`);
-      setChapters(prev => ({ ...prev, [subjectId]: r.data }));
+      setChapters(p => ({ ...p, [subjectId]: r.data }));
     } catch { toast.error('Failed to load chapters'); }
   }, []);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
-
-  /* ── Expand toggles ── */
+  /* ─── Toggle expand ─── */
   const toggleLevel = async (levelId) => {
-    const opening = !expandedLevels[levelId];
-    setExpandedLevels(prev => ({ ...prev, [levelId]: opening }));
-    if (opening && subjects[levelId] === undefined) await fetchSubjects(levelId);
+    const opening = !expanded.levels[levelId];
+    setExpanded(p => ({ ...p, levels: { ...p.levels, [levelId]: opening } }));
+    if (opening && !subjects[levelId]) await loadSubjects(levelId);
   };
 
   const toggleSubject = async (subjectId) => {
-    const opening = !expandedSubjects[subjectId];
-    setExpandedSubjects(prev => ({ ...prev, [subjectId]: opening }));
-    if (opening && chapters[subjectId] === undefined) await fetchChapters(subjectId);
+    const opening = !expanded.subjects[subjectId];
+    setExpanded(p => ({ ...p, subjects: { ...p.subjects, [subjectId]: opening } }));
+    if (opening && !chapters[subjectId]) await loadChapters(subjectId);
   };
 
-  /* ── Visibility toggle ── */
-  const toggleVisibility = async () => {
+  /* ─── Global visibility ─── */
+  const toggleGlobalVisible = async () => {
+    const newVal = !notesVisible;
     try {
-      const next = !notesVisible;
-      await api.put('/shortnotes/settings', { shortnotes_visible: next });
-      setNotesVisible(next);
-      toast.success(next ? 'Short Notes visible to students' : 'Short Notes hidden from students');
+      await api.put('/shortnotes/settings', { shortnotes_visible: newVal });
+      setNotesVisible(newVal);
+      toast.success(newVal ? 'Short Notes visible to students' : 'Short Notes hidden from students');
     } catch { toast.error('Failed to update visibility'); }
   };
 
-  /* ── Save level ── */
-  const saveLevel = async () => {
-    const { id, form } = levelModal;
-    if (!form.name.trim()) { toast.error('Level name is required'); return; }
-    setSaving(true);
+  /* ─── Level CRUD ─── */
+  const openAddLevel   = () => { setLf(emptyLevel);                  setLevelModal({ mode:'add' }); };
+  const openEditLevel  = (l) => { setLf({ ...l });                   setLevelModal({ mode:'edit', data: l }); };
+
+  const saveLevelModal = async () => {
+    if (!lf.name.trim()) { toast.error('Level name required'); return; }
+    setSubmitting(true);
     try {
-      if (id) { await api.put(`/shortnotes/levels/${id}`, form); toast.success('Level updated'); }
-      else     { await api.post('/shortnotes/levels', form);      toast.success('Level created'); }
+      if (levelModal.mode === 'add') {
+        const r = await api.post('/shortnotes/levels', lf);
+        setLevels(p => [...p, r.data]);
+        toast.success('Level created');
+      } else {
+        const r = await api.put(`/shortnotes/levels/${levelModal.data.id}`, lf);
+        setLevels(p => p.map(x => x.id === r.data.id ? r.data : x));
+        toast.success('Level updated');
+      }
       setLevelModal(null);
-      await fetchAll();
-    } catch (e) { toast.error(e.response?.data?.error || 'Save failed'); }
-    finally { setSaving(false); }
+    } catch (e) { toast.error(e.response?.data?.error || 'Failed to save level'); }
+    finally { setSubmitting(false); }
   };
 
-  /* ── Save subject ── */
-  const saveSubject = async () => {
-    const { id, levelId, form } = subjectModal;
-    if (!form.name.trim()) { toast.error('Subject name is required'); return; }
-    setSaving(true);
+  const toggleLevelVisible = async (level) => {
     try {
-      if (id) { await api.put(`/shortnotes/subjects/${id}`, form);                    toast.success('Subject updated'); }
-      else     { await api.post('/shortnotes/subjects', { ...form, level_id: levelId }); toast.success('Subject created'); }
+      const r = await api.put(`/shortnotes/levels/${level.id}`, { ...level, is_visible: !level.is_visible });
+      setLevels(p => p.map(x => x.id === r.data.id ? r.data : x));
+    } catch { toast.error('Failed to update visibility'); }
+  };
+
+  /* ─── Subject CRUD ─── */
+  const openAddSubject  = (levelId) => { setSf(emptySubject); setSubjectModal({ mode:'add', levelId }); };
+  const openEditSubject = (s, levelId) => { setSf({ ...s }); setSubjectModal({ mode:'edit', levelId, data: s }); };
+
+  const saveSubjectModal = async () => {
+    if (!sf.name.trim()) { toast.error('Subject name required'); return; }
+    setSubmitting(true);
+    const levelId = subjectModal.levelId;
+    try {
+      if (subjectModal.mode === 'add') {
+        const r = await api.post('/shortnotes/subjects', { ...sf, level_id: levelId });
+        setSubjects(p => ({ ...p, [levelId]: [...(p[levelId] || []), r.data] }));
+        toast.success('Subject created');
+      } else {
+        const r = await api.put(`/shortnotes/subjects/${subjectModal.data.id}`, sf);
+        setSubjects(p => ({ ...p, [levelId]: (p[levelId] || []).map(x => x.id === r.data.id ? r.data : x) }));
+        toast.success('Subject updated');
+      }
       setSubjectModal(null);
-      setSubjects(prev => ({ ...prev, [levelId]: undefined }));
-      await fetchSubjects(levelId);
-      setExpandedLevels(prev => ({ ...prev, [levelId]: true }));
-    } catch (e) { toast.error(e.response?.data?.error || 'Save failed'); }
-    finally { setSaving(false); }
+    } catch (e) { toast.error(e.response?.data?.error || 'Failed to save subject'); }
+    finally { setSubmitting(false); }
   };
 
-  /* ── Save chapter ── */
-  const saveChapter = async () => {
-    const { id, subjectId, form } = chapterModal;
-    if (!form.title.trim()) { toast.error('Chapter title is required'); return; }
-    setSaving(true);
+  const toggleSubjectVisible = async (subject, levelId) => {
     try {
-      if (id) { await api.put(`/shortnotes/chapters/${id}`, form);                         toast.success('Chapter updated'); }
-      else     { await api.post('/shortnotes/chapters', { ...form, subject_id: subjectId }); toast.success('Chapter created'); }
+      const r = await api.put(`/shortnotes/subjects/${subject.id}`, { ...subject, is_visible: !subject.is_visible });
+      setSubjects(p => ({ ...p, [levelId]: (p[levelId] || []).map(x => x.id === r.data.id ? r.data : x) }));
+    } catch { toast.error('Failed to update visibility'); }
+  };
+
+  /* ─── Chapter CRUD ─── */
+  const openAddChapter  = (subjectId) => { setCf(emptyChapter); setChapterModal({ mode:'add', subjectId }); };
+  const openEditChapter = (c, subjectId) => { setCf({ title: c.title, description: c.description || '', order_index: c.order_index, is_visible: c.is_visible }); setChapterModal({ mode:'edit', subjectId, data: c }); };
+
+  const saveChapterModal = async () => {
+    if (!cf.title.trim()) { toast.error('Chapter title required'); return; }
+    setSubmitting(true);
+    const subjectId = chapterModal.subjectId;
+    try {
+      if (chapterModal.mode === 'add') {
+        const r = await api.post('/shortnotes/chapters', { ...cf, subject_id: subjectId });
+        setChapters(p => ({ ...p, [subjectId]: [...(p[subjectId] || []), r.data] }));
+        toast.success('Chapter created');
+      } else {
+        const r = await api.put(`/shortnotes/chapters/${chapterModal.data.id}`, cf);
+        setChapters(p => ({ ...p, [subjectId]: (p[subjectId] || []).map(x => x.id === r.data.id ? r.data : x) }));
+        toast.success('Chapter updated');
+      }
       setChapterModal(null);
-      setChapters(prev => ({ ...prev, [subjectId]: undefined }));
-      await fetchChapters(subjectId);
-      setExpandedSubjects(prev => ({ ...prev, [subjectId]: true }));
-    } catch (e) { toast.error(e.response?.data?.error || 'Save failed'); }
-    finally { setSaving(false); }
+    } catch (e) { toast.error(e.response?.data?.error || 'Failed to save chapter'); }
+    finally { setSubmitting(false); }
   };
 
-  /* ── Delete ── */
-  const runDelete = async () => {
+  const toggleChapterVisible = async (chapter, subjectId) => {
+    try {
+      const r = await api.put(`/shortnotes/chapters/${chapter.id}`, { ...chapter, is_visible: !chapter.is_visible });
+      setChapters(p => ({
+        ...p,
+        [subjectId]: (p[subjectId] || []).map(x => x.id === r.data.id ? { ...x, ...r.data } : x),
+      }));
+    } catch { toast.error('Failed to update visibility'); }
+  };
+
+  /* ─── Delete ─── */
+  const confirmDelete = (type, id, label, extra) => setDeleteTarget({ type, id, label, extra });
+  const execDelete    = async () => {
     if (!deleteTarget) return;
-    const { type, id, parentId } = deleteTarget;
-    setDeleteTarget(null);
+    const { type, id, extra } = deleteTarget;
+    setSubmitting(true);
     try {
-      if (type === 'level')   { await api.delete(`/shortnotes/levels/${id}`);   await fetchAll(); }
-      if (type === 'subject') { await api.delete(`/shortnotes/subjects/${id}`); await fetchSubjects(parentId); }
-      if (type === 'chapter') { await api.delete(`/shortnotes/chapters/${id}`); await fetchChapters(parentId); }
-      toast.success('Deleted');
-    } catch { toast.error('Delete failed'); }
+      if (type === 'level') {
+        await api.delete(`/shortnotes/levels/${id}`);
+        setLevels(p => p.filter(x => x.id !== id));
+        toast.success('Level deleted');
+      } else if (type === 'subject') {
+        await api.delete(`/shortnotes/subjects/${id}`);
+        setSubjects(p => ({ ...p, [extra.levelId]: (p[extra.levelId] || []).filter(x => x.id !== id) }));
+        toast.success('Subject deleted');
+      } else if (type === 'chapter') {
+        await api.delete(`/shortnotes/chapters/${id}`);
+        setChapters(p => ({ ...p, [extra.subjectId]: (p[extra.subjectId] || []).filter(x => x.id !== id) }));
+        toast.success('Chapter deleted');
+      }
+      setDeleteTarget(null);
+    } catch { toast.error(`Failed to delete ${type}`); }
+    finally { setSubmitting(false); }
   };
 
-  /* ── Single PDF upload ── */
-  const handleSingleUpload = async (chapterId, subjectId, file) => {
-    if (!file) return;
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      toast.error('Only PDF files are allowed');
-      return;
-    }
-    setUploadingChapter(chapterId);
-    try {
-      const fd = new FormData();
-      fd.append('pdf', file);
-      await api.post(`/shortnotes/chapters/${chapterId}/upload`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      toast.success('PDF uploaded');
-      setChapters(prev => ({ ...prev, [subjectId]: undefined }));
-      await fetchChapters(subjectId);
-    } catch (e) {
-      toast.error(e.response?.data?.error || 'Upload failed');
-    } finally {
-      setUploadingChapter(null);
-    }
-  };
+  /* ─── Note saved callback ─── */
+  const onNoteSaved = (subjectId) => loadChapters(subjectId);
 
-  /* ── Delete PDF ── */
-  const handleDeleteFile = async (chapterId, subjectId) => {
-    try {
-      await api.delete(`/shortnotes/chapters/${chapterId}/file`);
-      toast.success('PDF removed');
-      setChapters(prev => ({ ...prev, [subjectId]: undefined }));
-      await fetchChapters(subjectId);
-    } catch (e) {
-      toast.error(e.response?.data?.error || 'Failed to remove PDF');
-    }
-  };
+  /* ─── Nav ─── */
+  const navItems = [
+    { to: '/admin',          icon: <Home size={16} />,        label: 'Dashboard' },
+    { to: '/admin/students', icon: <GraduationCap size={16}/>, label: 'Students' },
+    { to: '/admin/classes',  icon: <BookOpen size={16} />,    label: 'Classes' },
+    { to: '/admin/tests',    icon: <Brain size={16} />,       label: 'Tests' },
+    { to: '/admin/shortnotes', icon: <FileText size={16} />,  label: 'Short Notes' },
+    { to: '/admin/analytics', icon: <BarChart3 size={16} />,  label: 'Analytics' },
+  ];
 
-  /* ── Bulk upload ── */
-  const handleBulkUpload = async () => {
-    if (!bulkFiles.length || !bulkModal) return;
-    setBulkUploading(true);
-    setBulkResults(null);
-    try {
-      const fd = new FormData();
-      bulkFiles.forEach(f => fd.append('pdfs', f));
-      const r = await api.post(`/shortnotes/subjects/${bulkModal.subjectId}/bulk-upload`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setBulkResults(r.data);
-      toast.success(`${r.data.success}/${r.data.total} PDFs uploaded`);
-      setChapters(prev => ({ ...prev, [bulkModal.subjectId]: undefined }));
-      await fetchChapters(bulkModal.subjectId);
-      setExpandedSubjects(prev => ({ ...prev, [bulkModal.subjectId]: true }));
-    } catch (e) {
-      toast.error(e.response?.data?.error || 'Bulk upload failed');
-    } finally {
-      setBulkUploading(false);
-    }
-  };
-
-  const handleLogout = () => { logout(); navigate('/'); };
-
-  /* ── Sidebar JSX ── */
-  const SidebarContent = ({ onClose }) => (
-    <div className="sidebar flex flex-col h-full p-5">
-      <div className="flex items-center gap-3 mb-6 px-1">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-violet-800 flex items-center justify-center flex-shrink-0">
-          <BookOpen className="w-4 h-4 text-white" />
-        </div>
-        <div className="min-w-0">
-          <div className="text-white font-bold text-sm leading-tight">CA Mock</div>
-          <div className="text-[9px] text-yellow-400 font-semibold tracking-widest uppercase">Admin Panel</div>
-        </div>
-        {onClose && (
-          <button onClick={onClose} className="ml-auto p-1.5 hover:bg-white/[0.06] rounded-lg text-white/40">
-            <X className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-      <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 mb-5 border border-purple-500/20 bg-purple-500/5">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center flex-shrink-0">
-          <Shield className="w-4 h-4 text-black" />
-        </div>
-        <div>
-          <p className="text-white text-xs font-semibold">Administrator</p>
-          <p className="text-white/30 text-[10px]">Full access</p>
-        </div>
-      </div>
-      <nav className="flex flex-col gap-1 flex-1">
-        <p className="text-white/20 text-[10px] font-semibold uppercase tracking-widest px-2 mb-1">Navigation</p>
-        {navItems.map(item => (
-          <SidebarLink key={item.to} {...item} active={location.pathname === item.to} />
-        ))}
-      </nav>
-      <button onClick={handleLogout}
-        className="sidebar-item mt-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/[0.08]">
-        <LogOut className="w-4 h-4" /><span>Logout</span>
-      </button>
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+      <Loader2 size={32} className="animate-spin text-purple-400" />
     </div>
   );
 
-  /* ════════════════════════════════════════ */
   return (
-    <div className="flex min-h-screen" style={{ background: '#020818', paddingTop: '68px' }}>
-
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-[68px] h-[calc(100vh-68px)] overflow-y-auto">
-          <SidebarContent />
-        </div>
-      </div>
-
-      {/* Mobile sidebar overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 lg:hidden" style={{ zIndex: 8000 }}>
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <motion.div
-              initial={{ x: -288 }} animate={{ x: 0 }} exit={{ x: -288 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="absolute left-0 top-0 bottom-0 w-72">
-              <div className="h-full overflow-y-auto pt-[68px]">
-                <SidebarContent onClose={() => setSidebarOpen(false)} />
+    <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+      {/* ─── Sidebar ─── */}
+      <div className={`fixed inset-y-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:flex`}>
+        <div className="sidebar w-64 flex flex-col">
+          <div className="p-6 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                <Shield size={20} className="text-white" />
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* Top bar */}
-        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[68px] z-10">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-white/[0.06] rounded-lg flex-shrink-0">
-            <Menu className="w-5 h-5 text-white/60" />
-          </button>
-          <div className="flex items-center gap-2.5 mr-auto min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0">
-              <FileText className="w-4 h-4 text-purple-400" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-white font-bold text-base sm:text-lg leading-tight truncate">Short Notes Management</h1>
-              <p className="text-white/30 text-[11px] hidden sm:block">Manage levels, subjects, chapters and PDF notes</p>
+              <div>
+                <h1 className="font-bold text-white text-sm">Admin Panel</h1>
+                <p className="text-white/50 text-xs">{user?.name}</p>
+              </div>
             </div>
           </div>
-          <button onClick={toggleVisibility}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border transition-all flex-shrink-0
-              ${notesVisible
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
-                : 'bg-red-500/10 text-red-400 border-red-500/25 hover:bg-red-500/20'}`}>
-            {notesVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            <span className="hidden sm:inline">{notesVisible ? 'Visible' : 'Hidden'}</span>
-          </button>
-          <button onClick={() => setLevelModal({ id: null, form: emptyLevel() })}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors flex-shrink-0">
-            <Plus className="w-4 h-4" /><span>Add Level</span>
-          </button>
+          <nav className="flex-1 p-4 space-y-1">
+            {navItems.map(item => (
+              <SidebarLink key={item.to} {...item} active={location.pathname === item.to} />
+            ))}
+          </nav>
+          <div className="p-4 border-t border-white/10">
+            <button onClick={() => { logout(); navigate('/'); }}
+              className="sidebar-item w-full text-red-400/80 hover:text-red-400">
+              <LogOut size={16} /><span>Logout</span>
+            </button>
+          </div>
         </div>
+      </div>
+      {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-        {/* Content */}
-        <div className="flex-1 p-4 sm:p-6 space-y-3">
-          {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+      {/* ─── Main ─── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="sticky top-0 z-20 border-b border-white/10 bg-black/20 backdrop-blur-xl px-6 py-4 flex items-center gap-4">
+          <button className="lg:hidden p-2 rounded-lg hover:bg-white/[0.07]" onClick={() => setSidebarOpen(true)}>
+            <Menu size={20} className="text-white/70" />
+          </button>
+          <div className="flex-1">
+            <h2 className="text-white font-bold text-lg">Short Notes Manager</h2>
+            <p className="text-white/40 text-xs mt-0.5">Manage levels, subjects, chapters and short notes</p>
+          </div>
+          <Toggle value={notesVisible} onChange={toggleGlobalVisible} label={notesVisible ? 'Visible to students' : 'Hidden from students'} />
+        </header>
+
+        <main className="flex-1 p-6 space-y-4 max-w-5xl mx-auto w-full">
+          {/* Add Level */}
+          <div className="flex justify-end">
+            <button onClick={openAddLevel}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
+              <Plus size={16} />Add Level
+            </button>
+          </div>
+
+          {/* Levels list */}
+          {levels.length === 0 ? (
+            <div className="text-center py-20 text-white/30">
+              <Layers size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No levels yet. Add your first level above.</p>
             </div>
-
-          ) : levels.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
-                <FileText className="w-8 h-8 text-purple-400" />
-              </div>
-              <p className="text-white/60 text-lg font-semibold">No levels yet</p>
-              <p className="text-white/25 text-sm mt-1 mb-5">Create Certificate, Professional, and Advanced levels</p>
-              <button onClick={() => setLevelModal({ id: null, form: emptyLevel() })}
-                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
-                <Plus className="w-4 h-4" /> Create First Level
-              </button>
-            </div>
-
-          ) : levels.map((level, li) => (
-            <motion.div key={level.id}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: li * 0.04 }}
-              className="rounded-2xl border border-white/[0.08] bg-[#080f2e]/80 overflow-visible">
-
+          ) : levels.map(level => (
+            <div key={level.id} className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
               {/* Level row */}
-              <div className="flex items-center gap-2 p-3 sm:p-4">
-                <button onClick={() => toggleLevel(level.id)}
-                  className="flex items-center gap-3 flex-1 text-left min-w-0 group">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/15 flex items-center justify-center text-xl flex-shrink-0">
-                    {level.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-white font-bold text-sm sm:text-base">{level.name}</span>
-                      {!level.is_visible && (
-                        <span className="text-[10px] bg-red-500/15 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full">Hidden</span>
-                      )}
-                    </div>
-                    {level.description && <p className="text-white/35 text-xs truncate">{level.description}</p>}
-                    <p className="text-white/20 text-[10px] mt-0.5">
-                      {subjects[level.id] !== undefined ? `${subjects[level.id].length} subjects` : 'Click to expand'}
-                    </p>
-                  </div>
-                  <span className="text-white/30 flex-shrink-0">
-                    {expandedLevels[level.id] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </span>
+              <div className="flex items-center gap-3 px-5 py-4">
+                <button onClick={() => toggleLevel(level.id)} className="p-1 rounded-lg hover:bg-white/[0.07] transition-colors text-white/50 hover:text-white">
+                  {expanded.levels[level.id] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </button>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => setSubjectModal({ id: null, levelId: level.id, form: emptySubject() })}
-                    title="Add Subject"
-                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-xs font-semibold transition-colors">
-                    <Plus className="w-3.5 h-3.5" /><span className="hidden sm:inline">Subject</span>
+                <span className="text-xl">{level.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-white">{level.name}</span>
+                  {level.description && <span className="text-white/40 text-sm ml-2">{level.description}</span>}
+                </div>
+                {!level.is_visible && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400">Hidden</span>}
+                <div className="flex items-center gap-1">
+                  <button title={level.is_visible ? 'Hide level' : 'Show level'}
+                    onClick={() => toggleLevelVisible(level)}
+                    className="p-2 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                    {level.is_visible ? <Eye size={14} /> : <EyeOff size={14} />}
                   </button>
-                  <button
-                    onClick={() => setLevelModal({ id: level.id, form: { name: level.name, description: level.description || '', icon: level.icon, order_index: level.order_index, is_visible: level.is_visible } })}
-                    className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white/80 transition-colors">
-                    <Edit2 className="w-3.5 h-3.5" />
+                  <button onClick={() => openEditLevel(level)}
+                    className="p-2 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                    <Edit2 size={14} />
                   </button>
-                  <button
-                    onClick={() => setDeleteTarget({ type: 'level', id: level.id, name: level.name })}
-                    className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/25 hover:text-red-400 transition-colors">
-                    <Trash2 className="w-3.5 h-3.5" />
+                  <button onClick={() => confirmDelete('level', level.id, level.name)}
+                    className="p-2 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors">
+                    <Trash2 size={14} />
+                  </button>
+                  <button onClick={() => { openAddSubject(level.id); if (!expanded.levels[level.id]) toggleLevel(level.id); }}
+                    className="ml-1 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 text-xs font-medium transition-colors">
+                    <Plus size={12} />Subject
                   </button>
                 </div>
               </div>
 
               {/* Subjects */}
               <AnimatePresence>
-                {expandedLevels[level.id] && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
-                    <div className="border-t border-white/[0.06] px-3 sm:px-5 pb-4 pt-3 space-y-2">
-
-                      {subjects[level.id] === undefined ? (
-                        <div className="flex items-center justify-center py-5">
-                          <Loader2 className="w-5 h-5 text-purple-400/50 animate-spin" />
-                        </div>
-                      ) : subjects[level.id].length === 0 ? (
-                        <div className="text-center py-5">
-                          <p className="text-white/30 text-sm">No subjects in this level</p>
-                          <button onClick={() => setSubjectModal({ id: null, levelId: level.id, form: emptySubject() })}
-                            className="mt-2 text-purple-400 text-xs hover:text-purple-300 transition-colors underline underline-offset-2">
-                            + Add first subject
+                {expanded.levels[level.id] && (
+                  <motion.div initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }}
+                    exit={{ height:0, opacity:0 }} transition={{ duration:0.2 }}
+                    className="overflow-hidden border-t border-white/[0.06]">
+                    {(subjects[level.id] || []).length === 0 ? (
+                      <p className="px-8 py-5 text-white/30 text-sm text-center">No subjects yet. Click "Subject" to add one.</p>
+                    ) : (subjects[level.id] || []).map(subject => (
+                      <div key={subject.id} className="border-b border-white/[0.04] last:border-0">
+                        {/* Subject row */}
+                        <div className="flex items-center gap-3 pl-10 pr-5 py-3">
+                          <button onClick={() => toggleSubject(subject.id)} className="p-1 rounded-lg hover:bg-white/[0.07] text-white/50 hover:text-white">
+                            {expanded.subjects[subject.id] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                           </button>
-                        </div>
-                      ) : subjects[level.id].map(subj => (
-                        <div key={subj.id} className="rounded-xl border border-white/[0.07] bg-white/[0.02]">
-
-                          {/* Subject row */}
-                          <div className="flex items-center gap-2 p-3">
-                            <button onClick={() => toggleSubject(subj.id)}
-                              className="flex items-center gap-2.5 flex-1 text-left min-w-0">
-                              <span className="text-lg flex-shrink-0">{subj.icon}</span>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-white/85 font-semibold text-sm">{subj.name}</span>
-                                  {!subj.is_visible && (
-                                    <span className="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded-full border border-red-500/15">Hidden</span>
-                                  )}
-                                </div>
-                                <p className="text-white/20 text-[10px]">
-                                  {chapters[subj.id] !== undefined ? `${chapters[subj.id].length} chapters` : 'Click to expand'}
-                                </p>
-                              </div>
-                              <span className="text-white/25 flex-shrink-0">
-                                {expandedSubjects[subj.id] ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                              </span>
-                            </button>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <button
-                                onClick={() => { setBulkModal({ subjectId: subj.id, subjectName: subj.name }); setBulkFiles([]); setBulkResults(null); }}
-                                title="Bulk Upload PDFs"
-                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-400/80 hover:bg-amber-500/20 hover:text-amber-400 text-[11px] font-semibold transition-colors">
-                                <Package className="w-3 h-3" /><span className="hidden sm:inline">Bulk</span>
-                              </button>
-                              <button
-                                onClick={() => setChapterModal({ id: null, subjectId: subj.id, levelId: level.id, form: emptyChapter() })}
-                                title="Add Chapter"
-                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-500/10 text-purple-400/80 hover:bg-purple-500/20 hover:text-purple-400 text-[11px] font-semibold transition-colors">
-                                <Plus className="w-3 h-3" /><span className="hidden sm:inline">Chapter</span>
-                              </button>
-                              <button
-                                onClick={() => setSubjectModal({ id: subj.id, levelId: level.id, form: { name: subj.name, description: subj.description || '', icon: subj.icon, order_index: subj.order_index, is_visible: subj.is_visible } })}
-                                className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/30 hover:text-white/70 transition-colors">
-                                <Edit2 className="w-3 h-3" />
-                              </button>
-                              <button
-                                onClick={() => setDeleteTarget({ type: 'subject', id: subj.id, name: subj.name, parentId: level.id })}
-                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-colors">
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
+                          <span className="text-lg">{subject.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-white/90 font-medium text-sm">{subject.name}</span>
+                            {subject.description && <span className="text-white/30 text-xs ml-2">{subject.description}</span>}
                           </div>
-
-                          {/* Chapters */}
-                          <AnimatePresence>
-                            {expandedSubjects[subj.id] && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
-                                <div className="border-t border-white/[0.05] px-3 sm:px-4 pb-3 pt-2.5 space-y-2">
-
-                                  {chapters[subj.id] === undefined ? (
-                                    <div className="flex justify-center py-4">
-                                      <Loader2 className="w-4 h-4 text-purple-400/40 animate-spin" />
-                                    </div>
-                                  ) : chapters[subj.id].length === 0 ? (
-                                    <div className="text-center py-4">
-                                      <p className="text-white/20 text-xs">No chapters yet</p>
-                                      <button onClick={() => setChapterModal({ id: null, subjectId: subj.id, levelId: level.id, form: emptyChapter() })}
-                                        className="mt-1.5 text-purple-400/60 text-[11px] hover:text-purple-300 underline underline-offset-2">
-                                        + Add chapter
-                                      </button>
-                                    </div>
-                                  ) : chapters[subj.id].map(ch => (
-                                    <div key={ch.id} className="rounded-lg border border-white/[0.05] bg-white/[0.015] p-2.5">
-                                      <div className="flex items-start gap-2">
-                                        {/* PDF status icon */}
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${ch.filename ? 'bg-red-500/10 border border-red-500/15' : 'bg-white/[0.04] border border-white/[0.06]'}`}>
-                                          <FileText className={`w-3.5 h-3.5 ${ch.filename ? 'text-red-400' : 'text-white/20'}`} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-1.5 flex-wrap">
-                                            <span className="text-white/80 font-medium text-xs">{ch.title}</span>
-                                            {!ch.is_visible && (
-                                              <span className="text-[9px] bg-red-500/10 text-red-400/70 px-1.5 py-0.5 rounded-full">Hidden</span>
-                                            )}
-                                          </div>
-                                          {ch.filename ? (
-                                            <p className="text-emerald-400/60 text-[10px] mt-0.5">
-                                              {ch.original_name || ch.filename} · {formatSize(ch.file_size)}
-                                            </p>
-                                          ) : (
-                                            <p className="text-white/20 text-[10px] mt-0.5">No PDF uploaded</p>
-                                          )}
-                                        </div>
-
-                                        {/* Chapter actions */}
-                                        <div className="flex items-center gap-1 flex-shrink-0">
-                                          {/* Upload / Replace PDF */}
-                                          <div className="relative">
-                                            <input
-                                              type="file"
-                                              accept=".pdf,application/pdf"
-                                              style={{ display: 'none' }}
-                                              ref={el => singleUploadRef.current[ch.id] = el}
-                                              onChange={e => {
-                                                if (e.target.files[0]) {
-                                                  handleSingleUpload(ch.id, subj.id, e.target.files[0]);
-                                                  e.target.value = '';
-                                                }
-                                              }}
-                                            />
-                                            <button
-                                              onClick={() => singleUploadRef.current[ch.id]?.click()}
-                                              disabled={uploadingChapter === ch.id}
-                                              title={ch.filename ? 'Replace PDF' : 'Upload PDF'}
-                                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400/80 hover:bg-blue-500/20 hover:text-blue-400 text-[10px] font-medium transition-colors disabled:opacity-50">
-                                              {uploadingChapter === ch.id
-                                                ? <Loader2 className="w-3 h-3 animate-spin" />
-                                                : <Upload className="w-3 h-3" />}
-                                              <span className="hidden sm:inline">{ch.filename ? 'Replace' : 'Upload'}</span>
-                                            </button>
-                                          </div>
-
-                                          {/* View PDF */}
-                                          {ch.filename && (
-                                            <a
-                                              href={`/api/shortnotes/file/${ch.filename}`}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              title="View PDF"
-                                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-400/80 hover:bg-emerald-500/20 hover:text-emerald-400 text-[10px] font-medium transition-colors">
-                                              <Eye className="w-3 h-3" />
-                                              <span className="hidden sm:inline">View</span>
-                                            </a>
-                                          )}
-
-                                          {/* Delete PDF */}
-                                          {ch.filename && (
-                                            <button
-                                              onClick={() => handleDeleteFile(ch.id, subj.id)}
-                                              title="Remove PDF"
-                                              className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-colors">
-                                              <X className="w-3 h-3" />
-                                            </button>
-                                          )}
-
-                                          {/* Edit chapter */}
-                                          <button
-                                            onClick={() => setChapterModal({ id: ch.id, subjectId: subj.id, levelId: level.id, form: { title: ch.title, description: ch.description || '', order_index: ch.order_index, is_visible: ch.is_visible } })}
-                                            className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/25 hover:text-white/60 transition-colors">
-                                            <Edit2 className="w-3 h-3" />
-                                          </button>
-
-                                          {/* Delete chapter */}
-                                          <button
-                                            onClick={() => setDeleteTarget({ type: 'chapter', id: ch.id, name: ch.title, parentId: subj.id })}
-                                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/15 hover:text-red-400 transition-colors">
-                                            <Trash2 className="w-3 h-3" />
-                                          </button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                          {!subject.is_visible && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400">Hidden</span>}
+                          <div className="flex items-center gap-1">
+                            <button title={subject.is_visible ? 'Hide' : 'Show'} onClick={() => toggleSubjectVisible(subject, level.id)}
+                              className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                              {subject.is_visible ? <Eye size={13} /> : <EyeOff size={13} />}
+                            </button>
+                            <button onClick={() => openEditSubject(subject, level.id)}
+                              className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                              <Edit2 size={13} />
+                            </button>
+                            <button onClick={() => confirmDelete('subject', subject.id, subject.name, { levelId: level.id })}
+                              className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors">
+                              <Trash2 size={13} />
+                            </button>
+                            <button onClick={() => { openAddChapter(subject.id); if (!expanded.subjects[subject.id]) toggleSubject(subject.id); }}
+                              className="ml-1 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 text-xs font-medium transition-colors">
+                              <Plus size={11} />Chapter
+                            </button>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+
+                        {/* Chapters */}
+                        <AnimatePresence>
+                          {expanded.subjects[subject.id] && (
+                            <motion.div initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }}
+                              exit={{ height:0, opacity:0 }} transition={{ duration:0.15 }}
+                              className="overflow-hidden">
+                              {(chapters[subject.id] || []).length === 0 ? (
+                                <p className="pl-20 pr-5 py-4 text-white/25 text-xs text-center">No chapters yet.</p>
+                              ) : (chapters[subject.id] || []).map(chapter => (
+                                <div key={chapter.id} className="flex items-center gap-3 pl-20 pr-5 py-3 border-t border-white/[0.03] hover:bg-white/[0.02] group">
+                                  <FileText size={14} className="text-white/30 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-white/80 text-sm">{chapter.title}</span>
+                                    {chapter.description && <span className="text-white/30 text-xs ml-2">{chapter.description}</span>}
+                                  </div>
+                                  <NoteBadge type={chapter.note_type} />
+                                  {!chapter.is_visible && <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400">Hidden</span>}
+                                  <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                    <button title={chapter.is_visible ? 'Hide' : 'Show'} onClick={() => toggleChapterVisible(chapter, subject.id)}
+                                      className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                                      {chapter.is_visible ? <Eye size={12} /> : <EyeOff size={12} />}
+                                    </button>
+                                    <button onClick={() => openEditChapter(chapter, subject.id)}
+                                      className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40 hover:text-white transition-colors">
+                                      <Edit2 size={12} />
+                                    </button>
+                                    <button onClick={() => confirmDelete('chapter', chapter.id, chapter.title, { subjectId: subject.id })}
+                                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors">
+                                      <Trash2 size={12} />
+                                    </button>
+                                    <button onClick={() => setNoteModal({ chapter, subjectId: subject.id })}
+                                      className="ml-1 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-xs font-medium transition-colors">
+                                      {chapter.note_type ? <Pencil size={11} /> : <Plus size={11} />}
+                                      {chapter.note_type ? 'Edit Note' : 'Add Note'}
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           ))}
-        </div>
+        </main>
       </div>
 
-      {/* ═══ Modals ═══ */}
+      {/* ════ MODALS ════ */}
 
       {/* Level modal */}
       <AnimatePresence>
         {levelModal && (
           <Modal onClose={() => setLevelModal(null)}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-bold text-lg">{levelModal.id ? 'Edit Level' : 'New Level'}</h2>
-              <button onClick={() => setLevelModal(null)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40"><X className="w-4 h-4" /></button>
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">{levelModal.mode === 'add' ? 'Add Level' : 'Edit Level'}</h2>
+              <button onClick={() => setLevelModal(null)} className="p-2 rounded-lg hover:bg-white/[0.07] text-white/50"><X size={18} /></button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Name *</label>
-                <input value={levelModal.form.name} onChange={e => setLevelModal(p => ({ ...p, form: { ...p.form, name: e.target.value } }))}
-                  placeholder="e.g. Certificate" className="input-dark w-full" />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
-                <textarea value={levelModal.form.description} onChange={e => setLevelModal(p => ({ ...p, form: { ...p.form, description: e.target.value } }))}
-                  placeholder="Optional description" rows={2} className="input-dark w-full resize-none" />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Icon</label>
-                <IconPicker icons={LEVEL_ICONS} value={levelModal.form.icon} onChange={ic => setLevelModal(p => ({ ...p, form: { ...p.form, icon: ic } }))} />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Order</label>
-                <input type="number" value={levelModal.form.order_index} onChange={e => setLevelModal(p => ({ ...p, form: { ...p.form, order_index: parseInt(e.target.value) || 0 } }))}
-                  className="input-dark w-24" />
-              </div>
-              {levelModal.id && (
-                <div className="flex items-center justify-between">
-                  <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Visible to students</span>
-                  <Toggle value={levelModal.form.is_visible} onChange={() => setLevelModal(p => ({ ...p, form: { ...p.form, is_visible: !p.form.is_visible } }))} />
-                </div>
-              )}
-              <button onClick={saveLevel} disabled={saving}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {levelModal.id ? 'Save Changes' : 'Create Level'}
+            <div className="p-6 space-y-4">
+              <Field label="Name *"><Input value={lf.name} onChange={e => setLf(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Certificate" /></Field>
+              <Field label="Description"><Input value={lf.description} onChange={e => setLf(p => ({ ...p, description: e.target.value }))} placeholder="Optional" /></Field>
+              <Field label="Icon"><IconPicker icons={LEVEL_ICONS} value={lf.icon} onChange={ic => setLf(p => ({ ...p, icon: ic }))} /></Field>
+              <Field label="Order"><Input type="number" value={lf.order_index} onChange={e => setLf(p => ({ ...p, order_index: +e.target.value }))} /></Field>
+              <Toggle value={lf.is_visible} onChange={() => setLf(p => ({ ...p, is_visible: !p.is_visible }))} label="Visible to students" />
+            </div>
+            <div className="p-6 border-t border-white/10 flex justify-end gap-2">
+              <button onClick={() => setLevelModal(null)} className="px-4 py-2 rounded-xl bg-white/[0.06] text-white/70 hover:bg-white/[0.1] text-sm">Cancel</button>
+              <button onClick={saveLevelModal} disabled={submitting}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium text-sm disabled:opacity-50">
+                {submitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {levelModal.mode === 'add' ? 'Create' : 'Save'}
               </button>
             </div>
           </Modal>
@@ -691,40 +755,23 @@ export default function AdminShortNotes() {
       <AnimatePresence>
         {subjectModal && (
           <Modal onClose={() => setSubjectModal(null)}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-bold text-lg">{subjectModal.id ? 'Edit Subject' : 'New Subject'}</h2>
-              <button onClick={() => setSubjectModal(null)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40"><X className="w-4 h-4" /></button>
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">{subjectModal.mode === 'add' ? 'Add Subject' : 'Edit Subject'}</h2>
+              <button onClick={() => setSubjectModal(null)} className="p-2 rounded-lg hover:bg-white/[0.07] text-white/50"><X size={18} /></button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Name *</label>
-                <input value={subjectModal.form.name} onChange={e => setSubjectModal(p => ({ ...p, form: { ...p.form, name: e.target.value } }))}
-                  placeholder="e.g. Financial Accounting" className="input-dark w-full" />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
-                <textarea value={subjectModal.form.description} onChange={e => setSubjectModal(p => ({ ...p, form: { ...p.form, description: e.target.value } }))}
-                  rows={2} className="input-dark w-full resize-none" />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Icon</label>
-                <IconPicker icons={SUBJECT_ICONS} value={subjectModal.form.icon} onChange={ic => setSubjectModal(p => ({ ...p, form: { ...p.form, icon: ic } }))} />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Order</label>
-                <input type="number" value={subjectModal.form.order_index} onChange={e => setSubjectModal(p => ({ ...p, form: { ...p.form, order_index: parseInt(e.target.value) || 0 } }))}
-                  className="input-dark w-24" />
-              </div>
-              {subjectModal.id && (
-                <div className="flex items-center justify-between">
-                  <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Visible to students</span>
-                  <Toggle value={subjectModal.form.is_visible} onChange={() => setSubjectModal(p => ({ ...p, form: { ...p.form, is_visible: !p.form.is_visible } }))} />
-                </div>
-              )}
-              <button onClick={saveSubject} disabled={saving}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {subjectModal.id ? 'Save Changes' : 'Create Subject'}
+            <div className="p-6 space-y-4">
+              <Field label="Name *"><Input value={sf.name} onChange={e => setSf(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Accounting" /></Field>
+              <Field label="Description"><Input value={sf.description} onChange={e => setSf(p => ({ ...p, description: e.target.value }))} placeholder="Optional" /></Field>
+              <Field label="Icon"><IconPicker icons={SUBJECT_ICONS} value={sf.icon} onChange={ic => setSf(p => ({ ...p, icon: ic }))} /></Field>
+              <Field label="Order"><Input type="number" value={sf.order_index} onChange={e => setSf(p => ({ ...p, order_index: +e.target.value }))} /></Field>
+              <Toggle value={sf.is_visible} onChange={() => setSf(p => ({ ...p, is_visible: !p.is_visible }))} label="Visible to students" />
+            </div>
+            <div className="p-6 border-t border-white/10 flex justify-end gap-2">
+              <button onClick={() => setSubjectModal(null)} className="px-4 py-2 rounded-xl bg-white/[0.06] text-white/70 hover:bg-white/[0.1] text-sm">Cancel</button>
+              <button onClick={saveSubjectModal} disabled={submitting}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium text-sm disabled:opacity-50">
+                {submitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {subjectModal.mode === 'add' ? 'Create' : 'Save'}
               </button>
             </div>
           </Modal>
@@ -735,62 +782,47 @@ export default function AdminShortNotes() {
       <AnimatePresence>
         {chapterModal && (
           <Modal onClose={() => setChapterModal(null)}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-bold text-lg">{chapterModal.id ? 'Edit Chapter' : 'New Chapter'}</h2>
-              <button onClick={() => setChapterModal(null)} className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40"><X className="w-4 h-4" /></button>
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">{chapterModal.mode === 'add' ? 'Add Chapter' : 'Edit Chapter'}</h2>
+              <button onClick={() => setChapterModal(null)} className="p-2 rounded-lg hover:bg-white/[0.07] text-white/50"><X size={18} /></button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Title *</label>
-                <input value={chapterModal.form.title} onChange={e => setChapterModal(p => ({ ...p, form: { ...p.form, title: e.target.value } }))}
-                  placeholder="e.g. Chapter 1 – Introduction" className="input-dark w-full" />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
-                <textarea value={chapterModal.form.description} onChange={e => setChapterModal(p => ({ ...p, form: { ...p.form, description: e.target.value } }))}
-                  rows={2} className="input-dark w-full resize-none" />
-              </div>
-              <div>
-                <label className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Order</label>
-                <input type="number" value={chapterModal.form.order_index} onChange={e => setChapterModal(p => ({ ...p, form: { ...p.form, order_index: parseInt(e.target.value) || 0 } }))}
-                  className="input-dark w-24" />
-              </div>
-              {chapterModal.id && (
-                <div className="flex items-center justify-between">
-                  <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Visible to students</span>
-                  <Toggle value={chapterModal.form.is_visible} onChange={() => setChapterModal(p => ({ ...p, form: { ...p.form, is_visible: !p.form.is_visible } }))} />
-                </div>
-              )}
-              <button onClick={saveChapter} disabled={saving}
-                className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-2">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {chapterModal.id ? 'Save Changes' : 'Create Chapter'}
+            <div className="p-6 space-y-4">
+              <Field label="Title *"><Input value={cf.title} onChange={e => setCf(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Chapter 1: Introduction" /></Field>
+              <Field label="Description"><Input value={cf.description} onChange={e => setCf(p => ({ ...p, description: e.target.value }))} placeholder="Optional" /></Field>
+              <Field label="Order"><Input type="number" value={cf.order_index} onChange={e => setCf(p => ({ ...p, order_index: +e.target.value }))} /></Field>
+              <Toggle value={cf.is_visible} onChange={() => setCf(p => ({ ...p, is_visible: !p.is_visible }))} label="Visible to students" />
+            </div>
+            <div className="p-6 border-t border-white/10 flex justify-end gap-2">
+              <button onClick={() => setChapterModal(null)} className="px-4 py-2 rounded-xl bg-white/[0.06] text-white/70 hover:bg-white/[0.1] text-sm">Cancel</button>
+              <button onClick={saveChapterModal} disabled={submitting}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium text-sm disabled:opacity-50">
+                {submitting ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {chapterModal.mode === 'add' ? 'Create' : 'Save'}
               </button>
             </div>
           </Modal>
         )}
       </AnimatePresence>
 
-      {/* Delete confirm modal */}
+      {/* Delete confirm */}
       <AnimatePresence>
         {deleteTarget && (
           <Modal onClose={() => setDeleteTarget(null)}>
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
-                <Trash2 className="w-6 h-6 text-red-400" />
+            <div className="p-6 space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center mx-auto">
+                <AlertCircle size={24} className="text-red-400" />
               </div>
-              <h2 className="text-white font-bold text-lg mb-2">Delete {deleteTarget.type}?</h2>
-              <p className="text-white/40 text-sm mb-6">
-                "<span className="text-white/70">{deleteTarget.name}</span>" will be permanently deleted along with all its contents.
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.05] text-sm font-semibold transition-colors">
-                  Cancel
-                </button>
-                <button onClick={runDelete}
-                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition-colors">
-                  Delete
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-white">Delete {deleteTarget.type}?</h3>
+                <p className="text-white/50 text-sm mt-2">
+                  "<span className="text-white/80">{deleteTarget.label}</span>" and all its contents will be permanently deleted.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 rounded-xl bg-white/[0.06] text-white/70 text-sm">Cancel</button>
+                <button onClick={execDelete} disabled={submitting}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 text-white text-sm font-medium disabled:opacity-50">
+                  {submitting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}Delete
                 </button>
               </div>
             </div>
@@ -798,129 +830,15 @@ export default function AdminShortNotes() {
         )}
       </AnimatePresence>
 
-      {/* Bulk upload modal */}
+      {/* Note modal */}
       <AnimatePresence>
-        {bulkModal && (
-          <Modal onClose={() => { setBulkModal(null); setBulkFiles([]); setBulkResults(null); }}>
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-white font-bold text-lg">Bulk PDF Upload</h2>
-                <p className="text-white/35 text-xs mt-0.5">{bulkModal.subjectName}</p>
-              </div>
-              <button onClick={() => { setBulkModal(null); setBulkFiles([]); setBulkResults(null); }}
-                className="p-1.5 rounded-lg hover:bg-white/[0.07] text-white/40">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {!bulkResults ? (
-              <div className="space-y-4">
-                <div className="text-white/40 text-xs leading-relaxed bg-white/[0.03] rounded-xl p-3 border border-white/[0.07]">
-                  <p className="font-semibold text-white/60 mb-1">How it works:</p>
-                  <ul className="space-y-0.5">
-                    <li>• Each PDF filename becomes the chapter title</li>
-                    <li>• New chapters are created automatically</li>
-                    <li>• Existing chapters with matching titles get updated</li>
-                    <li>• PDF only, max 50 MB per file</li>
-                  </ul>
-                </div>
-
-                {/* Drop zone */}
-                <div
-                  className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer
-                    ${bulkFiles.length > 0 ? 'border-purple-500/50 bg-purple-500/5' : 'border-white/[0.12] hover:border-purple-500/40 hover:bg-white/[0.02]'}`}
-                  onClick={() => bulkInputRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => {
-                    e.preventDefault();
-                    const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-                    setBulkFiles(prev => {
-                      const names = new Set(prev.map(f => f.name));
-                      return [...prev, ...files.filter(f => !names.has(f.name))];
-                    });
-                  }}>
-                  <input
-                    ref={bulkInputRef}
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    multiple
-                    style={{ display: 'none' }}
-                    onChange={e => {
-                      const files = Array.from(e.target.files);
-                      setBulkFiles(prev => {
-                        const names = new Set(prev.map(f => f.name));
-                        return [...prev, ...files.filter(f => !names.has(f.name))];
-                      });
-                      e.target.value = '';
-                    }}
-                  />
-                  <Upload className="w-8 h-8 text-white/25 mx-auto mb-2" />
-                  <p className="text-white/50 text-sm font-medium">Click or drag PDFs here</p>
-                  <p className="text-white/25 text-xs mt-1">Select multiple PDF files at once</p>
-                </div>
-
-                {/* File list */}
-                {bulkFiles.length > 0 && (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                    {bulkFiles.map((f, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                        <File className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                        <span className="text-white/70 text-xs flex-1 truncate">{f.name}</span>
-                        <span className="text-white/30 text-[10px] flex-shrink-0">{formatSize(f.size)}</span>
-                        <button onClick={() => setBulkFiles(prev => prev.filter((_, j) => j !== i))}
-                          className="p-1 rounded hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-colors flex-shrink-0">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleBulkUpload}
-                  disabled={bulkFiles.length === 0 || bulkUploading}
-                  className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-                  {bulkUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                  {bulkUploading ? 'Uploading…' : `Upload ${bulkFiles.length} PDF${bulkFiles.length !== 1 ? 's' : ''}`}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Summary */}
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                  <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                  <div>
-                    <p className="text-emerald-400 font-semibold text-sm">Upload complete</p>
-                    <p className="text-white/40 text-xs">{bulkResults.success}/{bulkResults.total} files uploaded successfully</p>
-                  </div>
-                </div>
-
-                {/* Per-file results */}
-                <div className="space-y-1.5 max-h-52 overflow-y-auto">
-                  {bulkResults.results.map((r, i) => (
-                    <div key={i} className={`flex items-center gap-2 p-2 rounded-lg text-xs ${r.status === 'ok' ? 'bg-emerald-500/5 border border-emerald-500/15' : 'bg-red-500/5 border border-red-500/15'}`}>
-                      {r.status === 'ok'
-                        ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                        : <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />}
-                      <span className={`flex-1 truncate ${r.status === 'ok' ? 'text-white/70' : 'text-red-400/70'}`}>{r.title}</span>
-                      {r.status !== 'ok' && <span className="text-red-400/50 text-[10px]">{r.error}</span>}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex gap-2">
-                  <button onClick={() => { setBulkFiles([]); setBulkResults(null); }}
-                    className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/60 hover:text-white hover:bg-white/[0.05] text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-                    <RefreshCw className="w-4 h-4" /> Upload More
-                  </button>
-                  <button onClick={() => { setBulkModal(null); setBulkFiles([]); setBulkResults(null); }}
-                    className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors">
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
-          </Modal>
+        {noteModal && (
+          <NoteModal
+            chapter={noteModal.chapter}
+            subjectId={noteModal.subjectId}
+            onClose={() => setNoteModal(null)}
+            onSaved={onNoteSaved}
+          />
         )}
       </AnimatePresence>
     </div>
