@@ -578,14 +578,24 @@ export default function AdminShortNotes() {
             <h2 className="text-white font-bold text-lg">Short Notes Manager</h2>
             <p className="text-white/40 text-xs mt-0.5">Manage levels, subjects, chapters and short notes</p>
           </div>
-          <Toggle value={notesVisible} onChange={toggleGlobalVisible} label={notesVisible ? 'Visible to students' : 'Hidden from students'} />
         </header>
 
         <main className="flex-1 p-6 space-y-4 max-w-5xl mx-auto w-full">
-          {/* Add Level */}
-          <div className="flex justify-end">
+          {/* Toolbar: visibility toggle + Add Level */}
+          <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-white/[0.07] bg-white/[0.03]">
+            <div className="flex items-center gap-3">
+              <Toggle value={notesVisible} onChange={toggleGlobalVisible} />
+              <div>
+                <p className="text-sm font-medium text-white leading-tight">
+                  {notesVisible ? 'Short Notes visible to students' : 'Short Notes hidden from students'}
+                </p>
+                <p className="text-xs text-white/35 mt-0.5">
+                  {notesVisible ? 'Students can access the Short Notes section' : 'Students cannot see Short Notes anywhere'}
+                </p>
+              </div>
+            </div>
             <button onClick={openAddLevel}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium hover:opacity-90 transition-opacity">
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium hover:opacity-90 transition-opacity flex-shrink-0">
               <Plus size={16} />Add Level
             </button>
           </div>
