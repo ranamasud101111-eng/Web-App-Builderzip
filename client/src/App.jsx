@@ -19,6 +19,8 @@ import AdminNotifications from './pages/AdminNotifications';
 import AdminSubjects from './pages/AdminSubjects';
 import AdminMCQ from './pages/AdminMCQ';
 import AdminLogin from './pages/AdminLogin';
+import AdminExams from './pages/AdminExams';
+import StudentExams from './pages/StudentExams';
 import Leaderboard from './pages/Leaderboard';
 
 const Loader = () => (
@@ -38,7 +40,6 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (loading) return <Loader />;
   if (!user) return <Navigate to={adminOnly ? '/admin-login' : '/login'} replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
-  if (!adminOnly && user.role === 'admin') return <Navigate to="/admin" replace />;
   return children;
 };
 
@@ -69,6 +70,10 @@ const AppRoutes = () => {
         <Route path="/admin/notifications" element={<ProtectedRoute adminOnly><AdminNotifications /></ProtectedRoute>} />
         <Route path="/admin/subjects" element={<ProtectedRoute adminOnly><AdminSubjects /></ProtectedRoute>} />
         <Route path="/admin/mcqs" element={<ProtectedRoute adminOnly><AdminMCQ /></ProtectedRoute>} />
+        <Route path="/admin/exams" element={<ProtectedRoute adminOnly><AdminExams /></ProtectedRoute>} />
+
+        {/* Student exam routes */}
+        <Route path="/exams" element={<ProtectedRoute><StudentExams /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

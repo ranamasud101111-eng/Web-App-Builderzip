@@ -153,7 +153,7 @@ export default function Dashboard() {
             </div>
             <ChevronRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
           </Link>
-          <div className="card-premium p-5 flex items-center gap-4 group cursor-not-allowed">
+          <Link to="/exams" className="card-premium p-5 flex items-center gap-4 hover:border-purple-500/30 transition-colors group">
             <div className="w-11 h-11 rounded-2xl bg-purple-500/12 border border-purple-500/20 flex items-center justify-center">
               <Target className="w-5 h-5 text-purple-400" />
             </div>
@@ -161,8 +161,8 @@ export default function Dashboard() {
               <p className="font-semibold text-white text-sm">Mock Tests</p>
               <p className="text-white/35 text-xs">Practice timed exams</p>
             </div>
-            <span className="badge-gold">Soon</span>
-          </div>
+            <ChevronRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
+          </Link>
           <div className="card-premium p-5 flex items-center gap-4 group cursor-not-allowed">
             <div className="w-11 h-11 rounded-2xl bg-cyan-500/12 border border-cyan-500/20 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-cyan-400" />

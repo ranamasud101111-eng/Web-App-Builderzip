@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Users, BookOpen, Bell, BarChart3, TrendingUp, CheckCircle,
   ChevronRight, Activity, Shield, Settings, FileText, Trophy,
-  Home, LogOut, Menu, X, Megaphone, Brain
+  Home, LogOut, Menu, X, Megaphone, Brain, GraduationCap
 } from 'lucide-react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -58,6 +58,7 @@ export default function AdminDashboard() {
     { to: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
     { to: '/admin/mcqs', label: 'MCQ Manager', icon: <Brain className="w-4 h-4" /> },
+    { to: '/admin/exams', label: 'Exam Manager', icon: <GraduationCap className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];
@@ -166,7 +167,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
             <Link to="/admin/notifications" className="card-premium p-6 flex items-center gap-4 group hover:border-purple-500/35 transition-all duration-200 block">
               <div className="w-12 h-12 rounded-2xl bg-purple-500/12 border border-purple-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -179,7 +180,7 @@ export default function AdminDashboard() {
               <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
             </Link>
           </motion.div>
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.33 }}>
             <Link to="/admin/subjects" className="card-premium p-6 flex items-center gap-4 group hover:border-gold-500/35 transition-all duration-200 block">
               <div className="w-12 h-12 rounded-2xl bg-gold-500/12 border border-gold-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <BookOpen className="w-5 h-5 text-gold-400" />
@@ -189,6 +190,18 @@ export default function AdminDashboard() {
                 <p className="text-white/35 text-xs">Add subjects, chapters & materials</p>
               </div>
               <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-gold-400 group-hover:translate-x-1 transition-all" />
+            </Link>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.36 }}>
+            <Link to="/admin/exams" className="card-premium p-6 flex items-center gap-4 group hover:border-cyan-500/35 transition-all duration-200 block">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/12 border border-cyan-500/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <GraduationCap className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-white text-sm mb-1">Exam Manager</p>
+                <p className="text-white/35 text-xs">Create & publish exams</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
             </Link>
           </motion.div>
         </div>

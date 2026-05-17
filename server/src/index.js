@@ -10,6 +10,7 @@ import chapterRoutes from './routes/chapters.js';
 import notificationRoutes from './routes/notifications.js';
 import userRoutes from './routes/users.js';
 import mcqRoutes from './routes/mcqs.js';
+import examRoutes from './routes/exams.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/chapters', chapterRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/mcqs', mcqRoutes);
+app.use('/api/exams', examRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

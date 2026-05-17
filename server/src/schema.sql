@@ -121,6 +121,23 @@ CREATE TABLE IF NOT EXISTS user_notifications (
     PRIMARY KEY (user_id, notification_id)
 );
 
+CREATE TABLE IF NOT EXISTS exams (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    subject_id INTEGER REFERENCES subjects(id) ON DELETE SET NULL,
+    chapter_id INTEGER REFERENCES chapters(id) ON DELETE SET NULL,
+    duration_minutes INTEGER NOT NULL DEFAULT 60,
+    total_marks INTEGER NOT NULL DEFAULT 100,
+    passing_marks INTEGER DEFAULT 40,
+    question_count INTEGER NOT NULL DEFAULT 10,
+    difficulty VARCHAR(20) DEFAULT 'mixed',
+    is_published BOOLEAN DEFAULT FALSE,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS mcq_import_history (
     id SERIAL PRIMARY KEY,
     admin_id INTEGER REFERENCES users(id),
