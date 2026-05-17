@@ -18,6 +18,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminNotifications from './pages/AdminNotifications';
 import AdminSubjects from './pages/AdminSubjects';
 import AdminMCQ from './pages/AdminMCQ';
+import AdminLogin from './pages/AdminLogin';
 import Leaderboard from './pages/Leaderboard';
 
 const Loader = () => (
@@ -35,8 +36,9 @@ const Loader = () => (
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
   if (loading) return <Loader />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to={adminOnly ? '/admin-login' : '/login'} replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  if (!adminOnly && user.role === 'admin') return <Navigate to="/admin" replace />;
   return children;
 };
 
@@ -49,6 +51,7 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <Login />} />
+        <Route path="/admin-login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <AdminLogin />} />
         <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
 
         {/* Student routes */}

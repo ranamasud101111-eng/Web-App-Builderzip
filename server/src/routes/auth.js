@@ -38,6 +38,33 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     const user = result.rows[0];
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'Admin accounts must use the Admin Login portal' });
+    }
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
+    const { password_hash, ...safeUser } = user;
+    res.json({ user: safeUser, token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+router.post('/admin-login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    const user = result.rows[0];
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. This portal is for administrators only.' });
+    }
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
       return res.status(401).json({ error: 'Invalid credentials' });

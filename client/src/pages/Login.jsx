@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, Shield, ChevronRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, ChevronRight } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -18,20 +18,19 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      navigate(user.role === 'admin' ? '/admin' : '/dashboard');
+      navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid credentials');
+      const msg = err.response?.data?.error || 'Invalid credentials';
+      if (err.response?.status === 403) {
+        toast.error('Admin accounts must use the Admin Login portal');
+      } else {
+        toast.error(msg);
+      }
     } finally { setLoading(false); }
-  };
-
-  const fillDemo = (role) => {
-    if (role === 'admin') setForm({ email: 'admin@learnhub.com', password: 'Admin@2024' });
-    else setForm({ email: 'student@learnhub.com', password: 'Student@2024' });
   };
 
   return (
     <div className="min-h-screen flex overflow-hidden pt-16">
-      {/* Left decorative panel */}
       <div className="hidden lg:flex flex-col justify-between w-[42%] relative overflow-hidden p-12"
         style={{ background: 'linear-gradient(135deg, #06112e 0%, #0a1a4a 50%, #06112e 100%)' }}>
         <div className="orb w-72 h-72 top-[-5%] left-[-10%] opacity-30" style={{ background: '#7c3aed' }} />
@@ -84,7 +83,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right login panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
         <div className="orb w-96 h-96 top-[-10%] right-[-5%] opacity-10" style={{ background: '#7c3aed', animationDelay: '2s' }} />
 
@@ -92,34 +90,13 @@ export default function Login() {
           className="w-full max-w-md relative z-10">
 
           <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 border border-gold-500/20"
+              style={{ background: 'rgba(245,158,11,0.08)' }}>
+              <BookOpen className="w-3.5 h-3.5 text-gold-400" />
+              <span className="text-gold-400 text-xs font-semibold tracking-wide">Student Portal</span>
+            </div>
             <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
             <p className="text-white/45">Sign in to continue your preparation</p>
-          </div>
-
-          {/* Demo credentials */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button onClick={() => fillDemo('admin')}
-              className="flex items-center gap-2 glass-navy rounded-xl px-4 py-3 hover:border-purple-500/30 border border-white/[0.06] transition-all group">
-              <Shield className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
-              <div className="text-left">
-                <p className="text-xs font-semibold text-white">Admin Demo</p>
-                <p className="text-[10px] text-white/35">Full access</p>
-              </div>
-            </button>
-            <button onClick={() => fillDemo('student')}
-              className="flex items-center gap-2 glass-navy rounded-xl px-4 py-3 hover:border-gold-500/30 border border-white/[0.06] transition-all group">
-              <BookOpen className="w-4 h-4 text-gold-400 group-hover:scale-110 transition-transform" />
-              <div className="text-left">
-                <p className="text-xs font-semibold text-white">Student Demo</p>
-                <p className="text-[10px] text-white/35">CA aspirant</p>
-              </div>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-white/[0.07]"></div>
-            <span className="text-white/25 text-xs">or enter credentials</span>
-            <div className="flex-1 h-px bg-white/[0.07]"></div>
           </div>
 
           <div className="glass-navy rounded-3xl p-7 border border-purple-500/10">
@@ -138,6 +115,9 @@ export default function Login() {
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <div className="flex justify-end">
+                <span className="text-white/30 text-xs cursor-default">Forgot password? Contact your administrator</span>
+              </div>
               <button type="submit" disabled={loading}
                 className="btn-primary flex items-center justify-center gap-2 py-3.5 mt-1 disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading
@@ -151,6 +131,13 @@ export default function Login() {
             New to CA Mock?{' '}
             <Link to="/register" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
               Create free account <ChevronRight className="w-3 h-3 inline" />
+            </Link>
+          </p>
+
+          <p className="text-center text-white/20 mt-4 text-xs">
+            Are you an administrator?{' '}
+            <Link to="/admin-login" className="text-white/40 hover:text-white/60 transition-colors underline underline-offset-2">
+              Admin Login
             </Link>
           </p>
         </motion.div>
