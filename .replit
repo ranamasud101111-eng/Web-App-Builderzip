@@ -45,4 +45,3 @@ run = ["bash", "-c", "cd /home/runner/workspace/server && node src/index.js & cd
 [userenv]
 
 [userenv.shared]
-JWT_SECRET = "4553ddbd314beec08937bd127caa958fb0e2f4bb07e82f2f1d6d5b38ace100c6c3fff827c071e2ddaf695359465bc11f"
