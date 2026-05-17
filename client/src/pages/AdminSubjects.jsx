@@ -7,6 +7,7 @@ import {
   BookOpen, Plus, X, ArrowLeft, ChevronDown, ChevronUp,
   BarChart3, Bell, Home, LogOut, Menu, Shield, FileText, Brain, GraduationCap, Layers,
   Zap,
+  HelpCircle,
 } from 'lucide-react';
 import api from '../api';
 
@@ -43,6 +44,7 @@ export default function AdminSubjects() {
     { to: '/admin/flashcards', label: 'Flash Cards', icon: <Zap className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/admin/shortnotes', label: 'Short Notes', icon: <FileText className="w-4 h-4" /> },
+    { to: '/admin/question-bank', label: 'Question Bank', icon: <HelpCircle className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];
 

@@ -30,6 +30,8 @@ import AdminFlashCards from './pages/AdminFlashCards';
 import FlashCards from './pages/FlashCards';
 import AdminShortNotes from './pages/AdminShortNotes';
 import ShortNotes from './pages/ShortNotes';
+import AdminQuestionBank from './pages/AdminQuestionBank';
+import QuestionBank from './pages/QuestionBank';
 import StudentProgress from './pages/StudentProgress';
 import Leaderboard from './pages/Leaderboard';
 
@@ -99,6 +101,8 @@ const AppRoutes = () => {
         {/* Short Notes */}
         <Route path="/shortnotes" element={<ProtectedRoute><ShortNotes /></ProtectedRoute>} />
         <Route path="/admin/shortnotes" element={<ProtectedRoute adminOnly><AdminShortNotes /></ProtectedRoute>} />
+        <Route path="/question-bank" element={<ProtectedRoute><QuestionBank /></ProtectedRoute>} />
+        <Route path="/admin/question-bank" element={<ProtectedRoute adminOnly><AdminQuestionBank /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

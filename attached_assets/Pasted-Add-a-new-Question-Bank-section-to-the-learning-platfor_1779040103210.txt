@@ -1,0 +1,108 @@
+Add a new "Question Bank" section to the learning platform.
+
+Requirements:
+
+1. Structure:
+Question Bank must follow this hierarchy:
+Level → Subject → Chapter → Content
+
+Default 3 levels:
+- Certificate
+- Professional
+- Advanced
+
+Students should first see the 3 levels.
+Clicking a level opens subjects.
+Clicking a subject opens chapters.
+Clicking a chapter opens question bank content.
+
+2. Special content rules by level:
+
+Certificate level:
+For each chapter, admin can choose to show:
+- MCQ format
+- PDF format
+
+Admin can:
+- Show only MCQ
+- Show only PDF
+- Show both
+- Hide any one or both anytime
+
+Professional level:
+For each chapter, admin can choose:
+- PDF format
+- Text format
+
+Advanced level:
+For each chapter, admin can choose:
+- PDF format
+- Text format
+
+For Professional and Advanced:
+Admin can select content type:
+- PDF
+or
+- Text
+
+Admin can also hide/show content anytime.
+
+3. Admin panel:
+Create a new admin menu called "Question Bank Management".
+
+Admin should be able to:
+- Add/edit/delete levels
+- Add/edit/delete subjects
+- Add/edit/delete chapters
+- Upload PDF
+- Add text notes/content
+- Add MCQ questions for certificate level
+- Toggle visibility of each content type
+- Select content type per chapter
+- Change content later anytime
+
+4. Student view:
+Certificate:
+- chapter opens MCQ or PDF based on admin setting
+
+Professional / Advanced:
+- chapter opens PDF or text based on admin setting
+
+If hidden:
+- content must not be visible to students
+- hidden content route should be blocked
+
+5. Database:
+Create tables:
+- qbank_levels
+- qbank_subjects
+- qbank_chapters
+- qbank_contents
+- qbank_mcqs
+- settings
+
+Store:
+- level
+- subject
+- chapter
+- content_type (mcq/pdf/text)
+- visibility
+- file path
+- text content
+
+6. Important:
+- Fully functional backend
+- Save permanently in database
+- Load after refresh
+- Upload PDF works
+- Text editor works
+- MCQ works
+- No static demo UI
+- All buttons/routes functional
+- Keep existing premium dark design
+
+7. Extra:
+Admin can bulk import:
+- MCQ from text/PDF/DOCX
+- PDF upload
+- text notes paste option

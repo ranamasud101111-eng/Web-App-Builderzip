@@ -8,7 +8,7 @@ import {
   BarChart3, Bell, BookOpen, Home, LogOut, Menu, Shield,
   Brain, GraduationCap, Eye, EyeOff, Save, Loader2,
   Zap, Layers, Upload, File, CheckCircle, AlertCircle,
-  RefreshCw, Type, FileUp, Pencil, AlignLeft,
+  RefreshCw, Type, FileUp, Pencil, AlignLeft, HelpCircle,
 } from 'lucide-react';
 import api from '../api';
 
@@ -523,12 +523,15 @@ export default function AdminShortNotes() {
 
   /* ─── Nav ─── */
   const navItems = [
-    { to: '/admin',          icon: <Home size={16} />,        label: 'Dashboard' },
-    { to: '/admin/students', icon: <GraduationCap size={16}/>, label: 'Students' },
-    { to: '/admin/classes',  icon: <BookOpen size={16} />,    label: 'Classes' },
-    { to: '/admin/tests',    icon: <Brain size={16} />,       label: 'Tests' },
-    { to: '/admin/shortnotes', icon: <FileText size={16} />,  label: 'Short Notes' },
-    { to: '/admin/analytics', icon: <BarChart3 size={16} />,  label: 'Analytics' },
+    { to: '/admin',               icon: <BarChart3     size={16}/>, label: 'Dashboard' },
+    { to: '/admin/subjects',      icon: <BookOpen      size={16}/>, label: 'Subjects & Chapters' },
+    { to: '/admin/mcqs',          icon: <Brain         size={16}/>, label: 'MCQ Manager' },
+    { to: '/admin/exams',         icon: <GraduationCap size={16}/>, label: 'Exam Manager' },
+    { to: '/admin/classes',       icon: <Layers        size={16}/>, label: 'Classes' },
+    { to: '/admin/flashcards',    icon: <Zap           size={16}/>, label: 'Flash Cards' },
+    { to: '/admin/notifications', icon: <Bell          size={16}/>, label: 'Notifications' },
+    { to: '/admin/shortnotes',    icon: <FileText      size={16}/>, label: 'Short Notes' },
+    { to: '/admin/question-bank', icon: <HelpCircle   size={16}/>, label: 'Question Bank' },
   ];
 
   if (loading) return (

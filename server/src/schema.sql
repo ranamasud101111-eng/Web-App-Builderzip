@@ -323,3 +323,76 @@ CREATE TABLE IF NOT EXISTS short_notes (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+/* ── Question Bank ── */
+CREATE TABLE IF NOT EXISTS qbank_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  qbank_visible BOOLEAN DEFAULT TRUE,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS qbank_levels (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT DEFAULT '',
+  icon VARCHAR(10) DEFAULT '📝',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS qbank_subjects (
+  id SERIAL PRIMARY KEY,
+  level_id INTEGER REFERENCES qbank_levels(id) ON DELETE CASCADE,
+  name VARCHAR(150) NOT NULL,
+  description TEXT DEFAULT '',
+  icon VARCHAR(10) DEFAULT '📚',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS qbank_chapters (
+  id SERIAL PRIMARY KEY,
+  subject_id INTEGER REFERENCES qbank_subjects(id) ON DELETE CASCADE,
+  title VARCHAR(200) NOT NULL,
+  description TEXT DEFAULT '',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS qbank_contents (
+  id SERIAL PRIMARY KEY,
+  chapter_id INTEGER REFERENCES qbank_chapters(id) ON DELETE CASCADE,
+  content_type VARCHAR(10) CHECK (content_type IN ('mcq','pdf','text')),
+  is_visible BOOLEAN DEFAULT TRUE,
+  filename VARCHAR(255),
+  original_name VARCHAR(255),
+  file_size INTEGER,
+  text_content TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(chapter_id, content_type)
+);
+
+CREATE TABLE IF NOT EXISTS qbank_mcqs (
+  id SERIAL PRIMARY KEY,
+  chapter_id INTEGER REFERENCES qbank_chapters(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  option_a TEXT NOT NULL DEFAULT '',
+  option_b TEXT NOT NULL DEFAULT '',
+  option_c TEXT NOT NULL DEFAULT '',
+  option_d TEXT NOT NULL DEFAULT '',
+  correct_option CHAR(1) DEFAULT 'a' CHECK (correct_option IN ('a','b','c','d')),
+  explanation TEXT DEFAULT '',
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO qbank_settings (id, qbank_visible) VALUES (1, true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO qbank_levels (name, description, icon, order_index) VALUES
+  ('Certificate',  'Foundation level question bank', '📜', 1),
+  ('Professional', 'Intermediate level question bank', '💼', 2),
+  ('Advanced',     'Advanced level question bank', '🏆', 3)
+ON CONFLICT (name) DO NOTHING;
