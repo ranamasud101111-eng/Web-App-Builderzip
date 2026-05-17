@@ -182,6 +182,20 @@ router.get('/chapter/:chapterId', authenticate, async (req, res) => {
     const { chapterId } = req.params;
     const { mode } = req.query; // practice, quiz, exam
 
+    // Quiz mode: max 10 questions randomly selected
+    if (mode === 'quiz') {
+      const result = await pool.query(
+        `SELECT id, question, option_a, option_b, option_c, option_d,
+                correct_option, explanation, difficulty, order_index
+         FROM mcqs
+         WHERE chapter_id = $1 AND is_active = true
+         ORDER BY RANDOM()
+         LIMIT 10`,
+        [chapterId]
+      );
+      return res.json({ questions: result.rows, total: result.rows.length });
+    }
+
     const result = await pool.query(
       `SELECT id, question, option_a, option_b, option_c, option_d,
               correct_option, explanation, difficulty, order_index
@@ -546,6 +560,115 @@ router.get('/import-history', authenticate, requireAdmin, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
+/* ─── GET /api/mcqs/wrong-answers ─── */
+router.get('/wrong-answers', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT ON (msa.mcq_id)
+         m.id, m.question, m.option_a, m.option_b, m.option_c, m.option_d,
+         m.correct_option, m.explanation, m.difficulty,
+         msa.selected_option as my_answer,
+         s.name as subject_name, s.class_level as level, s.id as subject_id, s.color as subject_color, s.icon as subject_icon,
+         c.title as chapter_title, c.id as chapter_id,
+         ms.created_at as attempted_at
+       FROM mcq_session_answers msa
+       JOIN mcq_sessions ms ON msa.session_id = ms.id
+       JOIN mcqs m ON msa.mcq_id = m.id
+       LEFT JOIN subjects s ON m.subject_id = s.id
+       LEFT JOIN chapters c ON m.chapter_id = c.id
+       WHERE ms.user_id = $1 AND msa.is_correct = false AND msa.selected_option IS NOT NULL
+       ORDER BY msa.mcq_id, ms.created_at DESC`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch wrong answers' });
+  }
+});
+
+/* ─── POST /api/mcqs/custom-exam/generate ─── */
+router.post('/custom-exam/generate', authenticate, async (req, res) => {
+  try {
+    const { level, subject_ids, chapter_ids, question_count, duration_minutes } = req.body;
+    if (!question_count || question_count < 1) return res.status(400).json({ error: 'Invalid question count' });
+
+    let whereClause = 'WHERE m.is_active = true';
+    const args = [];
+
+    if (chapter_ids && chapter_ids.length > 0) {
+      args.push(chapter_ids);
+      whereClause += ` AND m.chapter_id = ANY($${args.length})`;
+    } else if (subject_ids && subject_ids.length > 0) {
+      args.push(subject_ids);
+      whereClause += ` AND m.subject_id = ANY($${args.length})`;
+    } else if (level) {
+      args.push(level);
+      whereClause += ` AND s.class_level = $${args.length}`;
+    }
+
+    args.push(parseInt(question_count));
+    const result = await pool.query(
+      `SELECT m.id, m.question, m.option_a, m.option_b, m.option_c, m.option_d,
+              m.difficulty, m.chapter_id, m.subject_id,
+              s.name as subject_name, s.class_level as level,
+              c.title as chapter_title
+       FROM mcqs m
+       LEFT JOIN subjects s ON m.subject_id = s.id
+       LEFT JOIN chapters c ON m.chapter_id = c.id
+       ${whereClause}
+       ORDER BY RANDOM()
+       LIMIT $${args.length}`,
+      args
+    );
+
+    if (!result.rows.length) return res.status(404).json({ error: 'No questions found for the selected criteria' });
+
+    const sessionArgs = [req.user.id, level || null, subject_ids?.[0] || null, chapter_ids?.[0] || null, result.rows.length, (duration_minutes || 30) * 60];
+    const session = await pool.query(
+      `INSERT INTO mcq_sessions (user_id, subject_id, chapter_id, mode, total_questions, time_limit_seconds, status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'active') RETURNING *`,
+      [req.user.id, subject_ids?.[0] || null, chapter_ids?.[0] || null, 'custom', result.rows.length, (duration_minutes || 30) * 60]
+    );
+
+    await pool.query(
+      `INSERT INTO custom_exams (user_id, level, subject_ids, chapter_ids, question_count, duration_minutes, session_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [req.user.id, level || null, subject_ids || [], chapter_ids || [], question_count, duration_minutes || 30, session.rows[0].id]
+    );
+
+    res.json({
+      session_id: session.rows[0].id,
+      questions: result.rows,
+      total: result.rows.length,
+      duration_minutes: duration_minutes || 30,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate custom exam: ' + err.message });
+  }
+});
+
+/* ─── GET /api/mcqs/levels ─── (distinct levels from subjects) */
+router.get('/levels', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT DISTINCT class_level as level, COUNT(*) as subject_count
+       FROM subjects WHERE class_level IS NOT NULL AND class_level != ''
+       GROUP BY class_level ORDER BY class_level`
+    );
+    const ordered = ['Certificate', 'Professional', 'Advanced'];
+    const rows = result.rows.sort((a, b) => {
+      const ai = ordered.indexOf(a.level);
+      const bi = ordered.indexOf(b.level);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch levels' });
   }
 });
 

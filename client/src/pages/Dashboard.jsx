@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import {
   BookOpen, TrendingUp, Clock, CheckCircle, ChevronRight,
   Play, Trophy, BarChart3, Target, Flame, Layers, Plus, ArrowRight, FileText,
-  Zap, HelpCircle
+  Zap, HelpCircle, Brain, XCircle, Bookmark, Shuffle
 } from 'lucide-react';
 import api from '../api';
 
@@ -151,6 +151,34 @@ export default function Dashboard() {
             </Link>
           ))}
         </div>
+
+        {/* MCQ Learning Section */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Brain className="w-4 h-4 text-purple-400" />
+            <h2 className="text-sm font-bold text-white/60 uppercase tracking-wide">MCQ Practice</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { to: '/practice', icon: <Brain className="w-5 h-5" />, label: 'Practice', sub: 'Level → Subject → Chapter', color: '#8b5cf6', bg: 'bg-purple-500/12', border: 'border-purple-500/20', hover: 'hover:border-purple-500/35' },
+              { to: '/custom-exam', icon: <Shuffle className="w-5 h-5" />, label: 'Custom Exam', sub: 'Build your own exam', color: '#3b82f6', bg: 'bg-blue-500/12', border: 'border-blue-500/20', hover: 'hover:border-blue-500/35' },
+              { to: '/wrong-answers', icon: <XCircle className="w-5 h-5" />, label: 'Wrong Answers', sub: 'Review mistakes', color: '#f43f5e', bg: 'bg-red-500/12', border: 'border-red-500/20', hover: 'hover:border-red-500/35' },
+              { to: '/bookmarks', icon: <Bookmark className="w-5 h-5" />, label: 'Bookmarks', sub: 'Saved questions', color: '#f59e0b', bg: 'bg-amber-500/12', border: 'border-amber-500/20', hover: 'hover:border-amber-500/35' },
+            ].map((item, i) => (
+              <Link key={item.to} to={item.to}
+                className={`card-premium p-4 flex flex-col gap-3 ${item.hover} transition-all hover:-translate-y-0.5 group`}>
+                <div className={`w-10 h-10 rounded-xl ${item.bg} border ${item.border} flex items-center justify-center group-hover:scale-110 transition-transform`}
+                  style={{ color: item.color }}>
+                  {item.icon}
+                </div>
+                <div>
+                  <p className="font-bold text-white text-sm leading-tight">{item.label}</p>
+                  <p className="text-white/30 text-[11px] mt-0.5">{item.sub}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Quick links */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">

@@ -34,6 +34,10 @@ import AdminQuestionBank from './pages/AdminQuestionBank';
 import QuestionBank from './pages/QuestionBank';
 import StudentProgress from './pages/StudentProgress';
 import Leaderboard from './pages/Leaderboard';
+import PracticeHub from './pages/PracticeHub';
+import WrongAnswers from './pages/WrongAnswers';
+import Bookmarks from './pages/Bookmarks';
+import CustomExam from './pages/CustomExam';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 
 const Loader = () => (
@@ -100,6 +104,12 @@ const AppRoutes = () => {
         {/* Student exam routes */}
         <Route path="/exams" element={<ProtectedRoute><StudentExams /></ProtectedRoute>} />
         <Route path="/progress" element={<ProtectedRoute><StudentProgress /></ProtectedRoute>} />
+
+        {/* New MCQ feature routes */}
+        <Route path="/practice" element={<ProtectedRoute><PracticeHub /></ProtectedRoute>} />
+        <Route path="/wrong-answers" element={<ProtectedRoute><WrongAnswers /></ProtectedRoute>} />
+        <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
+        <Route path="/custom-exam" element={<ProtectedRoute><CustomExam /></ProtectedRoute>} />
         <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><Classes /></ModuleRoute></ProtectedRoute>} />
 
         {/* Admin classes route */}

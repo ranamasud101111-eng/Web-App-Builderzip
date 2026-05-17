@@ -396,3 +396,16 @@ INSERT INTO qbank_levels (name, description, icon, order_index) VALUES
   ('Professional', 'Intermediate level question bank', '💼', 2),
   ('Advanced',     'Advanced level question bank', '🏆', 3)
 ON CONFLICT (name) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS custom_exams (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) DEFAULT 'Custom Exam',
+    level VARCHAR(100),
+    subject_ids INTEGER[] DEFAULT '{}',
+    chapter_ids INTEGER[] DEFAULT '{}',
+    question_count INTEGER DEFAULT 10,
+    duration_minutes INTEGER DEFAULT 30,
+    session_id INTEGER REFERENCES mcq_sessions(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

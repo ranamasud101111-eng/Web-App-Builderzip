@@ -1,0 +1,103 @@
+Upgrade the student learning system so all MCQ practice and exams follow a structured level-based flow.
+
+Requirements:
+
+1. Student navigation flow:
+Students must first see 3 levels:
+- Certificate
+- Professional
+- Advanced
+
+Then:
+Level → Subject → Chapter
+
+After selecting a chapter, students can access:
+- Practice MCQ
+- Chapter Quiz
+- Custom Exam
+
+2. Chapter Quiz:
+For every chapter:
+- Automatically create quiz mode
+- 10 questions per quiz
+- 10 minutes timer
+- Submit automatically when time ends
+- Show result instantly:
+  - score
+  - correct
+  - wrong
+  - unanswered
+
+3. Custom Exam:
+Students can create their own exam:
+- choose level
+- choose subject
+- choose chapter(s)
+- choose number of questions
+- choose time duration
+- generate custom exam from available MCQs
+
+4. MCQ Practice:
+Students can solve all MCQs chapter-wise.
+Features:
+- next/previous question
+- submit answer
+- instant feedback
+- explanation (if available)
+- progress tracking
+
+5. Wrong answer tracking:
+Create a separate section:
+"Wrong Answers"
+
+Students can see all incorrect answers:
+- grouped by level
+- grouped by subject
+- grouped by chapter
+
+This helps revision.
+
+6. Bookmark:
+Students can bookmark any question.
+Create:
+"Bookmarked Questions" section
+
+Features:
+- save question
+- remove bookmark
+- revisit later
+- filter by level/subject/chapter
+
+7. Database:
+Create proper tables:
+- student_attempts
+- quiz_results
+- custom_exams
+- wrong_answers
+- bookmarked_questions
+- question_progress
+
+8. Admin sync:
+All MCQs added by admin must automatically appear in:
+- practice
+- chapter quiz
+- custom exam
+
+9. UI:
+Keep premium dark design.
+Student dashboard must have clear sections:
+- Practice
+- Chapter Quiz
+- Custom Exam
+- Wrong Answers
+- Bookmarks
+
+10. Important:
+Do not create static demo UI.
+Build full backend functionality:
+- timer
+- save attempts
+- scoring
+- wrong answer tracking
+- bookmarks
+- persistent data after refresh

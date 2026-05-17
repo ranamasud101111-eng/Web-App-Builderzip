@@ -33,9 +33,10 @@ export default function QuizMode() {
     ]).then(([qRes, cRes]) => {
       setQuestions(qRes.data.questions);
       setChapter(cRes.data);
-      const mins = Math.max(10, qRes.data.total * 1.5); // 1.5 min per question
-      setTimeLeft(mins * 60);
-      setTotalTime(mins * 60);
+      // Chapter quiz: fixed 10 minutes, max 10 questions
+      const secs = 10 * 60;
+      setTimeLeft(secs);
+      setTotalTime(secs);
     }).catch(() => toast.error('Failed to load quiz'))
       .finally(() => setLoading(false));
   }, [chapterId]);
