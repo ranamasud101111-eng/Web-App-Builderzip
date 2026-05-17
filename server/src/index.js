@@ -15,6 +15,7 @@ import classRoutes from './routes/classes.js';
 import flashcardRoutes from './routes/flashcards.js';
 import shortnotesRoutes from './routes/shortnotes.js';
 import qbankRoutes from './routes/qbank.js';
+import settingsRoutes from './routes/settings.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/classes', classRoutes);
 app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/shortnotes', shortnotesRoutes);
 app.use('/api/qbank', qbankRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

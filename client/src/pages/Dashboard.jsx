@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useModuleSettings } from '../context/ModuleSettingsContext';
 import { motion } from 'framer-motion';
 import {
   BookOpen, TrendingUp, Clock, CheckCircle, ChevronRight,
-  Play, Trophy, BarChart3, Target, Flame, Layers, Plus, ArrowRight, FileText
+  Play, Trophy, BarChart3, Target, Flame, Layers, Plus, ArrowRight, FileText,
+  Zap, HelpCircle
 } from 'lucide-react';
 import api from '../api';
 
@@ -66,6 +68,8 @@ const SubjectCard = ({ subject, index }) => {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { modules } = useModuleSettings();
+  const isAdmin = user?.role === 'admin';
   const [progress, setProgress] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -182,29 +186,70 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Classes + Short Notes quick links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-          <Link to="/classes" className="card-premium p-5 flex items-center gap-4 hover:border-purple-500/30 transition-all hover:-translate-y-0.5 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/20 to-violet-800/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-              <Layers className="w-5 h-5 text-purple-400" />
+        {/* Dynamic module cards — hidden modules are excluded for students */}
+        {(() => {
+          const moduleCards = [
+            {
+              key: 'classes',
+              to: '/classes',
+              title: 'Video Classes',
+              desc: 'Watch lecture videos — Certificate, Professional & Advanced',
+              icon: <Layers className="w-5 h-5 text-purple-400" />,
+              from: 'from-purple-600/20', to2: 'to-violet-800/10',
+              border: 'border-purple-500/20', hover: 'hover:border-purple-500/30',
+              visible: isAdmin || modules.classes,
+            },
+            {
+              key: 'shortnotes',
+              to: '/shortnotes',
+              title: 'Short Notes',
+              desc: 'View & download PDF notes — Certificate, Professional & Advanced',
+              icon: <FileText className="w-5 h-5 text-emerald-400" />,
+              from: 'from-emerald-600/20', to2: 'to-teal-800/10',
+              border: 'border-emerald-500/20', hover: 'hover:border-emerald-500/30',
+              visible: isAdmin || modules.shortnotes,
+            },
+            {
+              key: 'flashcards',
+              to: '/flashcards',
+              title: 'Flash Cards',
+              desc: 'Study with intelligent flash cards for every subject and level',
+              icon: <Zap className="w-5 h-5 text-yellow-400" />,
+              from: 'from-yellow-600/20', to2: 'to-amber-800/10',
+              border: 'border-yellow-500/20', hover: 'hover:border-yellow-500/30',
+              visible: isAdmin || modules.flashcards,
+            },
+            {
+              key: 'qbank',
+              to: '/question-bank',
+              title: 'Question Bank',
+              desc: 'Practice with curated MCQs organised by level and subject',
+              icon: <HelpCircle className="w-5 h-5 text-indigo-400" />,
+              from: 'from-indigo-600/20', to2: 'to-blue-800/10',
+              border: 'border-indigo-500/20', hover: 'hover:border-indigo-500/30',
+              visible: isAdmin || modules.qbank,
+            },
+          ].filter(m => m.visible);
+
+          if (moduleCards.length === 0) return null;
+          return (
+            <div className={`grid grid-cols-1 ${moduleCards.length > 1 ? 'md:grid-cols-2' : ''} gap-4 mb-10`}>
+              {moduleCards.map(m => (
+                <Link key={m.key} to={m.to}
+                  className={`card-premium p-5 flex items-center gap-4 transition-all hover:-translate-y-0.5 group ${m.hover}`}>
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${m.from} ${m.to2} border ${m.border} flex items-center justify-center flex-shrink-0`}>
+                    {m.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-white text-base">{m.title}</p>
+                    <p className="text-white/35 text-sm">{m.desc}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+                </Link>
+              ))}
             </div>
-            <div className="flex-1">
-              <p className="font-bold text-white text-base">Video Classes</p>
-              <p className="text-white/35 text-sm">Watch lecture videos — Certificate, Professional & Advanced</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
-          </Link>
-          <Link to="/shortnotes" className="card-premium p-5 flex items-center gap-4 hover:border-emerald-500/30 transition-all hover:-translate-y-0.5 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-teal-800/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-              <FileText className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-white text-base">Short Notes</p>
-              <p className="text-white/35 text-sm">View & download PDF notes — Certificate, Professional & Advanced</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
-          </Link>
-        </div>
+          );
+        })()}
 
         {/* Tabs */}
         <div className="flex items-center gap-2 mb-8">

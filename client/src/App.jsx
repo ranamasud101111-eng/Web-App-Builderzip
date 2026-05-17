@@ -34,6 +34,7 @@ import AdminQuestionBank from './pages/AdminQuestionBank';
 import QuestionBank from './pages/QuestionBank';
 import StudentProgress from './pages/StudentProgress';
 import Leaderboard from './pages/Leaderboard';
+import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 
 const Loader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#020818' }}>
@@ -52,6 +53,15 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   if (loading) return <Loader />;
   if (!user) return <Navigate to={adminOnly ? '/admin-login' : '/login'} replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  return children;
+};
+
+const ModuleRoute = ({ moduleKey, children }) => {
+  const { modules, loading } = useModuleSettings();
+  const { user } = useAuth();
+  if (loading) return <Loader />;
+  if (user?.role === 'admin') return children;
+  if (!modules[moduleKey]) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -90,18 +100,18 @@ const AppRoutes = () => {
         {/* Student exam routes */}
         <Route path="/exams" element={<ProtectedRoute><StudentExams /></ProtectedRoute>} />
         <Route path="/progress" element={<ProtectedRoute><StudentProgress /></ProtectedRoute>} />
-        <Route path="/classes" element={<ProtectedRoute><Classes /></ProtectedRoute>} />
+        <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><Classes /></ModuleRoute></ProtectedRoute>} />
 
         {/* Admin classes route */}
         <Route path="/admin/classes" element={<ProtectedRoute adminOnly><AdminClasses /></ProtectedRoute>} />
         {/* Flash Cards */}
-        <Route path="/flashcards" element={<ProtectedRoute><FlashCards /></ProtectedRoute>} />
+        <Route path="/flashcards" element={<ProtectedRoute><ModuleRoute moduleKey="flashcards"><FlashCards /></ModuleRoute></ProtectedRoute>} />
         <Route path="/admin/flashcards" element={<ProtectedRoute adminOnly><AdminFlashCards /></ProtectedRoute>} />
 
         {/* Short Notes */}
-        <Route path="/shortnotes" element={<ProtectedRoute><ShortNotes /></ProtectedRoute>} />
+        <Route path="/shortnotes" element={<ProtectedRoute><ModuleRoute moduleKey="shortnotes"><ShortNotes /></ModuleRoute></ProtectedRoute>} />
         <Route path="/admin/shortnotes" element={<ProtectedRoute adminOnly><AdminShortNotes /></ProtectedRoute>} />
-        <Route path="/question-bank" element={<ProtectedRoute><QuestionBank /></ProtectedRoute>} />
+        <Route path="/question-bank" element={<ProtectedRoute><ModuleRoute moduleKey="qbank"><QuestionBank /></ModuleRoute></ProtectedRoute>} />
         <Route path="/admin/question-bank" element={<ProtectedRoute adminOnly><AdminQuestionBank /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -115,7 +125,9 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <ModuleSettingsProvider>
+          <AppRoutes />
+        </ModuleSettingsProvider>
       </BrowserRouter>
     </AuthProvider>
   );
