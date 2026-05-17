@@ -1,6 +1,11 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'learnhub_secret_2024_very_secure';
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required in production');
+  process.exit(1);
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || 'learnhub_dev_secret_do_not_use_in_production';
 
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;

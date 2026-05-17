@@ -18,13 +18,44 @@ import qbankRoutes from './routes/qbank.js';
 import settingsRoutes from './routes/settings.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const app = express();
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: true, credentials: true }));
+// ── Startup validation ────────────────────────────────────────────────────────
+if (IS_PRODUCTION) {
+  const required = ['DATABASE_URL', 'JWT_SECRET'];
+  const missing = required.filter((key) => !process.env[key]);
+  if (missing.length > 0) {
+    console.error(`FATAL: Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+const app = express();
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+// Development: allow all origins.
+// Production: only allow origins listed in ALLOWED_ORIGINS (comma-separated).
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!IS_PRODUCTION) return callback(null, true);
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn(`CORS blocked request from origin: ${origin}`);
+    callback(new Error(`Origin ${origin} not allowed by CORS policy`));
+  },
+  credentials: true,
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/chapters', chapterRoutes);
@@ -38,8 +69,11 @@ app.use('/api/shortnotes', shortnotesRoutes);
 app.use('/api/qbank', qbankRoutes);
 app.use('/api/settings', settingsRoutes);
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' })
+);
 
+// ── Database schema (development only) ───────────────────────────────────────
 async function initDb() {
   try {
     const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf8');
@@ -50,8 +84,14 @@ async function initDb() {
   }
 }
 
-initDb().then(() => {
+// ── Start ─────────────────────────────────────────────────────────────────────
+async function start() {
+  if (!IS_PRODUCTION) {
+    await initDb();
+  }
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`CA Mock API running on port ${PORT}`);
+    console.log(`CA Mock API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
   });
-});
+}
+
+start();
