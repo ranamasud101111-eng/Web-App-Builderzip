@@ -7,7 +7,7 @@ import { BookOpen, LayoutDashboard, LogOut, Settings, Menu, X, ChevronDown, Trop
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const { modules } = useModuleSettings();
+  const { modules, loading: modulesLoading } = useModuleSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
@@ -36,12 +36,13 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   const isAdmin = user?.role === 'admin';
+  const showModule = (key) => isAdmin || (!modulesLoading && modules[key]);
   const navLinks = user ? [
     { to: '/dashboard', label: 'Dashboard' },
-    ...(isAdmin || modules.classes    ? [{ to: '/classes',       label: 'Classes'       }] : []),
-    ...(isAdmin || modules.flashcards ? [{ to: '/flashcards',    label: 'Flash Cards'   }] : []),
-    ...(isAdmin || modules.shortnotes ? [{ to: '/shortnotes',    label: 'Short Notes'   }] : []),
-    ...(isAdmin || modules.qbank      ? [{ to: '/question-bank', label: 'Question Bank' }] : []),
+    ...(showModule('classes')    ? [{ to: '/classes',       label: 'Classes'       }] : []),
+    ...(showModule('flashcards') ? [{ to: '/flashcards',    label: 'Flash Cards'   }] : []),
+    ...(showModule('shortnotes') ? [{ to: '/shortnotes',    label: 'Short Notes'   }] : []),
+    ...(showModule('qbank')      ? [{ to: '/question-bank', label: 'Question Bank' }] : []),
     { to: '/leaderboard', label: 'Leaderboard' },
     ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
   ] : [];
@@ -106,22 +107,22 @@ export default function Navbar() {
                       <Link to="/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                         <LayoutDashboard className="w-4 h-4" /> Dashboard
                       </Link>
-                      {(isAdmin || modules.classes) && (
+                      {showModule('classes') && (
                         <Link to="/classes" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                           <Layers className="w-4 h-4 text-purple-400" /> Classes
                         </Link>
                       )}
-                      {(isAdmin || modules.flashcards) && (
+                      {showModule('flashcards') && (
                         <Link to="/flashcards" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                           <Zap className="w-4 h-4 text-yellow-400" /> Flash Cards
                         </Link>
                       )}
-                      {(isAdmin || modules.shortnotes) && (
+                      {showModule('shortnotes') && (
                         <Link to="/shortnotes" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                           <FileText className="w-4 h-4 text-emerald-400" /> Short Notes
                         </Link>
                       )}
-                      {(isAdmin || modules.qbank) && (
+                      {showModule('qbank') && (
                         <Link to="/question-bank" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                           <HelpCircle className="w-4 h-4 text-indigo-400" /> Question Bank
                         </Link>

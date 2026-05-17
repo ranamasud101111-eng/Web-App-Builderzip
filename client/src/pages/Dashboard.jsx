@@ -68,7 +68,7 @@ const SubjectCard = ({ subject, index }) => {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { modules } = useModuleSettings();
+  const { modules, loading: modulesLoading } = useModuleSettings();
   const isAdmin = user?.role === 'admin';
   const [progress, setProgress] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
@@ -215,7 +215,7 @@ export default function Dashboard() {
         </div>
 
         {/* Dynamic module cards — hidden modules are excluded for students */}
-        {(() => {
+        {!modulesLoading && (() => {
           const moduleCards = [
             {
               key: 'classes',
