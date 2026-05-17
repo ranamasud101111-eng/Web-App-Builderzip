@@ -257,7 +257,10 @@ export default function AdminExams() {
         {/* Exams list */}
         {loading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+            <div className="relative w-10 h-10">
+              <div className="absolute inset-0 rounded-full border-2 border-purple-500/15" />
+              <div className="absolute inset-0 rounded-full border-2 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+            </div>
           </div>
         ) : exams.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}

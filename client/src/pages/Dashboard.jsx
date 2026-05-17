@@ -9,6 +9,7 @@ import {
   Zap, HelpCircle, Brain, XCircle, Bookmark, Shuffle
 } from 'lucide-react';
 import api from '../api';
+import { SkeletonStatCard, SkeletonCard } from '../components/Skeleton';
 
 const ProgressRing = ({ progress, size = 72, stroke = 5, color = '#7c3aed' }) => {
   const r = (size - stroke) / 2;
@@ -98,10 +99,19 @@ export default function Dashboard() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center pt-16">
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 rounded-full border-2 border-purple-500/20" />
-        <div className="absolute inset-0 rounded-full border-2 border-t-purple-500 border-r-gold-500 border-l-transparent border-b-transparent animate-spin" />
+    <div className="min-h-screen pt-24 pb-16 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-10">
+          <div className="shimmer h-4 w-40 rounded mb-3" />
+          <div className="shimmer h-10 w-72 rounded-xl mb-2" />
+          <div className="shimmer h-3 w-56 rounded" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          {[...Array(4)].map((_, i) => <SkeletonStatCard key={i} />)}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
       </div>
     </div>
   );

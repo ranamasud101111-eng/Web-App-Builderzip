@@ -103,12 +103,12 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
-                <input type="email" required placeholder="Email address" value={form.email}
+                <input type="email" required placeholder="Email address" value={form.email} autoComplete="email"
                   onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="input-field pl-11" />
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25" />
-                <input type={showPwd ? 'text' : 'password'} required placeholder="Password" value={form.password}
+                <input type={showPwd ? 'text' : 'password'} required placeholder="Password" value={form.password} autoComplete="current-password"
                   onChange={e => setForm(p => ({ ...p, password: e.target.value }))} className="input-field pl-11 pr-11" />
                 <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/60 transition-colors">

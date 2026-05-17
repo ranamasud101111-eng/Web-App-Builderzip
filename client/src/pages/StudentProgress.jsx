@@ -4,10 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, BookOpen, CheckCircle, TrendingUp, Target,
-  Layers, BarChart3, ChevronRight, Loader2, Trophy, Clock,
+  Layers, BarChart3, ChevronRight, Trophy, Clock,
   Play, Flame, Star
 } from 'lucide-react';
 import api from '../api';
+import { PageLoader } from '../components/Skeleton';
 
 const ProgressRing = ({ progress, size = 56, stroke = 5, color = '#7c3aed' }) => {
   const r = (size - stroke) / 2;
@@ -55,11 +56,7 @@ export default function StudentProgress() {
     return pctB - pctA;
   });
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center pt-16">
-      <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
-    </div>
-  );
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">

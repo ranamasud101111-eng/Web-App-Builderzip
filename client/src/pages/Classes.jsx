@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Play, ArrowLeft, Layers, BookOpen, Youtube, Lock, Loader2, EyeOff } from 'lucide-react';
+import { ChevronRight, Play, ArrowLeft, Layers, BookOpen, Youtube, Lock, EyeOff } from 'lucide-react';
+import { PageLoader } from '../components/Skeleton';
 import api from '../api';
 
 function getYouTubeEmbedUrl(url) {
@@ -84,11 +85,7 @@ export default function Classes() {
   const getLevelColor = (idx) => LEVEL_COLORS[idx % LEVEL_COLORS.length];
   const getLevelBg = (idx) => LEVEL_BG[idx % LEVEL_BG.length];
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-24">
-      <Loader2 className="w-7 h-7 text-purple-400 animate-spin" />
-    </div>
-  );
+  if (loading) return <PageLoader />;
 
   if (!visible) return (
     <div className="flex flex-col items-center justify-center py-24 text-center px-4">
