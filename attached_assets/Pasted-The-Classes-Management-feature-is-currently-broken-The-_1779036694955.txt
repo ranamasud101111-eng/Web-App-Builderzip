@@ -1,0 +1,97 @@
+The Classes Management feature is currently broken. The design looks okay, but functionality is not working and save is failing. Rebuild and fix the entire Classes module properly with full backend support.
+
+Current problems:
+- "Create Level" shows Save failed
+- Added levels are not saving
+- Sidebar and page layout are broken
+- Some buttons are UI only and not functional
+- Data disappears after refresh
+- Student side cannot properly view class content
+
+Please fix everything from scratch and make it production-ready.
+
+FULL REQUIREMENTS:
+
+1. Admin Classes Module:
+Create a fully functional admin section named "Classes Management".
+
+Admin should be able to:
+- Create level
+- Edit level
+- Delete level
+- Hide/show level
+- Add subject under a level
+- Edit/delete subject
+- Add chapter under subject
+- Edit/delete chapter
+- Add YouTube video URL inside each chapter
+- Reorder levels/subjects/chapters
+
+2. Default structure:
+First 3 default levels should be:
+- Certificate
+- Professional
+- Advanced
+
+Admin can also add more levels manually.
+
+3. Student view:
+Students should see:
+Level → Subject → Chapter → Embedded YouTube video
+
+Navigation must work:
+- click level → subjects open
+- click subject → chapters open
+- click chapter → video player opens
+
+4. Visibility control:
+Admin can hide the entire Classes section.
+If hidden:
+- Students must not see "Classes" menu at all
+- Students cannot access classes route manually
+
+5. Backend/database:
+Fix backend completely.
+Create proper database tables:
+- class_levels
+- class_subjects
+- class_chapters
+- app_settings
+
+All operations must save permanently.
+No fake frontend storage.
+Must work after page refresh and redeploy.
+
+6. Save failed issue:
+Fix all API routes and database integration.
+Make sure:
+- Create Level works
+- Save works
+- No "Save failed" message
+- Proper error handling
+- Show success toast when saved
+
+7. UI fixes:
+Keep dark premium theme but fix:
+- sidebar width
+- navbar overlap
+- modal spacing
+- button alignment
+- responsive mobile layout
+- no overlapping components
+- proper scroll behavior
+
+8. Technical:
+Make sure:
+- all routes are connected
+- all forms submit correctly
+- backend endpoints are working
+- fetch/axios requests work
+- database migrations run correctly
+- page loads existing saved data automatically
+
+IMPORTANT:
+Do not create demo/static UI.
+Do not create placeholder pages.
+Fix the actual backend logic, API, database, and frontend integration so everything works in one complete system.
+Test all buttons and save/load functionality before finishing.

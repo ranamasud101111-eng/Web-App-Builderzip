@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS mcq_import_history (
 
 CREATE TABLE IF NOT EXISTS class_levels (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
+  name VARCHAR(100) NOT NULL UNIQUE,
   description TEXT,
   icon VARCHAR(10) DEFAULT '🎓',
   order_index INTEGER DEFAULT 0,
@@ -187,3 +187,13 @@ CREATE TABLE IF NOT EXISTS class_settings (
   classes_visible BOOLEAN DEFAULT TRUE,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO class_settings (id, classes_visible) VALUES (1, true)
+  ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO class_levels (name, description, icon, order_index, is_visible)
+VALUES
+  ('Certificate',   'Foundation level certification courses',         '📜', 1, true),
+  ('Professional',  'Intermediate professional certification courses', '💼', 2, true),
+  ('Advanced',      'Advanced level mastery courses',                 '🏆', 3, true)
+ON CONFLICT DO NOTHING;
