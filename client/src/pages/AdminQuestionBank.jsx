@@ -594,78 +594,121 @@ export default function AdminQuestionBank() {
   };
 
   const navItems = [
-    { to:'/admin',              icon:<BarChart3     className="w-4 h-4"/>, label:'Dashboard' },
-    { to:'/admin/subjects',     icon:<BookOpen      className="w-4 h-4"/>, label:'Subjects & Chapters' },
-    { to:'/admin/mcqs',         icon:<Brain         className="w-4 h-4"/>, label:'MCQ Manager' },
-    { to:'/admin/exams',        icon:<GraduationCap className="w-4 h-4"/>, label:'Exam Manager' },
-    { to:'/admin/classes',      icon:<Layers        className="w-4 h-4"/>, label:'Classes' },
-    { to:'/admin/flashcards',   icon:<Zap           className="w-4 h-4"/>, label:'Flash Cards' },
-    { to:'/admin/notifications',icon:<Bell          className="w-4 h-4"/>, label:'Notifications' },
-    { to:'/admin/shortnotes',   icon:<FileText      className="w-4 h-4"/>, label:'Short Notes' },
-    { to:'/admin/question-bank',icon:<HelpCircle    className="w-4 h-4"/>, label:'Question Bank' },
+    { to: '/admin',               icon: <BarChart3     className="w-4 h-4" />, label: 'Dashboard' },
+    { to: '/admin/subjects',      icon: <BookOpen      className="w-4 h-4" />, label: 'Subjects & Chapters' },
+    { to: '/admin/mcqs',          icon: <Brain         className="w-4 h-4" />, label: 'MCQ Manager' },
+    { to: '/admin/exams',         icon: <GraduationCap className="w-4 h-4" />, label: 'Exam Manager' },
+    { to: '/admin/classes',       icon: <Layers        className="w-4 h-4" />, label: 'Classes' },
+    { to: '/admin/flashcards',    icon: <Zap           className="w-4 h-4" />, label: 'Flash Cards' },
+    { to: '/admin/notifications', icon: <Bell          className="w-4 h-4" />, label: 'Notifications' },
+    { to: '/admin/shortnotes',    icon: <FileText      className="w-4 h-4" />, label: 'Short Notes' },
+    { to: '/admin/question-bank', icon: <HelpCircle    className="w-4 h-4" />, label: 'Question Bank' },
   ];
 
-  return (
-    <motion.div className="min-h-screen flex pt-[68px]" style={{ background:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
-      {/* Sidebar */}
-      <div className={`fixed top-[68px] bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen?'translate-x-0':'-translate-x-full'} lg:translate-x-0 lg:relative lg:flex lg:transform-none`}>
-        <div className="sidebar w-64 flex flex-col h-full overflow-y-auto">
-          <div className="p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <HelpCircle size={20} className="text-white"/>
-              </div>
-              <div>
-                <h1 className="font-bold text-white text-sm">Admin Panel</h1>
-                <p className="text-white/50 text-xs">{user?.name}</p>
-              </div>
-            </div>
-          </div>
-          <nav className="flex-1 p-4 space-y-1">
-            {navItems.map(item => <SidebarLink key={item.to} {...item} active={location.pathname===item.to}/>)}
-          </nav>
-          <div className="p-4 border-t border-white/10">
-            <button onClick={() => { logout(); navigate('/'); }} className="sidebar-item w-full text-red-400/80 hover:text-red-400">
-              <LogOut size={16}/><span>Logout</span>
-            </button>
-          </div>
+  const handleLogout = () => { logout(); navigate('/'); };
+
+  const SidebarContent = ({ onClose }) => (
+    <div className="sidebar flex flex-col h-full p-5">
+      <div className="flex items-center gap-3 mb-6 px-1">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-violet-800 flex items-center justify-center flex-shrink-0">
+          <BookOpen className="w-4 h-4 text-white" />
+        </div>
+        <div className="min-w-0">
+          <div className="text-white font-bold text-sm leading-tight">CA Mock</div>
+          <div className="text-[9px] text-yellow-400 font-semibold tracking-widest uppercase">Admin Panel</div>
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="ml-auto p-1.5 hover:bg-white/[0.06] rounded-lg text-white/40">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 mb-5 border border-purple-500/20 bg-purple-500/5">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center flex-shrink-0">
+          <Shield className="w-4 h-4 text-black" />
+        </div>
+        <div>
+          <p className="text-white text-xs font-semibold">Administrator</p>
+          <p className="text-white/30 text-[10px]">Full access</p>
         </div>
       </div>
-      {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)}/>}
+      <nav className="flex flex-col gap-1 flex-1">
+        <p className="text-white/20 text-[10px] font-semibold uppercase tracking-widest px-2 mb-1">Navigation</p>
+        {navItems.map(item => (
+          <SidebarLink key={item.to} {...item} active={location.pathname === item.to} />
+        ))}
+      </nav>
+      <button onClick={handleLogout}
+        className="sidebar-item mt-3 text-red-400/60 hover:text-red-400 hover:bg-red-500/[0.08]">
+        <LogOut className="w-4 h-4" /><span>Logout</span>
+      </button>
+    </div>
+  );
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-[68px] z-20 border-b border-white/10 bg-black/20 backdrop-blur-xl px-6 py-4 flex items-center gap-4">
-          <button className="lg:hidden p-2 rounded-lg hover:bg-white/[0.07]" onClick={() => setSidebarOpen(true)}>
-            <Menu size={20} className="text-white/70"/>
-          </button>
-          <div className="flex-1">
-            <h2 className="text-white font-bold text-lg">Question Bank Management</h2>
-            <p className="text-white/40 text-xs mt-0.5">Manage levels, subjects, chapters and question content</p>
-          </div>
-        </header>
+  return (
+    <motion.div className="flex min-h-screen" style={{ background: '#020818', paddingTop: '68px' }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
 
-        <main className="flex-1 p-6 space-y-4 max-w-5xl mx-auto w-full">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-white/[0.07] bg-white/[0.03]">
-            <div className="flex items-center gap-3">
-              <Toggle value={qbankVisible} onChange={toggleGlobalVisible}/>
-              <div>
-                <p className="text-sm font-medium text-white leading-tight">
-                  {qbankVisible ? 'Question Bank visible to students' : 'Question Bank hidden from students'}
-                </p>
-                <p className="text-xs text-white/35 mt-0.5">
-                  {qbankVisible ? 'Students can access the Question Bank' : 'Students cannot see Question Bank'}
-                </p>
+      {/* ── Desktop sidebar ── */}
+      <div className="hidden lg:block w-64 flex-shrink-0">
+        <div className="sticky top-[68px] h-[calc(100vh-68px)] overflow-y-auto">
+          <SidebarContent />
+        </div>
+      </div>
+
+      {/* ── Mobile sidebar overlay ── */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 lg:hidden" style={{ zIndex: 8000 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <motion.div
+              initial={{ x: -288 }} animate={{ x: 0 }} exit={{ x: -288 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="absolute left-0 top-0 bottom-0 w-72">
+              <div className="h-full overflow-y-auto pt-[68px]">
+                <SidebarContent onClose={() => setSidebarOpen(false)} />
               </div>
-            </div>
-            <button onClick={() => { setLf(emptyLevel); setLevelModal({ mode:'add' }); }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium hover:opacity-90 transition-opacity flex-shrink-0">
-              <Plus size={16}/>Add Level
-            </button>
-          </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
+      {/* ── Main content area ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Top bar */}
+        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[68px] z-10">
+          <button onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 hover:bg-white/[0.06] rounded-lg flex-shrink-0">
+            <Menu className="w-5 h-5 text-white/60" />
+          </button>
+          <div className="flex items-center gap-2.5 mr-auto min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
+              <HelpCircle className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-white font-bold text-base sm:text-lg leading-tight truncate">Question Bank Management</h1>
+              <p className="text-white/30 text-[11px] hidden sm:block">Manage levels, subjects, chapters and question content</p>
+            </div>
+          </div>
+          <button onClick={toggleGlobalVisible}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border transition-all flex-shrink-0
+              ${qbankVisible
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/20'
+                : 'bg-red-500/10 text-red-400 border-red-500/25 hover:bg-red-500/20'}`}>
+            {qbankVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            <span className="hidden sm:inline">{qbankVisible ? 'Visible' : 'Hidden'}</span>
+          </button>
+          <button onClick={() => { setLf(emptyLevel); setLevelModal({ mode: 'add' }); }}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-semibold transition-colors flex-shrink-0">
+            <Plus className="w-4 h-4" />
+            <span>Add Level</span>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-4 sm:p-6 space-y-3">
           {/* Levels */}
           {loading ? (
             <div className="space-y-3">
@@ -782,7 +825,7 @@ export default function AdminQuestionBank() {
               </AnimatePresence>
             </div>
           ))}
-        </main>
+        </div>
       </div>
 
       {/* ── Modals ── */}
