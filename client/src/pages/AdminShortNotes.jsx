@@ -541,10 +541,10 @@ export default function AdminShortNotes() {
   );
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+    <div className="min-h-screen flex pt-[68px]" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
       {/* ─── Sidebar ─── */}
-      <div className={`fixed inset-y-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:flex`}>
-        <div className="sidebar w-64 flex flex-col">
+      <div className={`fixed top-[68px] bottom-0 left-0 z-40 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:relative lg:flex lg:transform-none`}>
+        <div className="sidebar w-64 flex flex-col h-full overflow-y-auto">
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
@@ -573,7 +573,7 @@ export default function AdminShortNotes() {
 
       {/* ─── Main ─── */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 border-b border-white/10 bg-black/20 backdrop-blur-xl px-6 py-4 flex items-center gap-4">
+        <header className="sticky top-[68px] z-20 border-b border-white/10 bg-black/20 backdrop-blur-xl px-6 py-4 flex items-center gap-4">
           <button className="lg:hidden p-2 rounded-lg hover:bg-white/[0.07]" onClick={() => setSidebarOpen(true)}>
             <Menu size={20} className="text-white/70" />
           </button>
@@ -646,9 +646,9 @@ export default function AdminShortNotes() {
               {/* Subjects */}
               <AnimatePresence>
                 {expanded.levels[level.id] && (
-                  <motion.div initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }}
-                    exit={{ height:0, opacity:0 }} transition={{ duration:0.2 }}
-                    className="overflow-hidden border-t border-white/[0.06]">
+                  <motion.div initial={{ opacity:0, y:-4 }} animate={{ opacity:1, y:0 }}
+                    exit={{ opacity:0, y:-4 }} transition={{ duration:0.18 }}
+                    className="border-t border-white/[0.06]">
                     {(subjects[level.id] || []).length === 0 ? (
                       <p className="px-8 py-5 text-white/30 text-sm text-center">No subjects yet. Click "Subject" to add one.</p>
                     ) : (subjects[level.id] || []).map(subject => (
@@ -687,9 +687,9 @@ export default function AdminShortNotes() {
                         {/* Chapters */}
                         <AnimatePresence>
                           {expanded.subjects[subject.id] && (
-                            <motion.div initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }}
-                              exit={{ height:0, opacity:0 }} transition={{ duration:0.15 }}
-                              className="overflow-hidden">
+                            <motion.div initial={{ opacity:0, y:-4 }} animate={{ opacity:1, y:0 }}
+                              exit={{ opacity:0, y:-4 }} transition={{ duration:0.15 }}
+                              className="">
                               {(chapters[subject.id] || []).length === 0 ? (
                                 <p className="pl-20 pr-5 py-4 text-white/25 text-xs text-center">No chapters yet.</p>
                               ) : (chapters[subject.id] || []).map(chapter => (

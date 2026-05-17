@@ -140,7 +140,7 @@ export default function ShortNotes() {
 
   /* ─── Hidden ─── */
   if (!globalVisible) return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
+    <div className="min-h-screen flex items-center justify-center px-6 pt-[68px]" style={{ background: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' }}>
       <div className="text-center max-w-sm">
         <EyeOff size={48} className="mx-auto mb-4 text-white/20" />
         <h2 className="text-xl font-bold text-white/70 mb-2">Short Notes Unavailable</h2>
@@ -153,7 +153,7 @@ export default function ShortNotes() {
 
   return (
     <div className="min-h-screen" style={{ background: bg }}>
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-4xl mx-auto px-4 pt-[84px] pb-8 space-y-6">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
