@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Users, BookOpen, Bell, BarChart3, TrendingUp, CheckCircle,
   Home, LogOut, Menu, X, Brain, GraduationCap, Shield,
-  Loader2, ChevronRight, Star, BarChart2
+  Loader2, ChevronRight, Star, BarChart2, Layers
 } from 'lucide-react';
 import api from '../api';
 
@@ -31,6 +31,7 @@ export default function AdminEnrollments() {
     { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
     { to: '/admin/mcqs', label: 'MCQ Manager', icon: <Brain className="w-4 h-4" /> },
     { to: '/admin/exams', label: 'Exam Manager', icon: <GraduationCap className="w-4 h-4" /> },
+    { to: '/admin/classes', label: 'Classes', icon: <Layers className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];

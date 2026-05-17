@@ -182,6 +182,18 @@ export default function Dashboard() {
           </Link>
         </div>
 
+        {/* Classes quick link */}
+        <Link to="/classes" className="card-premium p-5 flex items-center gap-4 hover:border-purple-500/30 transition-all hover:-translate-y-0.5 mb-10 group">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/20 to-violet-800/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+            <Layers className="w-5 h-5 text-purple-400" />
+          </div>
+          <div className="flex-1">
+            <p className="font-bold text-white text-base">Video Classes</p>
+            <p className="text-white/35 text-sm">Watch lecture videos — Certificate, Professional & Advanced levels</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+        </Link>
+
         {/* Tabs */}
         <div className="flex items-center gap-2 mb-8">
           {['my-courses', 'explore'].map(t => (

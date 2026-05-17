@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
-import { BookOpen, LayoutDashboard, LogOut, Settings, Menu, X, ChevronDown, Trophy, Shield } from 'lucide-react';
+import { BookOpen, LayoutDashboard, LogOut, Settings, Menu, X, ChevronDown, Trophy, Shield, Layers } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -35,6 +35,7 @@ export default function Navbar() {
 
   const navLinks = user ? [
     { to: '/dashboard', label: 'Dashboard' },
+    { to: '/classes', label: 'Classes' },
     { to: '/leaderboard', label: 'Leaderboard' },
     ...(user.role === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
   ] : [];
@@ -98,6 +99,9 @@ export default function Navbar() {
                       )}
                       <Link to="/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                         <LayoutDashboard className="w-4 h-4" /> Dashboard
+                      </Link>
+                      <Link to="/classes" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
+                        <Layers className="w-4 h-4 text-purple-400" /> Classes
                       </Link>
                       <Link to="/leaderboard" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors">
                         <Trophy className="w-4 h-4 text-gold-400" /> Leaderboard

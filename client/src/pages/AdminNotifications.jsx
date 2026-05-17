@@ -8,7 +8,7 @@ import {
   Bell, Send, Trash2, Edit2, Plus, X, ArrowLeft,
   Users, BookOpen, Star, Clock, Info, AlertCircle,
   CheckCheck, Megaphone, BarChart3, FileText,
-  Home, LogOut, Menu, Shield, Brain, GraduationCap
+  Home, LogOut, Menu, Shield, Brain, GraduationCap, Layers
 } from 'lucide-react';
 import api from '../api';
 
@@ -51,6 +51,7 @@ export default function AdminNotifications() {
     { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
     { to: '/admin/mcqs', label: 'MCQ Manager', icon: <Brain className="w-4 h-4" /> },
     { to: '/admin/exams', label: 'Exam Manager', icon: <GraduationCap className="w-4 h-4" /> },
+    { to: '/admin/classes', label: 'Classes', icon: <Layers className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];

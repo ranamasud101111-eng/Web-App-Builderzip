@@ -149,3 +149,41 @@ CREATE TABLE IF NOT EXISTS mcq_import_history (
     status VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS class_levels (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  icon VARCHAR(10) DEFAULT '🎓',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS class_subjects (
+  id SERIAL PRIMARY KEY,
+  level_id INTEGER REFERENCES class_levels(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  icon VARCHAR(10) DEFAULT '📚',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS class_chapters (
+  id SERIAL PRIMARY KEY,
+  subject_id INTEGER REFERENCES class_subjects(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  youtube_url TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS class_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  classes_visible BOOLEAN DEFAULT TRUE,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

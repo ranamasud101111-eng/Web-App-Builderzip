@@ -11,6 +11,7 @@ import notificationRoutes from './routes/notifications.js';
 import userRoutes from './routes/users.js';
 import mcqRoutes from './routes/mcqs.js';
 import examRoutes from './routes/exams.js';
+import classRoutes from './routes/classes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/mcqs', mcqRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/classes', classRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

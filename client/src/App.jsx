@@ -24,6 +24,8 @@ import StudentExams from './pages/StudentExams';
 import AdminStudents from './pages/AdminStudents';
 import AdminEnrollments from './pages/AdminEnrollments';
 import AdminCompletions from './pages/AdminCompletions';
+import AdminClasses from './pages/AdminClasses';
+import Classes from './pages/Classes';
 import StudentProgress from './pages/StudentProgress';
 import Leaderboard from './pages/Leaderboard';
 
@@ -82,6 +84,10 @@ const AppRoutes = () => {
         {/* Student exam routes */}
         <Route path="/exams" element={<ProtectedRoute><StudentExams /></ProtectedRoute>} />
         <Route path="/progress" element={<ProtectedRoute><StudentProgress /></ProtectedRoute>} />
+        <Route path="/classes" element={<ProtectedRoute><Classes /></ProtectedRoute>} />
+
+        {/* Admin classes route */}
+        <Route path="/admin/classes" element={<ProtectedRoute adminOnly><AdminClasses /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
