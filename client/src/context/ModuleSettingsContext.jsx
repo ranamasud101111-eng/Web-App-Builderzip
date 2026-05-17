@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import api from '../api';
 
 const DEFAULT = { classes: true, flashcards: true, shortnotes: true, qbank: true };
-const POLL_INTERVAL = 30000;
+const POLL_INTERVAL = 15000;
 
 const ModuleSettingsContext = createContext({
   modules: DEFAULT,
@@ -14,6 +14,7 @@ const ModuleSettingsContext = createContext({
 export const ModuleSettingsProvider = ({ children }) => {
   const [modules, setModules] = useState(DEFAULT);
   const [loading, setLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
   const timerRef = useRef(null);
   const location = useLocation();
 
@@ -21,8 +22,11 @@ export const ModuleSettingsProvider = ({ children }) => {
     try {
       const res = await api.get('/settings/modules');
       setModules(res.data);
+      hasLoadedRef.current = true;
     } catch {
-      setModules(DEFAULT);
+      if (!hasLoadedRef.current) {
+        setModules(DEFAULT);
+      }
     } finally {
       setLoading(false);
     }
