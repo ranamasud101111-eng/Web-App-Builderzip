@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useModuleSettings } from '../context/ModuleSettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
@@ -450,6 +451,7 @@ function ContentModal({ chapter, subjectId, levelName, onClose, onSaved }) {
 /* ════ MAIN PAGE ════ */
 export default function AdminQuestionBank() {
   const { user, logout } = useAuth();
+  const { refresh: refreshModules } = useModuleSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -517,7 +519,7 @@ export default function AdminQuestionBank() {
 
   const toggleGlobalVisible = async () => {
     const nv = !qbankVisible;
-    try { await api.put('/qbank/settings', { qbank_visible: nv }); setQbankVisible(nv); toast.success(nv ? 'Question Bank visible to students' : 'Question Bank hidden from students'); }
+    try { await api.put('/qbank/settings', { qbank_visible: nv }); setQbankVisible(nv); refreshModules(); toast.success(nv ? 'Question Bank visible to students' : 'Question Bank hidden from students'); }
     catch { toast.error('Failed to update'); }
   };
 

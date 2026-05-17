@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useModuleSettings } from '../context/ModuleSettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
@@ -318,6 +319,7 @@ function NoteModal({ chapter, subjectId, onClose, onSaved }) {
 ═══════════════════════════════════════════════════ */
 export default function AdminShortNotes() {
   const { user, logout } = useAuth();
+  const { refresh: refreshModules } = useModuleSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -397,6 +399,7 @@ export default function AdminShortNotes() {
     try {
       await api.put('/shortnotes/settings', { shortnotes_visible: newVal });
       setNotesVisible(newVal);
+      refreshModules();
       toast.success(newVal ? 'Short Notes visible to students' : 'Short Notes hidden from students');
     } catch { toast.error('Failed to update visibility'); }
   };

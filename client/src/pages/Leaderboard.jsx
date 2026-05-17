@@ -10,11 +10,8 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/users').then(r => {
-      const sorted = r.data
-        .filter(u => u.role === 'student')
-        .sort((a, b) => (parseInt(b.completed_chapters) || 0) - (parseInt(a.completed_chapters) || 0));
-      setUsers(sorted);
+    api.get('/users/leaderboard').then(r => {
+      setUsers(r.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 

@@ -1,6 +1,6 @@
 import express from 'express';
 import pool from '../db.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -49,9 +49,8 @@ router.get('/:id/chapters', async (req, res) => {
   }
 });
 
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
     const { name, description, icon, color, class_level, order_index } = req.body;
     const result = await pool.query(
       'INSERT INTO subjects (name, description, icon, color, class_level, order_index) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
@@ -60,6 +59,36 @@ router.post('/', authenticate, async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create subject' });
+  }
+});
+
+router.put('/:id', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { name, description, icon, color, class_level, order_index } = req.body;
+    const result = await pool.query(
+      `UPDATE subjects SET
+        name = COALESCE($2, name),
+        description = COALESCE($3, description),
+        icon = COALESCE($4, icon),
+        color = COALESCE($5, color),
+        class_level = $6,
+        order_index = COALESCE($7, order_index)
+       WHERE id = $1 RETURNING *`,
+      [req.params.id, name, description, icon, color, class_level || null, order_index]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Subject not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update subject' });
+  }
+});
+
+router.delete('/:id', authenticate, requireAdmin, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM subjects WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete subject' });
   }
 });
 

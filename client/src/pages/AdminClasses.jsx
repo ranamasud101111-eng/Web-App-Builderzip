@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useModuleSettings } from '../context/ModuleSettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
@@ -64,6 +65,7 @@ const Modal = ({ onClose, children }) => (
 /* ──────────────────────────────────────── */
 export default function AdminClasses() {
   const { logout } = useAuth();
+  const { refresh: refreshModules } = useModuleSettings();
   const navigate   = useNavigate();
   const location   = useLocation();
 
@@ -146,6 +148,7 @@ export default function AdminClasses() {
       const next = !classesVisible;
       await api.put('/classes/settings', { classes_visible: next });
       setClassesVisible(next);
+      refreshModules();
       toast.success(next ? 'Classes visible to students' : 'Classes hidden from students');
     } catch { toast.error('Failed to update visibility'); }
   };

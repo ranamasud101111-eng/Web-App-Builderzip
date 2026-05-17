@@ -4,10 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
-  BookOpen, Plus, X, ArrowLeft, ChevronDown, ChevronUp,
+  BookOpen, Plus, X, ChevronDown, ChevronUp,
   BarChart3, Bell, Home, LogOut, Menu, Shield, FileText, Brain, GraduationCap, Layers,
-  Zap,
-  HelpCircle,
+  Zap, HelpCircle, Edit2, Trash2, Check,
 } from 'lucide-react';
 import api from '../api';
 
@@ -34,6 +33,9 @@ export default function AdminSubjects() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sf, setSf] = useState({ name: '', description: '', icon: '📚', color: '#7c3aed', class_level: '', order_index: 0 });
   const [cf, setCf] = useState({ title: '', content: '', video_url: '', duration_minutes: '', order_index: 0, is_preview: false });
+  const [editSubjectModal, setEditSubjectModal] = useState(null);
+  const [editSf, setEditSf] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
@@ -77,6 +79,39 @@ export default function AdminSubjects() {
       setCf({ title: '', content: '', video_url: '', duration_minutes: '', order_index: 0, is_preview: false });
       fetchSubjects();
     } catch (err) { toast.error(err.response?.data?.error || 'Failed'); }
+    finally { setSaving(false); }
+  };
+
+  const openEditSubject = (s) => {
+    setEditSf({ name: s.name, description: s.description || '', icon: s.icon || '📚', color: s.color || '#7c3aed', class_level: s.class_level || '', order_index: s.order_index || 0 });
+    setEditSubjectModal(s);
+  };
+
+  const handleUpdateSubject = async (e) => {
+    e.preventDefault(); setSaving(true);
+    try {
+      await api.put(`/subjects/${editSubjectModal.id}`, editSf);
+      toast.success('Subject updated!');
+      setEditSubjectModal(null);
+      fetchSubjects();
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to update'); }
+    finally { setSaving(false); }
+  };
+
+  const handleDeleteSubject = async () => {
+    if (!deleteConfirm) return;
+    setSaving(true);
+    try {
+      if (deleteConfirm.type === 'subject') {
+        await api.delete(`/subjects/${deleteConfirm.id}`);
+        toast.success('Subject deleted');
+      } else {
+        await api.delete(`/chapters/${deleteConfirm.id}`);
+        toast.success('Chapter deleted');
+      }
+      setDeleteConfirm(null);
+      fetchSubjects();
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to delete'); }
     finally { setSaving(false); }
   };
 
@@ -170,8 +205,16 @@ export default function AdminSubjects() {
                       {s.chapter_count || 0} chapters · {s.student_count || 0} students enrolled
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{ background: s.color || '#7c3aed' }} />
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: s.color || '#7c3aed' }} />
+                    <button onClick={e => { e.stopPropagation(); openEditSubject(s); }}
+                      className="p-1.5 rounded-lg hover:bg-white/[0.08] text-white/30 hover:text-purple-400 transition-colors">
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); setDeleteConfirm({ type: 'subject', id: s.id, name: s.name }); }}
+                      className="p-1.5 rounded-lg hover:bg-red-500/[0.12] text-white/20 hover:text-red-400 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                     {expanded[s.id] ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}
                   </div>
                 </div>
@@ -181,7 +224,8 @@ export default function AdminSubjects() {
                   {expanded[s.id] && (
                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
                       <div className="border-t border-white/[0.05] p-5">
-                        <SubjectChapters subjectId={s.id} color={s.color} />
+                        <SubjectChapters subjectId={s.id} color={s.color}
+                          onDeleteChapter={(ch) => setDeleteConfirm({ type: 'chapter', id: ch.id, name: ch.title })} />
 
                         {showChapterForm === s.id ? (
                           <form onSubmit={e => handleSaveChapter(e, s.id)}
@@ -230,6 +274,108 @@ export default function AdminSubjects() {
           </div>
         )}
       </div>
+
+      {/* Edit Subject Modal */}
+      <AnimatePresence>
+        {editSubjectModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              className="glass-navy rounded-3xl p-8 w-full max-w-lg border border-purple-500/15 shadow-premium max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-white">Edit Subject</h2>
+                  <p className="text-white/35 text-sm mt-0.5">Update subject details</p>
+                </div>
+                <button onClick={() => setEditSubjectModal(null)} className="p-2 hover:bg-white/[0.08] rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-white/40" />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateSubject} className="flex flex-col gap-5">
+                <input required placeholder="Subject name" value={editSf.name}
+                  onChange={e => setEditSf(p => ({ ...p, name: e.target.value }))} className="input-field" />
+                <textarea placeholder="Brief description..." value={editSf.description}
+                  onChange={e => setEditSf(p => ({ ...p, description: e.target.value }))}
+                  className="input-field resize-none" rows={3} />
+                <div>
+                  <label className="text-xs text-white/40 font-semibold uppercase tracking-wide mb-2.5 block">Subject Icon</label>
+                  <div className="flex flex-wrap gap-2">
+                    {ICONS.map(icon => (
+                      <button type="button" key={icon} onClick={() => setEditSf(p => ({ ...p, icon }))}
+                        className={`w-10 h-10 rounded-xl text-xl transition-all ${editSf.icon === icon ? 'scale-110 ring-2 ring-purple-500 bg-purple-500/20' : 'glass border border-white/[0.06] hover:border-white/25 hover:scale-105'}`}>
+                        {icon}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-white/40 font-semibold uppercase tracking-wide mb-2.5 block">Subject Color</label>
+                  <div className="flex flex-wrap gap-2">
+                    {COLORS.map(color => (
+                      <button type="button" key={color} onClick={() => setEditSf(p => ({ ...p, color }))}
+                        className={`w-8 h-8 rounded-full transition-all ${editSf.color === color ? 'scale-125 ring-2 ring-white/50 ring-offset-2 ring-offset-navy-900' : 'hover:scale-110'}`}
+                        style={{ background: color }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-white/40 mb-1.5 block">Level</label>
+                    <select value={editSf.class_level} onChange={e => setEditSf(p => ({ ...p, class_level: e.target.value }))}
+                      className="input-field" style={{ background: 'rgba(255,255,255,0.04)', color: 'white' }}>
+                      <option value="" style={{ background: '#06112e' }}>All Levels</option>
+                      {['Foundation','Intermediate','Final',6,7,8,9,10,11,12].map(c => (
+                        <option key={c} value={c} style={{ background: '#06112e' }}>{isNaN(c) ? `CA ${c}` : `Class ${c}`}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-white/40 mb-1.5 block">Display Order</label>
+                    <input type="number" min="0" value={editSf.order_index}
+                      onChange={e => setEditSf(p => ({ ...p, order_index: parseInt(e.target.value) || 0 }))} className="input-field" />
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => setEditSubjectModal(null)} className="flex-1 btn-outline py-3">Cancel</button>
+                  <button type="submit" disabled={saving}
+                    className="flex-1 btn-primary flex items-center justify-center gap-2 py-3 disabled:opacity-50">
+                    {saving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Check className="w-4 h-4" />Save Changes</>}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete confirmation */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              className="glass-navy rounded-2xl p-6 w-full max-w-sm border border-red-500/20 shadow-premium">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/15 border border-red-500/20 flex items-center justify-center mb-4">
+                <Trash2 className="w-5 h-5 text-red-400" />
+              </div>
+              <h3 className="text-white font-bold text-lg mb-1">
+                Delete {deleteConfirm.type === 'subject' ? 'Subject' : 'Chapter'}?
+              </h3>
+              <p className="text-white/45 text-sm mb-5">
+                <span className="text-white/70 font-medium">"{deleteConfirm.name}"</span> will be permanently deleted.
+                {deleteConfirm.type === 'subject' && ' All chapters within it will also be removed.'}
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setDeleteConfirm(null)} className="flex-1 btn-outline py-2.5 text-sm">Cancel</button>
+                <button onClick={handleDeleteSubject} disabled={saving}
+                  className="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/25 transition-colors disabled:opacity-50">
+                  {saving ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Subject creation modal */}
       <AnimatePresence>
@@ -312,7 +458,7 @@ export default function AdminSubjects() {
   );
 }
 
-function SubjectChapters({ subjectId, color }) {
+function SubjectChapters({ subjectId, color, onDeleteChapter }) {
   const [chapters, setChapters] = useState([]);
   useEffect(() => {
     api.get(`/subjects/${subjectId}/chapters`).then(r => setChapters(r.data)).catch(() => {});
@@ -325,7 +471,7 @@ function SubjectChapters({ subjectId, color }) {
   return (
     <div className="flex flex-col gap-2">
       {chapters.map((ch, i) => (
-        <div key={ch.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors">
+        <div key={ch.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors group">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
             style={{ background: `${color || '#7c3aed'}18`, color: color || '#a78bfa' }}>
             {i + 1}
@@ -334,6 +480,10 @@ function SubjectChapters({ subjectId, color }) {
           <div className="flex items-center gap-2">
             {ch.is_preview && <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-lg">Preview</span>}
             {ch.duration_minutes > 0 && <span className="text-xs text-white/25">{ch.duration_minutes}m</span>}
+            <button onClick={() => onDeleteChapter?.(ch)}
+              className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/[0.12] text-white/20 hover:text-red-400 transition-all">
+              <Trash2 className="w-3 h-3" />
+            </button>
           </div>
         </div>
       ))}

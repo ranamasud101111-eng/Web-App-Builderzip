@@ -4,6 +4,26 @@ import { authenticate, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// Leaderboard — accessible by any authenticated user
+router.get('/leaderboard', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT u.id, u.name, u.email, u.class_level,
+        COUNT(DISTINCT e.subject_id) as enrolled_count,
+        COUNT(DISTINCT up.chapter_id) FILTER (WHERE up.completed = true) as completed_chapters
+      FROM users u
+      LEFT JOIN enrollments e ON e.user_id = u.id
+      LEFT JOIN user_progress up ON up.user_id = u.id
+      WHERE u.role = 'student'
+      GROUP BY u.id
+      ORDER BY completed_chapters DESC NULLS LAST, u.name ASC
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
 // Get all users (admin)
 router.get('/', authenticate, requireAdmin, async (req, res) => {
   try {

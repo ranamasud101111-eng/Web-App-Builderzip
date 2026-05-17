@@ -16,9 +16,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const saved = localStorage.getItem('user');
+      const role = saved ? JSON.parse(saved)?.role : null;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = role === 'admin' ? '/admin-login' : '/login';
     }
     return Promise.reject(error);
   }

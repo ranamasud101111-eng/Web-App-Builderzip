@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useModuleSettings } from '../context/ModuleSettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
@@ -60,6 +61,7 @@ const Modal = ({ onClose, children, wide }) => (
 
 export default function AdminFlashCards() {
   const { logout } = useAuth();
+  const { refresh: refreshModules } = useModuleSettings();
   const navigate   = useNavigate();
   const location   = useLocation();
   const fileRef    = useRef(null);
@@ -157,6 +159,7 @@ export default function AdminFlashCards() {
       const next = !fcVisible;
       await api.put('/flashcards/settings', { flashcards_visible: next });
       setFcVisible(next);
+      refreshModules();
       toast.success(next ? 'Flash Cards visible to students' : 'Flash Cards hidden from students');
     } catch { toast.error('Failed to update visibility'); }
   };
