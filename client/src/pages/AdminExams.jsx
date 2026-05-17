@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -193,6 +194,7 @@ export default function AdminExams() {
   const diffColor = (d) => DIFFICULTIES.find(x => x.value === d)?.color || '#7c3aed';
 
   return (
+    <>
     <div className="flex min-h-screen pt-[68px]">
       <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40">
         <Sidebar />
@@ -357,12 +359,13 @@ export default function AdminExams() {
           </div>
         )}
       </div>
+    </div>
 
-      {/* Create / Edit Modal */}
+    {createPortal(
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="glass-navy rounded-3xl border border-purple-500/15 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-premium">
@@ -499,12 +502,13 @@ export default function AdminExams() {
           </motion.div>
         )}
       </AnimatePresence>
+    , document.body)}
 
-      {/* Delete confirmation */}
+    {createPortal(
       <AnimatePresence>
         {deleteId && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
               className="glass-navy rounded-3xl border border-red-500/20 p-7 w-full max-w-sm text-center shadow-premium">
               <div className="w-14 h-14 rounded-2xl bg-red-500/12 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
@@ -526,6 +530,7 @@ export default function AdminExams() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    , document.body)}
+    </>
   );
 }

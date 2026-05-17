@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -126,6 +127,7 @@ export default function AdminNotifications() {
   );
 
   return (
+    <>
     <div className="flex min-h-screen pt-[68px]">
       <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40"><Sidebar /></div>
 
@@ -229,12 +231,13 @@ export default function AdminNotifications() {
           </div>
         )}
       </div>
+    </div>
 
-      {/* Form Modal */}
+    {createPortal(
       <AnimatePresence>
         {showForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
               className="glass-navy rounded-3xl p-8 w-full max-w-lg border border-purple-500/15 shadow-premium max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
@@ -334,6 +337,7 @@ export default function AdminNotifications() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    , document.body)}
+    </>
   );
 }
