@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Users, BookOpen, Bell, BarChart3, TrendingUp, CheckCircle,
   ChevronRight, Activity, Shield, Settings, FileText, Trophy,
-  Home, LogOut, Menu, X, Megaphone
+  Home, LogOut, Menu, X, Megaphone, Brain
 } from 'lucide-react';
 import api from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -57,6 +57,7 @@ export default function AdminDashboard() {
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
+    { to: '/admin/mcqs', label: 'MCQ Manager', icon: <Brain className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import {
   BookOpen, TrendingUp, Clock, CheckCircle, ChevronRight,
-  Play, Trophy, BarChart3, Target, Flame, Layers, Plus
+  Play, Trophy, BarChart3, Target, Flame, Layers, Plus, ArrowRight
 } from 'lucide-react';
 import api from '../api';
 

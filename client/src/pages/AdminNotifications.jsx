@@ -7,7 +7,7 @@ import {
   Bell, Send, Trash2, Edit2, Plus, X, ArrowLeft,
   Users, BookOpen, Star, Clock, Info, AlertCircle,
   CheckCheck, Megaphone, BarChart3, FileText,
-  Home, LogOut, Menu, Shield
+  Home, LogOut, Menu, Shield, Brain
 } from 'lucide-react';
 import api from '../api';
 
@@ -48,6 +48,7 @@ export default function AdminNotifications() {
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
+    { to: '/admin/mcqs', label: 'MCQ Manager', icon: <Brain className="w-4 h-4" /> },
     { to: '/admin/notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
     { to: '/dashboard', label: 'Student View', icon: <Home className="w-4 h-4" /> },
   ];
