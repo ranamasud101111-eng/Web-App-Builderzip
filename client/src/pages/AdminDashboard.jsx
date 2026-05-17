@@ -18,22 +18,28 @@ const SidebarLink = ({ to, icon, label, active, badge }) => (
   </Link>
 );
 
-const StatCard = ({ label, value, icon, color, change, index }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.07 }}
-    className="card-premium p-5">
-    <div className="flex items-start justify-between mb-4">
-      <div className="w-11 h-11 rounded-2xl flex items-center justify-center"
-        style={{ background: `${color}15`, color, border: `1px solid ${color}25` }}>
-        {icon}
+const StatCard = ({ label, value, icon, color, change, index, to }) => {
+  const inner = (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.07 }}
+      className={`card-premium p-5 h-full group transition-all duration-200 ${to ? 'cursor-pointer hover:border-white/20 hover:-translate-y-0.5' : ''}`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-11 h-11 rounded-2xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+          style={{ background: `${color}15`, color, border: `1px solid ${color}25` }}>
+          {icon}
+        </div>
+        {change && (
+          <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-lg">{change}</span>
+        )}
       </div>
-      {change && (
-        <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-lg">{change}</span>
-      )}
-    </div>
-    <div className="text-3xl font-black text-white mb-1">{value}</div>
-    <div className="text-xs text-white/35 font-medium uppercase tracking-wide">{label}</div>
-  </motion.div>
-);
+      <div className="text-3xl font-black text-white mb-1">{value}</div>
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-white/35 font-medium uppercase tracking-wide">{label}</div>
+        {to && <ChevronRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/50 group-hover:translate-x-0.5 transition-all" />}
+      </div>
+    </motion.div>
+  );
+  return to ? <Link to={to} className="block">{inner}</Link> : inner;
+};
 
 export default function AdminDashboard() {
   const { logout } = useAuth();
@@ -64,12 +70,12 @@ export default function AdminDashboard() {
   ];
 
   const statCards = [
-    { label: 'Total Students', value: stats?.total_students || 0, icon: <Users className="w-5 h-5" />, color: '#7c3aed', change: '+12%' },
-    { label: 'Subjects', value: stats?.total_subjects || 0, icon: <BookOpen className="w-5 h-5" />, color: '#f59e0b', change: '+2' },
-    { label: 'Chapters', value: stats?.total_chapters || 0, icon: <FileText className="w-5 h-5" />, color: '#06b6d4', change: '+8' },
-    { label: 'Enrollments', value: stats?.total_enrollments || 0, icon: <TrendingUp className="w-5 h-5" />, color: '#10b981', change: '+18%' },
-    { label: 'Completions', value: stats?.total_completions || 0, icon: <CheckCircle className="w-5 h-5" />, color: '#8b5cf6', change: '+24%' },
-    { label: 'Active Users', value: stats?.total_students || 0, icon: <Activity className="w-5 h-5" />, color: '#f43f5e', change: 'Live' },
+    { label: 'Total Students', value: stats?.total_students || 0, icon: <Users className="w-5 h-5" />, color: '#7c3aed', change: '+12%', to: '/admin/students' },
+    { label: 'Subjects', value: stats?.total_subjects || 0, icon: <BookOpen className="w-5 h-5" />, color: '#f59e0b', change: '+2', to: '/admin/subjects' },
+    { label: 'Chapters', value: stats?.total_chapters || 0, icon: <FileText className="w-5 h-5" />, color: '#06b6d4', change: '+8', to: '/admin/subjects' },
+    { label: 'Enrollments', value: stats?.total_enrollments || 0, icon: <TrendingUp className="w-5 h-5" />, color: '#10b981', change: '+18%', to: '/admin/enrollments' },
+    { label: 'Completions', value: stats?.total_completions || 0, icon: <CheckCircle className="w-5 h-5" />, color: '#8b5cf6', change: '+24%', to: '/admin/completions' },
+    { label: 'Active Users', value: stats?.total_students || 0, icon: <Activity className="w-5 h-5" />, color: '#f43f5e', change: 'Live', to: '/admin/students' },
   ];
 
   const Sidebar = ({ mobile = false }) => (

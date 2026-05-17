@@ -21,6 +21,9 @@ import AdminMCQ from './pages/AdminMCQ';
 import AdminLogin from './pages/AdminLogin';
 import AdminExams from './pages/AdminExams';
 import StudentExams from './pages/StudentExams';
+import AdminStudents from './pages/AdminStudents';
+import AdminEnrollments from './pages/AdminEnrollments';
+import AdminCompletions from './pages/AdminCompletions';
 import Leaderboard from './pages/Leaderboard';
 
 const Loader = () => (
@@ -71,6 +74,9 @@ const AppRoutes = () => {
         <Route path="/admin/subjects" element={<ProtectedRoute adminOnly><AdminSubjects /></ProtectedRoute>} />
         <Route path="/admin/mcqs" element={<ProtectedRoute adminOnly><AdminMCQ /></ProtectedRoute>} />
         <Route path="/admin/exams" element={<ProtectedRoute adminOnly><AdminExams /></ProtectedRoute>} />
+        <Route path="/admin/students" element={<ProtectedRoute adminOnly><AdminStudents /></ProtectedRoute>} />
+        <Route path="/admin/enrollments" element={<ProtectedRoute adminOnly><AdminEnrollments /></ProtectedRoute>} />
+        <Route path="/admin/completions" element={<ProtectedRoute adminOnly><AdminCompletions /></ProtectedRoute>} />
 
         {/* Student exam routes */}
         <Route path="/exams" element={<ProtectedRoute><StudentExams /></ProtectedRoute>} />
