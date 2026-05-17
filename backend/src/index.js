@@ -69,6 +69,10 @@ app.use('/api/shortnotes', shortnotesRoutes);
 app.use('/api/qbank', qbankRoutes);
 app.use('/api/settings', settingsRoutes);
 
+app.get('/', (req, res) =>
+  res.send('Backend is running successfully 🚀')
+);
+
 app.get('/api/health', (req, res) =>
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' })
 );
