@@ -1,6 +1,7 @@
 modules = ["nodejs-20", "postgresql-16"]
 [agent]
 expertMode = true
+stack = "BEST_EFFORT_FALLBACK"
 
 [nix]
 channel = "stable-25_05"
@@ -32,7 +33,6 @@ outputType = "webview"
 [[ports]]
 localPort = 3001
 externalPort = 3001
-exposeLocalhost = true
 
 [[ports]]
 localPort = 5000

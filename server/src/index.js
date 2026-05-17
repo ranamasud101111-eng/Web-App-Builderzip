@@ -1,5 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import pool from './db.js';
 import authRoutes from './routes/auth.js';
 import subjectRoutes from './routes/subjects.js';
 import chapterRoutes from './routes/chapters.js';
@@ -7,6 +11,7 @@ import notificationRoutes from './routes/notifications.js';
 import userRoutes from './routes/users.js';
 import mcqRoutes from './routes/mcqs.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -23,6 +28,18 @@ app.use('/api/mcqs', mcqRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`CA Mock API running on port ${PORT}`);
+async function initDb() {
+  try {
+    const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf8');
+    await pool.query(schema);
+    console.log('Database schema initialized');
+  } catch (err) {
+    console.error('Failed to initialize database schema:', err.message);
+  }
+}
+
+initDb().then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`CA Mock API running on port ${PORT}`);
+  });
 });
