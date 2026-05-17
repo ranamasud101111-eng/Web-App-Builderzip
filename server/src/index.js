@@ -13,6 +13,7 @@ import mcqRoutes from './routes/mcqs.js';
 import examRoutes from './routes/exams.js';
 import classRoutes from './routes/classes.js';
 import flashcardRoutes from './routes/flashcards.js';
+import shortnotesRoutes from './routes/shortnotes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api/mcqs', mcqRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/flashcards', flashcardRoutes);
+app.use('/api/shortnotes', shortnotesRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

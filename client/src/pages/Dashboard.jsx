@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import {
   BookOpen, TrendingUp, Clock, CheckCircle, ChevronRight,
-  Play, Trophy, BarChart3, Target, Flame, Layers, Plus, ArrowRight
+  Play, Trophy, BarChart3, Target, Flame, Layers, Plus, ArrowRight, FileText
 } from 'lucide-react';
 import api from '../api';
 
@@ -182,17 +182,29 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Classes quick link */}
-        <Link to="/classes" className="card-premium p-5 flex items-center gap-4 hover:border-purple-500/30 transition-all hover:-translate-y-0.5 mb-10 group">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/20 to-violet-800/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-            <Layers className="w-5 h-5 text-purple-400" />
-          </div>
-          <div className="flex-1">
-            <p className="font-bold text-white text-base">Video Classes</p>
-            <p className="text-white/35 text-sm">Watch lecture videos — Certificate, Professional & Advanced levels</p>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
-        </Link>
+        {/* Classes + Short Notes quick links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          <Link to="/classes" className="card-premium p-5 flex items-center gap-4 hover:border-purple-500/30 transition-all hover:-translate-y-0.5 group">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/20 to-violet-800/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <Layers className="w-5 h-5 text-purple-400" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-white text-base">Video Classes</p>
+              <p className="text-white/35 text-sm">Watch lecture videos — Certificate, Professional & Advanced</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+          </Link>
+          <Link to="/shortnotes" className="card-premium p-5 flex items-center gap-4 hover:border-emerald-500/30 transition-all hover:-translate-y-0.5 group">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600/20 to-teal-800/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <FileText className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-white text-base">Short Notes</p>
+              <p className="text-white/35 text-sm">View & download PDF notes — Certificate, Professional & Advanced</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/25 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all" />
+          </Link>
+        </div>
 
         {/* Tabs */}
         <div className="flex items-center gap-2 mb-8">

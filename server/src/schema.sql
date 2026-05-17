@@ -253,3 +253,60 @@ VALUES
   ('Professional',  'Intermediate professional certification courses', '💼', 2, true),
   ('Advanced',      'Advanced level mastery courses',                 '🏆', 3, true)
 ON CONFLICT DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS shortnote_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  shortnotes_visible BOOLEAN DEFAULT TRUE,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS shortnote_levels (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  icon VARCHAR(10) DEFAULT '📝',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS shortnote_subjects (
+  id SERIAL PRIMARY KEY,
+  level_id INTEGER REFERENCES shortnote_levels(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  icon VARCHAR(10) DEFAULT '📚',
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS shortnote_chapters (
+  id SERIAL PRIMARY KEY,
+  subject_id INTEGER REFERENCES shortnote_subjects(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_visible BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS shortnote_files (
+  id SERIAL PRIMARY KEY,
+  chapter_id INTEGER REFERENCES shortnote_chapters(id) ON DELETE CASCADE UNIQUE,
+  filename VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255),
+  file_path TEXT NOT NULL,
+  file_size INTEGER,
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO shortnote_settings (id, shortnotes_visible) VALUES (1, true)
+  ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO shortnote_levels (name, description, icon, order_index)
+VALUES
+  ('Certificate',  'Foundation level short notes', '📜', 1),
+  ('Professional', 'Intermediate level short notes', '💼', 2),
+  ('Advanced',     'Advanced level short notes', '🏆', 3)
+ON CONFLICT (name) DO NOTHING;

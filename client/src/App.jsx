@@ -28,6 +28,8 @@ import AdminClasses from './pages/AdminClasses';
 import Classes from './pages/Classes';
 import AdminFlashCards from './pages/AdminFlashCards';
 import FlashCards from './pages/FlashCards';
+import AdminShortNotes from './pages/AdminShortNotes';
+import ShortNotes from './pages/ShortNotes';
 import StudentProgress from './pages/StudentProgress';
 import Leaderboard from './pages/Leaderboard';
 
@@ -93,6 +95,10 @@ const AppRoutes = () => {
         {/* Flash Cards */}
         <Route path="/flashcards" element={<ProtectedRoute><FlashCards /></ProtectedRoute>} />
         <Route path="/admin/flashcards" element={<ProtectedRoute adminOnly><AdminFlashCards /></ProtectedRoute>} />
+
+        {/* Short Notes */}
+        <Route path="/shortnotes" element={<ProtectedRoute><ShortNotes /></ProtectedRoute>} />
+        <Route path="/admin/shortnotes" element={<ProtectedRoute adminOnly><AdminShortNotes /></ProtectedRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
