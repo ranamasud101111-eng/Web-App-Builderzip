@@ -77,6 +77,42 @@ app.get('/api/health', (req, res) =>
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' })
 );
 
+// ── Admin auth diagnostic (remove after confirming login works) ───────────────
+app.get('/api/check-admin', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, role,
+              length(password_hash) AS hash_length,
+              substring(password_hash, 1, 7) AS hash_prefix
+       FROM users WHERE email = $1`,
+      ['admin@camock.com']
+    );
+    if (result.rows.length === 0) {
+      return res.json({ found: false, message: 'admin@camock.com does NOT exist in this database' });
+    }
+    const row = result.rows[0];
+    const bcrypt = (await import('bcryptjs')).default;
+    const passwordMatch = await bcrypt.compare('admin123', await pool.query(
+      'SELECT password_hash FROM users WHERE email = $1', ['admin@camock.com']
+    ).then(r => r.rows[0].password_hash));
+
+    res.json({
+      found: true,
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      role: row.role,
+      hash_length: parseInt(row.hash_length),
+      hash_prefix: row.hash_prefix,
+      hash_valid: row.hash_length === '60' || parseInt(row.hash_length) === 60,
+      password_admin123_matches: passwordMatch,
+      database: process.env.DATABASE_URL?.includes('supabase') ? 'Supabase' : 'Replit PostgreSQL',
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Database connection test ───────────────────────────────────────────────────
 app.get('/api/test-db', async (req, res) => {
   try {
