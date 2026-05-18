@@ -2,7 +2,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useLocation } from 'react-router-dom';
 import api from '../api';
 
-const DEFAULT = { classes: true, flashcards: true, shortnotes: true, qbank: true };
+const DEFAULT = {
+  classes: true, flashcards: true, shortnotes: true, qbank: true,
+  progressTracker: true,
+  progressSections: {
+    levelProgress: true, subjectProgress: true, chapterProgress: true,
+    mcqProgress: true, examProgress: true, quizProgress: true,
+  },
+};
 const POLL_INTERVAL = 15000;
 
 const ModuleSettingsContext = createContext({

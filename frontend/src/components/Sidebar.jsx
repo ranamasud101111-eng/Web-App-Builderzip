@@ -8,7 +8,7 @@ import {
   GraduationCap, LayoutDashboard, BookOpen, Brain, FileText, Zap,
   Trophy, BarChart3, Bookmark, XCircle, Shuffle, HelpCircle, Layers,
   LogOut, Shield, Video, TrendingUp, Award, Settings, User,
-  HeadphonesIcon, Target, Flame, ClipboardList
+  HeadphonesIcon, Target, Flame, ClipboardList, Activity
 } from 'lucide-react';
 
 const STUDENT_SECTIONS = [
@@ -45,6 +45,9 @@ const STUDENT_SECTIONS = [
       { to: '/bookmarks', icon: Bookmark, label: 'Bookmarks' },
       { to: '/wrong-answers', icon: XCircle, label: 'Wrong Answers' },
     ],
+    moduleItems: [
+      { to: '/progress-tracker', icon: Activity, label: 'Progress Tracker', moduleKey: 'progressTracker' },
+    ],
   },
 ];
 
@@ -80,6 +83,7 @@ const ADMIN_SECTIONS = [
     label: 'System',
     items: [
       { to: '/admin/notifications', icon: Flame, label: 'Notifications' },
+      { to: '/admin/settings', icon: Settings, label: 'Settings' },
     ],
   },
 ];

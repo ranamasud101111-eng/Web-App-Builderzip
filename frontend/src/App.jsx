@@ -44,6 +44,8 @@ import Bookmarks from './pages/Bookmarks';
 import CustomExam from './pages/CustomExam';
 import QuizHub from './pages/QuizHub';
 import VerifyEmail from './pages/VerifyEmail';
+import ProgressTracker from './pages/ProgressTracker';
+import AdminSettings from './pages/AdminSettings';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -118,6 +120,9 @@ const AppRoutes = () => {
           <Route path="/bookmarks" element={<ProtectedRoute><AuthWrap><Bookmarks /></AuthWrap></ProtectedRoute>} />
           <Route path="/custom-exam" element={<ProtectedRoute><AuthWrap><CustomExam /></AuthWrap></ProtectedRoute>} />
           <Route path="/quiz" element={<ProtectedRoute><AuthWrap><QuizHub /></AuthWrap></ProtectedRoute>} />
+          <Route path="/progress-tracker" element={<ProtectedRoute><ModuleRoute moduleKey="progressTracker"><AuthWrap><ProgressTracker /></AuthWrap></ModuleRoute></ProtectedRoute>} />
+
+          <Route path="/admin/settings" element={<ProtectedRoute adminOnly><AuthWrap><AdminSettings /></AuthWrap></ProtectedRoute>} />
 
           <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><AuthWrap><Classes /></AuthWrap></ModuleRoute></ProtectedRoute>} />
           <Route path="/flashcards" element={<ProtectedRoute><ModuleRoute moduleKey="flashcards"><AuthWrap><FlashCards /></AuthWrap></ModuleRoute></ProtectedRoute>} />

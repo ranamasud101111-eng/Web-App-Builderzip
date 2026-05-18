@@ -16,6 +16,7 @@ import flashcardRoutes from './routes/flashcards.js';
 import shortnotesRoutes from './routes/shortnotes.js';
 import qbankRoutes from './routes/qbank.js';
 import settingsRoutes from './routes/settings.js';
+import progressRoutes from './routes/progress.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -80,6 +81,7 @@ app.use('/api/flashcards', flashcardRoutes);
 app.use('/api/shortnotes', shortnotesRoutes);
 app.use('/api/qbank', qbankRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/progress', progressRoutes);
 
 app.get('/', (req, res) =>
   res.send('Backend is running successfully 🚀')

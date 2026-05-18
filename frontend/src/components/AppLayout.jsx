@@ -32,6 +32,8 @@ const PAGE_TITLES = {
   '/admin/notifications': { title: 'Notifications', sub: 'Broadcast messages' },
   '/admin/enrollments': { title: 'Enrollments', sub: 'Student enrollments' },
   '/admin/completions': { title: 'Completions', sub: 'Chapter completions' },
+  '/admin/settings': { title: 'Settings', sub: 'Feature visibility controls' },
+  '/progress-tracker': { title: 'Progress Tracker', sub: 'Full learning analytics' },
 };
 
 function getPageMeta(pathname) {

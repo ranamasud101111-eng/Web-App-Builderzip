@@ -201,6 +201,21 @@ CREATE TABLE IF NOT EXISTS class_settings (
 INSERT INTO class_settings (id, classes_visible) VALUES (1, true)
   ON CONFLICT (id) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS progress_tracker_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  progress_tracker_visible BOOLEAN DEFAULT TRUE,
+  show_level_progress BOOLEAN DEFAULT TRUE,
+  show_subject_progress BOOLEAN DEFAULT TRUE,
+  show_chapter_progress BOOLEAN DEFAULT TRUE,
+  show_mcq_progress BOOLEAN DEFAULT TRUE,
+  show_exam_progress BOOLEAN DEFAULT TRUE,
+  show_quiz_progress BOOLEAN DEFAULT TRUE,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO progress_tracker_settings (id) VALUES (1)
+  ON CONFLICT (id) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS flashcard_settings (
   id INTEGER PRIMARY KEY DEFAULT 1,
   flashcards_visible BOOLEAN DEFAULT TRUE,
