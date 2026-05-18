@@ -1109,145 +1109,244 @@ html {
   outline-offset: 2px;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   LIGHT MODE — COMPREHENSIVE TEXT READABILITY FIXES
-   Targets raw text-white/* usage on page backgrounds (not inside dark cards)
-══════════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — FULL ADMIN + GLOBAL READABILITY OVERHAUL
+   Covers: text, backgrounds, borders, hover states, tables, buttons, badges,
+   sticky headers, modals, action icons — every admin page pattern.
+══════════════════════════════════════════════════════════════════════════════ */
 
-/* Page-level containers that have a transparent / light background */
-[data-theme="light"] .page-content [class*="text-white"],
-[data-theme="light"] main [class*="text-white"] {
-  color: #374151;
-}
+/* ── 1. TEXT: white → dark (all pages, all elements) ────────────────────── */
+[data-theme="light"] main .text-white          { color: #0f172a !important; }
+[data-theme="light"] main .text-white\/90      { color: #1e293b !important; }
+[data-theme="light"] main .text-white\/85      { color: #1e293b !important; }
+[data-theme="light"] main .text-white\/80      { color: #334155 !important; }
+[data-theme="light"] main .text-white\/75      { color: #374151 !important; }
+[data-theme="light"] main .text-white\/70      { color: #475569 !important; }
+[data-theme="light"] main .text-white\/65      { color: #52606d !important; }
+[data-theme="light"] main .text-white\/60      { color: #64748b !important; }
+[data-theme="light"] main .text-white\/55      { color: #6b7280 !important; }
+[data-theme="light"] main .text-white\/50      { color: #6b7280 !important; }
+[data-theme="light"] main .text-white\/45      { color: #9ca3af !important; }
+[data-theme="light"] main .text-white\/40      { color: #9ca3af !important; }
+[data-theme="light"] main .text-white\/35      { color: #94a3b8 !important; }
+[data-theme="light"] main .text-white\/30      { color: #94a3b8 !important; }
+[data-theme="light"] main .text-white\/25      { color: #cbd5e1 !important; }
+[data-theme="light"] main .text-white\/20      { color: #cbd5e1 !important; }
+[data-theme="light"] main .text-white\/15      { color: #e2e8f0 !important; }
+[data-theme="light"] main .text-white\/10      { color: #f1f5f9 !important; }
 
-/* Preserve pure white text inside intentionally dark panels */
+/* bracket-opacity variants (\[0.XX\]) */
+[data-theme="light"] main .text-white\/\[0\.90\] { color: #1e293b !important; }
+[data-theme="light"] main .text-white\/\[0\.85\] { color: #1e293b !important; }
+[data-theme="light"] main .text-white\/\[0\.75\] { color: #374151 !important; }
+[data-theme="light"] main .text-white\/\[0\.65\] { color: #475569 !important; }
+[data-theme="light"] main .text-white\/\[0\.55\] { color: #64748b !important; }
+[data-theme="light"] main .text-white\/\[0\.45\] { color: #9ca3af !important; }
+[data-theme="light"] main .text-white\/\[0\.35\] { color: #94a3b8 !important; }
+[data-theme="light"] main .text-white\/\[0\.25\] { color: #cbd5e1 !important; }
+[data-theme="light"] main .text-white\/\[0\.15\] { color: #e2e8f0 !important; }
+
+/* ── 2. PRESERVE ACCENT / SEMANTIC COLOURS (global, not just in main) ───── */
+[data-theme="light"] .text-violet-300                                              { color: #8b5cf6  !important; }
+[data-theme="light"] .text-violet-400, [data-theme="light"] .text-violet-500      { color: #7c3aed  !important; }
+[data-theme="light"] .text-purple-400, [data-theme="light"] .text-purple-500      { color: #7c3aed  !important; }
+[data-theme="light"] .text-indigo-400, [data-theme="light"] .text-indigo-500      { color: #4f46e5  !important; }
+[data-theme="light"] .text-emerald-400                                             { color: #059669  !important; }
+[data-theme="light"] .text-emerald-500                                             { color: #047857  !important; }
+[data-theme="light"] .text-green-400,  [data-theme="light"] .text-green-500       { color: #16a34a  !important; }
+[data-theme="light"] .text-teal-400,   [data-theme="light"] .text-teal-500        { color: #0d9488  !important; }
+[data-theme="light"] .text-cyan-400,   [data-theme="light"] .text-cyan-500        { color: #0891b2  !important; }
+[data-theme="light"] .text-sky-400,    [data-theme="light"] .text-sky-500         { color: #0284c7  !important; }
+[data-theme="light"] .text-blue-400,   [data-theme="light"] .text-blue-500        { color: #2563eb  !important; }
+[data-theme="light"] .text-amber-400                                               { color: #d97706  !important; }
+[data-theme="light"] .text-amber-500                                               { color: #b45309  !important; }
+[data-theme="light"] .text-amber-600                                               { color: #92400e  !important; }
+[data-theme="light"] .text-yellow-400, [data-theme="light"] .text-yellow-500      { color: #ca8a04  !important; }
+[data-theme="light"] .text-orange-400, [data-theme="light"] .text-orange-500      { color: #ea580c  !important; }
+[data-theme="light"] .text-red-400,    [data-theme="light"] .text-red-500         { color: #dc2626  !important; }
+[data-theme="light"] .text-rose-400,   [data-theme="light"] .text-rose-500        { color: #e11d48  !important; }
+[data-theme="light"] .text-pink-400,   [data-theme="light"] .text-pink-500        { color: #db2777  !important; }
+[data-theme="light"] .text-fuchsia-400,[data-theme="light"] .text-fuchsia-500     { color: #a21caf  !important; }
+
+/* ── 3. HARDCODED DARK BACKGROUNDS → CLEAN LIGHT SURFACE ───────────────── */
 [data-theme="light"] main .bg-\[\#020818\],
+[data-theme="light"] main .bg-\[\#020818\]\/80,
+[data-theme="light"] main .bg-\[\#020818\]\/90,
 [data-theme="light"] main .bg-\[\#06112e\],
-[data-theme="light"] main [style*="020818"],
-[data-theme="light"] main [style*="06112e"],
-[data-theme="light"] main [style*="06112E"],
-[data-theme="light"] main [style*="0,8,24"],
-[data-theme="light"] main [style*="4,8,28"] {
-  color: rgba(255,255,255,0.85);
+[data-theme="light"] main .bg-\[\#0e1a4a\],
+[data-theme="light"] main .bg-\[\#080f2e\],
+[data-theme="light"] main .bg-\[\#0a1a4a\] {
+  background-color: rgba(255,255,255,0.96) !important;
+  border-color: rgba(139,92,246,0.10) !important;
 }
 
-/* Keep accent colours as-is anywhere */
-[data-theme="light"] .text-violet-400 { color: #7c3aed !important; }
-[data-theme="light"] .text-violet-500 { color: #6d28d9 !important; }
-[data-theme="light"] .text-violet-300 { color: #8b5cf6 !important; }
-[data-theme="light"] .text-purple-400 { color: #7c3aed !important; }
-[data-theme="light"] .text-emerald-400 { color: #059669 !important; }
-[data-theme="light"] .text-emerald-500 { color: #047857 !important; }
-[data-theme="light"] .text-amber-400  { color: #d97706 !important; }
-[data-theme="light"] .text-amber-500  { color: #b45309 !important; }
-[data-theme="light"] .text-amber-600  { color: #92400e !important; }
-[data-theme="light"] .text-cyan-400   { color: #0891b2 !important; }
-[data-theme="light"] .text-blue-400   { color: #2563eb !important; }
-[data-theme="light"] .text-blue-500   { color: #1d4ed8 !important; }
-[data-theme="light"] .text-red-400    { color: #dc2626 !important; }
-[data-theme="light"] .text-red-500    { color: #b91c1c !important; }
-[data-theme="light"] .text-green-400  { color: #16a34a !important; }
-[data-theme="light"] .text-indigo-400 { color: #4f46e5 !important; }
-[data-theme="light"] .text-indigo-500 { color: #4338ca !important; }
-[data-theme="light"] .text-pink-400   { color: #db2777 !important; }
-[data-theme="light"] .text-yellow-400 { color: #ca8a04 !important; }
+/* Semi-transparent white overlays that vanish on a light page */
+[data-theme="light"] main .bg-white\/\[0\.02\] { background-color: rgba(139,92,246,0.03) !important; }
+[data-theme="light"] main .bg-white\/\[0\.03\] { background-color: rgba(139,92,246,0.04) !important; }
+[data-theme="light"] main .bg-white\/\[0\.04\] { background-color: rgba(139,92,246,0.05) !important; }
+[data-theme="light"] main .bg-white\/\[0\.05\] { background-color: rgba(139,92,246,0.06) !important; }
+[data-theme="light"] main .bg-white\/\[0\.06\] { background-color: rgba(139,92,246,0.07) !important; }
+[data-theme="light"] main .bg-white\/\[0\.07\] { background-color: rgba(248,246,255,0.88) !important; }
+[data-theme="light"] main .bg-white\/\[0\.08\] { background-color: rgba(248,246,255,0.95) !important; }
+[data-theme="light"] main .bg-white\/\[0\.1\]  { background-color: rgba(248,246,255,1.00) !important; }
+[data-theme="light"] main .bg-white\/\[0\.12\] { background-color: rgba(247,245,255,1.00) !important; }
+[data-theme="light"] main .bg-white\/\[0\.15\] { background-color: rgba(246,244,255,1.00) !important; }
 
-/* Global fixes for common transparency text classes on light backgrounds */
-[data-theme="light"] .card-premium .text-white\/40,
-[data-theme="light"] .card-premium .text-white\/45,
-[data-theme="light"] .card-premium .text-white\/50,
-[data-theme="light"] .card-premium .text-white\/55,
-[data-theme="light"] .card-premium .text-white\/60,
-[data-theme="light"] .card-premium .text-white\/70,
-[data-theme="light"] .glass-card .text-white\/40,
-[data-theme="light"] .glass-card .text-white\/45,
-[data-theme="light"] .glass-card .text-white\/50,
-[data-theme="light"] .glass-card .text-white\/55,
-[data-theme="light"] .glass-card .text-white\/60,
-[data-theme="light"] .glass-card .text-white\/70,
-[data-theme="light"] .glass-navy .text-white\/40,
-[data-theme="light"] .glass-navy .text-white\/45,
-[data-theme="light"] .glass-navy .text-white\/50,
-[data-theme="light"] .glass-navy .text-white\/55,
-[data-theme="light"] .glass-navy .text-white\/60,
-[data-theme="light"] .glass-navy .text-white\/70,
-[data-theme="light"] .exam-card .text-white\/40,
-[data-theme="light"] .exam-card .text-white\/45,
-[data-theme="light"] .exam-card .text-white\/50,
-[data-theme="light"] .exam-card .text-white\/55,
-[data-theme="light"] .exam-card .text-white\/60,
-[data-theme="light"] .exam-card .text-white\/70 {
+/* ── 4. BORDERS: white opacity → soft violet ────────────────────────────── */
+[data-theme="light"] main .border-white\/\[0\.04\] { border-color: rgba(139,92,246,0.08) !important; }
+[data-theme="light"] main .border-white\/\[0\.05\] { border-color: rgba(139,92,246,0.09) !important; }
+[data-theme="light"] main .border-white\/\[0\.06\] { border-color: rgba(139,92,246,0.10) !important; }
+[data-theme="light"] main .border-white\/\[0\.07\] { border-color: rgba(139,92,246,0.12) !important; }
+[data-theme="light"] main .border-white\/\[0\.08\] { border-color: rgba(139,92,246,0.14) !important; }
+[data-theme="light"] main .border-white\/10,
+[data-theme="light"] main .border-white\/\[0\.1\]  { border-color: rgba(139,92,246,0.15) !important; }
+[data-theme="light"] main .border-white\/\[0\.12\] { border-color: rgba(139,92,246,0.18) !important; }
+[data-theme="light"] main .border-white\/\[0\.15\] { border-color: rgba(139,92,246,0.20) !important; }
+[data-theme="light"] main .border-white\/20        { border-color: rgba(139,92,246,0.25) !important; }
+[data-theme="light"] main .border-white\/25        { border-color: rgba(139,92,246,0.28) !important; }
+
+/* ── 5. HOVER BACKGROUNDS: white/opacity → light purple ─────────────────── */
+[data-theme="light"] main .hover\:bg-white\/\[0\.04\]:hover { background-color: rgba(124,58,237,0.05) !important; }
+[data-theme="light"] main .hover\:bg-white\/\[0\.05\]:hover { background-color: rgba(124,58,237,0.06) !important; }
+[data-theme="light"] main .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(124,58,237,0.07) !important; }
+[data-theme="light"] main .hover\:bg-white\/\[0\.07\]:hover { background-color: rgba(124,58,237,0.08) !important; }
+[data-theme="light"] main .hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(124,58,237,0.09) !important; }
+[data-theme="light"] main .hover\:bg-white\/\[0\.1\]:hover  { background-color: rgba(124,58,237,0.10) !important; }
+[data-theme="light"] main .hover\:bg-white\/\[0\.12\]:hover { background-color: rgba(124,58,237,0.12) !important; }
+[data-theme="light"] main .hover\:bg-white\/10:hover         { background-color: rgba(124,58,237,0.10) !important; }
+
+/* ── 6. HOVER TEXT STAYS READABLE ───────────────────────────────────────── */
+[data-theme="light"] main .hover\:text-white:hover     { color: #0f172a !important; }
+[data-theme="light"] main .hover\:text-white\/80:hover { color: #334155 !important; }
+[data-theme="light"] main .hover\:text-white\/60:hover { color: #64748b !important; }
+
+/* Coloured hover labels — preserve them */
+[data-theme="light"] main .hover\:text-emerald-400:hover { color: #059669 !important; }
+[data-theme="light"] main .hover\:text-red-400:hover     { color: #dc2626 !important; }
+[data-theme="light"] main .hover\:text-amber-400:hover   { color: #d97706 !important; }
+[data-theme="light"] main .hover\:text-blue-400:hover    { color: #2563eb !important; }
+[data-theme="light"] main .hover\:text-violet-400:hover  { color: #7c3aed !important; }
+[data-theme="light"] main .hover\:text-cyan-400:hover    { color: #0891b2 !important; }
+[data-theme="light"] main .hover\:text-purple-400:hover  { color: #7c3aed !important; }
+[data-theme="light"] main .hover\:text-rose-400:hover    { color: #e11d48 !important; }
+[data-theme="light"] main .hover\:text-pink-400:hover    { color: #db2777 !important; }
+[data-theme="light"] main .hover\:text-indigo-400:hover  { color: #4f46e5 !important; }
+[data-theme="light"] main .hover\:text-yellow-400:hover  { color: #ca8a04 !important; }
+[data-theme="light"] main .hover\:text-green-400:hover   { color: #16a34a !important; }
+[data-theme="light"] main .hover\:text-teal-400:hover    { color: #0d9488 !important; }
+
+/* ── 7. PREMIUM TABLE ────────────────────────────────────────────────────── */
+[data-theme="light"] .premium-table th {
+  background: rgba(139,92,246,0.05) !important;
+  color: #6d28d9 !important;
+  border-bottom: 1.5px solid rgba(139,92,246,0.14) !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.08em !important;
+}
+[data-theme="light"] .premium-table td {
+  border-bottom: 1px solid rgba(139,92,246,0.07) !important;
+  color: #374151 !important;
+  background: transparent !important;
+}
+[data-theme="light"] .premium-table tr:hover td {
+  background: rgba(124,58,237,0.04) !important;
+}
+[data-theme="light"] .premium-table td button {
   color: #6b7280 !important;
 }
-
-[data-theme="light"] .card-premium .text-white\/20,
-[data-theme="light"] .card-premium .text-white\/25,
-[data-theme="light"] .card-premium .text-white\/30,
-[data-theme="light"] .card-premium .text-white\/35,
-[data-theme="light"] .glass-card .text-white\/20,
-[data-theme="light"] .glass-card .text-white\/25,
-[data-theme="light"] .glass-card .text-white\/30,
-[data-theme="light"] .glass-card .text-white\/35,
-[data-theme="light"] .glass-navy .text-white\/20,
-[data-theme="light"] .glass-navy .text-white\/25,
-[data-theme="light"] .glass-navy .text-white\/30,
-[data-theme="light"] .glass-navy .text-white\/35,
-[data-theme="light"] .exam-card .text-white\/20,
-[data-theme="light"] .exam-card .text-white\/25,
-[data-theme="light"] .exam-card .text-white\/30,
-[data-theme="light"] .exam-card .text-white\/35 {
-  color: #9ca3af !important;
-}
-
-/* ArrowUpRight icon in stat cards */
-[data-theme="light"] .card-premium .text-white\/15,
-[data-theme="light"] .glass-card .text-white\/15 {
-  color: #d1d5db !important;
-}
-
-/* Admin pages that have hardcoded dark backgrounds — keep their text white */
-[data-theme="light"] [class*="bg-\[#020818\]"] [class*="text-white"],
-[data-theme="light"] [class*="bg-\[rgba(2,8,24"] [class*="text-white"],
-[data-theme="light"] [style*="background: linear-gradient(135deg, rgba(14,22,74"] [class*="text-white"],
-[data-theme="light"] [style*="background:linear-gradient(135deg,rgba(14,22,74"] [class*="text-white"] {
-  color: inherit;
-}
-
-/* Flash card faces need readable text */
-[data-theme="light"] .fc-face {
-  color: #0f172a;
-}
-
-/* Premium table on light bg pages */
-[data-theme="light"] .premium-table td button {
-  color: #374151;
-}
-
-/* Section header text above cards */
-[data-theme="light"] h1.text-white,
-[data-theme="light"] h2.text-white,
-[data-theme="light"] h3.text-white,
-[data-theme="light"] h4.text-white,
-[data-theme="light"] p.text-white,
-[data-theme="light"] span.text-white {
+[data-theme="light"] .premium-table td button:hover {
   color: #0f172a !important;
 }
+[data-theme="light"] .premium-table th [class*="text-white"] { color: #6d28d9 !important; }
 
-/* Heading transparency variants */
-[data-theme="light"] h1[class*="text-white\/"],
-[data-theme="light"] h2[class*="text-white\/"],
-[data-theme="light"] h3[class*="text-white\/"] {
+/* ── 8. ACTION ICON BUTTONS (edit / delete / view) ─────────────────────── */
+/* Ghost icon buttons that use text-white/30 and hover:bg-white/[0.08] */
+[data-theme="light"] main button[class*="p-1"][class*="rounded"] { color: #9ca3af !important; }
+[data-theme="light"] main button[class*="p-1"][class*="rounded"]:hover {
+  background-color: rgba(124,58,237,0.08) !important;
+  color: #374151 !important;
+}
+/* Retain semantic hover colours on action buttons */
+[data-theme="light"] main button[class*="hover:text-emerald"]:hover { color: #059669 !important; }
+[data-theme="light"] main button[class*="hover:text-red"]:hover     { color: #dc2626 !important; }
+[data-theme="light"] main button[class*="hover:text-amber"]:hover   { color: #d97706 !important; }
+[data-theme="light"] main button[class*="hover:text-violet"]:hover  { color: #7c3aed !important; }
+[data-theme="light"] main button[class*="hover:text-blue"]:hover    { color: #2563eb !important; }
+[data-theme="light"] main button[class*="hover:text-cyan"]:hover    { color: #0891b2 !important; }
+[data-theme="light"] main button[class*="hover:text-rose"]:hover    { color: #e11d48 !important; }
+[data-theme="light"] main button[class*="hover:text-pink"]:hover    { color: #db2777 !important; }
+[data-theme="light"] main button[class*="hover:text-indigo"]:hover  { color: #4f46e5 !important; }
+[data-theme="light"] main button[class*="hover:text-yellow"]:hover  { color: #ca8a04 !important; }
+[data-theme="light"] main button[class*="hover:text-teal"]:hover    { color: #0d9488 !important; }
+
+/* ── 9. STICKY INNER ADMIN HEADERS ──────────────────────────────────────── */
+[data-theme="light"] main .sticky {
+  background-color: rgba(248,246,255,0.97) !important;
+  border-color: rgba(139,92,246,0.10) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* ── 10. BTN-OUTLINE ─────────────────────────────────────────────────────── */
+[data-theme="light"] .btn-outline {
+  border-color: rgba(124,58,237,0.35) !important;
+  color: #7c3aed !important;
+  background: transparent !important;
+}
+[data-theme="light"] .btn-outline:hover {
+  background: rgba(124,58,237,0.08) !important;
+  border-color: rgba(124,58,237,0.55) !important;
+  color: #6d28d9 !important;
+}
+
+/* ── 11. SECONDARY/GHOST BUTTONS (admin inline actions) ─────────────────── */
+/* Pattern: bg-white/[0.07] border border-white/[0.1] text-white/60 */
+[data-theme="light"] main button[class*="border"][class*="bg-white\/\[0\.0"] {
+  background-color: rgba(255,255,255,0.9) !important;
+  border-color: rgba(139,92,246,0.2) !important;
+  color: #374151 !important;
+}
+[data-theme="light"] main button[class*="border"][class*="bg-white\/\[0\.0"]:hover {
+  background-color: rgba(124,58,237,0.07) !important;
+  border-color: rgba(124,58,237,0.35) !important;
   color: #1e293b !important;
 }
 
-[data-theme="light"] p[class*="text-white\/"],
-[data-theme="light"] span[class*="text-white\/"] {
-  color: #64748b;
+/* ── 12. STATUS / COUNT BADGES ───────────────────────────────────────────── */
+[data-theme="light"] main span[class*="rounded-full"][class*="text-white"],
+[data-theme="light"] main div[class*="rounded-full"][class*="text-white"],
+[data-theme="light"] main span[class*="rounded-xl"][class*="text-white"],
+[data-theme="light"] main div[class*="rounded-xl"][class*="text-white"] {
+  color: #374151 !important;
 }
 
-/* Input text color fix for light mode */
-[data-theme="light"] select.input-field option {
-  background: #ffffff;
-  color: #0f172a;
+/* ── 13. MODAL / OVERLAY PANELS ─────────────────────────────────────────── */
+/* Admin modals are inside .fixed.inset-0 and use glass-navy or bg-[#020818] */
+[data-theme="light"] .fixed.inset-0 .glass-navy,
+[data-theme="light"] .fixed.inset-0 .bg-\[\#020818\] {
+  background: rgba(255,255,255,0.98) !important;
+  border-color: rgba(139,92,246,0.12) !important;
 }
+[data-theme="light"] .fixed.inset-0 .glass-navy [class*="text-white"],
+[data-theme="light"] .fixed.inset-0 .bg-\[\#020818\] [class*="text-white"] {
+  color: #374151 !important;
+}
+
+/* ── 14. DIVIDERS ────────────────────────────────────────────────────────── */
+[data-theme="light"] main hr { border-color: rgba(139,92,246,0.10) !important; }
+[data-theme="light"] main [class*="divide-white"] > * + * { border-color: rgba(139,92,246,0.09) !important; }
+
+/* ── 15. FLASHCARD FACES ─────────────────────────────────────────────────── */
+[data-theme="light"] .fc-face { color: #0f172a; }
+
+/* ── 16. SELECT OPTIONS ──────────────────────────────────────────────────── */
+[data-theme="light"] select.input-field option,
+[data-theme="light"] main select option { background: #ffffff; color: #0f172a; }
+
+/* ── 17. PROGRESS BARS IN LIGHT MODE ────────────────────────────────────── */
+[data-theme="light"] main .progress-bar { background: rgba(139,92,246,0.10) !important; }
+
+/* ── 18. SCROLLABLE INNER PANELS ────────────────────────────────────────── */
+[data-theme="light"] main .overflow-y-auto,
+[data-theme="light"] main .overflow-x-auto { scrollbar-color: rgba(124,58,237,0.2) transparent; }
 
