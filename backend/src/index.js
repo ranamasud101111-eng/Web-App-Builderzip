@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import bcrypt from 'bcryptjs';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -92,7 +93,7 @@ app.get('/api/health', (req, res) =>
 );
 
 
-// ── Database schema (development only) ───────────────────────────────────────
+// ── Database schema ───────────────────────────────────────────────────────────
 async function initDb() {
   try {
     const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf8');
@@ -103,9 +104,38 @@ async function initDb() {
   }
 }
 
+// ── Auto-create admin if none exists ──────────────────────────────────────────
+async function ensureAdminExists() {
+  try {
+    const existing = await pool.query(
+      "SELECT id FROM users WHERE role = 'admin' LIMIT 1"
+    );
+    if (existing.rows.length > 0) {
+      console.log('[Admin] Admin account already exists — skipping seed');
+      return;
+    }
+
+    const ADMIN_EMAIL    = 'ranamasud101111@gmail.com';
+    const TEMP_PASSWORD  = 'Admin@1234';
+    const hashed = await bcrypt.hash(TEMP_PASSWORD, 12);
+
+    await pool.query(
+      `INSERT INTO users (name, email, password_hash, role, email_verified)
+       VALUES ($1, $2, $3, 'admin', TRUE)`,
+      ['Admin', ADMIN_EMAIL, hashed]
+    );
+
+    console.log(`[Admin] Admin account created — email: ${ADMIN_EMAIL} | temp password: ${TEMP_PASSWORD}`);
+    console.log('[Admin] IMPORTANT: Log in and change your password immediately.');
+  } catch (err) {
+    console.error('[Admin] Failed to seed admin account:', err.message);
+  }
+}
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 async function start() {
   await initDb();
+  await ensureAdminExists();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`CA Mock API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
   });

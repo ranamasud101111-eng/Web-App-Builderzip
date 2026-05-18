@@ -214,6 +214,60 @@ router.post('/admin-login', async (req, res) => {
   }
 });
 
+// ── Change password (admin, authenticated) ────────────────────────────────────
+router.post('/change-password', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admin accounts can use this endpoint' });
+    }
+
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'New password and confirmation do not match' });
+    }
+
+    const result = await pool.query('SELECT id, password_hash FROM users WHERE id = $1', [decoded.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Admin account not found' });
+    }
+
+    const user = result.rows[0];
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashed, user.id]);
+
+    console.log(`[Admin] Password changed for admin id=${user.id}`);
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Change password error:', err.message);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 // ── /me ───────────────────────────────────────────────────────────────────────
 router.get('/me', async (req, res) => {
   try {

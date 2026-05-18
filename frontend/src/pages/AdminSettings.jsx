@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Settings, Activity, Layers, BookOpen, Brain, Target, Zap,
-  CheckCircle2, Save, RefreshCw
+  CheckCircle2, Save, RefreshCw, Lock, Eye, EyeOff, KeyRound
 } from 'lucide-react';
 import api from '../api';
 import { useTheme } from '../context/ThemeContext';
@@ -81,6 +81,10 @@ export default function AdminSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [showPw, setShowPw] = useState({ current: false, newPw: false, confirm: false });
+
   useEffect(() => {
     api.get('/settings/modules')
       .then(r => {
@@ -100,6 +104,29 @@ export default function AdminSettings() {
   }, []);
 
   const set = (key, val) => setSettings(p => ({ ...p, [key]: val }));
+
+  const handleChangePassword = async () => {
+    const { currentPassword, newPassword, confirmPassword } = pwForm;
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return toast.error('All fields are required');
+    }
+    if (newPassword.length < 6) {
+      return toast.error('New password must be at least 6 characters');
+    }
+    if (newPassword !== confirmPassword) {
+      return toast.error('New password and confirmation do not match');
+    }
+    setPwSaving(true);
+    try {
+      await api.post('/auth/change-password', { currentPassword, newPassword, confirmPassword });
+      toast.success('Password updated successfully');
+      setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to change password');
+    } finally {
+      setPwSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -128,6 +155,12 @@ export default function AdminSettings() {
     );
   }
 
+  const inputBase = `w-full px-4 py-3 rounded-xl text-[13px] font-medium outline-none transition-all pr-11 ${
+    isDark
+      ? 'bg-white/5 border border-white/10 text-white placeholder-white/25 focus:border-violet-500/60'
+      : 'bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:border-violet-400'
+  }`;
+
   return (
     <div className="px-5 md:px-8 max-w-3xl mx-auto space-y-6 pb-10">
 
@@ -149,6 +182,59 @@ export default function AdminSettings() {
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
+      </motion.div>
+
+      {/* Change Password */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.02 }}>
+        <Card>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.12)' }}>
+              <KeyRound className="w-5 h-5 text-red-400" />
+            </div>
+            <div>
+              <h2 className={`text-[15px] font-bold ${isDark ? 'text-white/90' : 'text-slate-800'}`}>Change Password</h2>
+              <p className={`text-[11px] ${textMuted}`}>Update your admin account password</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              { key: 'currentPassword', label: 'Current Password', showKey: 'current' },
+              { key: 'newPassword',     label: 'New Password',     showKey: 'newPw'   },
+              { key: 'confirmPassword', label: 'Confirm New Password', showKey: 'confirm' },
+            ].map(({ key, label, showKey }) => (
+              <div key={key}>
+                <label className={`block text-[11px] font-semibold mb-1.5 ${textMuted}`}>{label}</label>
+                <div className="relative">
+                  <input
+                    type={showPw[showKey] ? 'text' : 'password'}
+                    value={pwForm[key]}
+                    onChange={e => setPwForm(p => ({ ...p, [key]: e.target.value }))}
+                    placeholder={`Enter ${label.toLowerCase()}`}
+                    className={inputBase}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw(p => ({ ...p, [showKey]: !p[showKey] }))}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${textMuted} hover:text-violet-400 transition-colors`}
+                  >
+                    {showPw[showKey] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={handleChangePassword}
+            disabled={pwSaving}
+            className="mt-5 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-bold text-white transition-all disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}
+          >
+            {pwSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+            {pwSaving ? 'Updating...' : 'Update Password'}
+          </button>
+        </Card>
       </motion.div>
 
       {/* Progress Tracker Module */}
