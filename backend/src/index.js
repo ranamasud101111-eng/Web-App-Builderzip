@@ -35,8 +35,6 @@ if (IS_PRODUCTION) {
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-// Always-allowed origins (hardcoded). Additional origins can be added via the
-// ALLOWED_ORIGINS environment variable (comma-separated) on Render.
 const HARDCODED_ORIGINS = [
   'https://optireachhub.com',
   'https://www.optireachhub.com',
@@ -50,10 +48,13 @@ const envOrigins = process.env.ALLOWED_ORIGINS
 
 const allowedOrigins = [...new Set([...HARDCODED_ORIGINS, ...envOrigins])];
 
+const REPLIT_DOMAIN_RE = /\.replit\.dev$|\.repl\.co$/;
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (REPLIT_DOMAIN_RE.test(origin)) return callback(null, true);
     if (!IS_PRODUCTION) return callback(null, true);
     console.warn(`CORS blocked: ${origin}`);
     callback(new Error(`Origin ${origin} not allowed`));
