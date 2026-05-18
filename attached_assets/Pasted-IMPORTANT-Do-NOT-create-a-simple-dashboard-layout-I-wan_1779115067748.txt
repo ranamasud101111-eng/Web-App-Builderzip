@@ -1,0 +1,155 @@
+IMPORTANT:
+Do NOT create a simple dashboard layout.
+
+I want a PREMIUM MODERN EDTECH SaaS dashboard EXACTLY like high-end platforms such as Linear, Raycast, Notion, Stripe Dashboard, and modern premium exam platforms.
+
+FOLLOW THIS DESIGN STRUCTURE STRICTLY:
+
+LAYOUT:
+- Fixed left sidebar
+- Large main dashboard content
+- Dark premium navy background
+- Purple neon gradients
+- Smooth glassmorphism effect
+- Rounded cards
+- Spacious clean layout
+- Modern typography
+- High quality UI spacing
+
+SIDEBAR STYLE:
+- Full height fixed sidebar
+- Dark transparent background
+- Neon active indicator
+- Large section spacing
+- Group sidebar items by category
+- Sidebar should look exactly like premium SaaS apps
+
+Sidebar Sections:
+MAIN
+- Dashboard
+- Enrolled Subjects
+- MCQ Practice
+- Mock Tests
+- Analytics
+
+LEARNING
+- Study Materials
+- Notes
+- Flashcards
+
+PERFORMANCE
+- Progress
+- Leaderboard
+- Achievements
+
+SETTINGS
+- Profile
+- Settings
+- Help & Support
+
+TOP SECTION:
+Create a large HERO section like premium SaaS homepage.
+
+Include:
+- Welcome back message
+- Student name
+- Motivational subtitle
+- Large glowing progress circle
+- Current streak card
+- Beautiful gradient background
+- CTA buttons:
+   • Start Practice
+   • Mock Test
+
+IMPORTANT:
+The hero section must look PREMIUM and visually attractive.
+Use glow effects and gradients.
+
+STAT CARDS:
+Create modern horizontal stat cards with:
+- Icons
+- Numbers
+- Mini chart lines
+- Gradient hover effect
+- Animated transitions
+
+Cards:
+- Enrolled Subjects
+- Completed
+- Total Chapters
+- Progress
+- Mock Tests
+
+ENROLLED SUBJECT FLOW:
+When clicking "Enrolled Subjects":
+
+STEP 1:
+Show 3 LEVEL CARDS:
+- Certificate
+- Professional
+- Advance
+
+Each level card should:
+- Have gradient icon
+- Show total subjects
+- Show progress
+- Premium hover effect
+- Large modern card UI
+
+STEP 2:
+After clicking a level:
+Show SUBJECT CARDS.
+
+Each subject card includes:
+- Subject icon
+- Subject name
+- Small description
+- Progress bar
+- Total chapters
+- Enroll button
+- FREE badge
+- Smooth hover animation
+
+LEVEL MANAGEMENT:
+Admin can:
+- Add level
+- Delete level
+- Edit level
+- Reorder level
+
+IMPORTANT DESIGN REQUIREMENTS:
+- Use large spacing
+- Use glow shadows
+- Avoid crowded layout
+- Use Framer Motion animations
+- Use glassmorphism cards
+- Use neon purple + blue accents
+- Add subtle background blur
+- Add premium progress rings
+- Add beautiful hover animations
+
+SECTIONS TO INCLUDE:
+1. Recent Activity
+2. Study Streak
+3. Upcoming Mock Tests
+4. Subject-wise Progress
+5. Performance Analytics
+6. Quick Actions
+7. Continue Learning
+
+UI QUALITY:
+This must look like a professionally designed Dribbble/Behance UI shot.
+
+DO NOT create plain admin template design.
+
+Use:
+- React
+- Tailwind CSS
+- shadcn/ui
+- Framer Motion
+- Recharts
+- Lucide React Icons
+
+Make everything fully responsive and visually premium. DO NOT USE BASIC TEMPLATE UI.
+DO NOT USE STANDARD ADMIN DASHBOARD DESIGN.
+MAKE IT LOOK LIKE A DRIBBBLE PREMIUM UI CONCEPT.
