@@ -44,6 +44,7 @@ import Bookmarks from './pages/Bookmarks';
 import CustomExam from './pages/CustomExam';
 import VerifyEmail from './pages/VerifyEmail';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -139,12 +140,14 @@ const AppRoutes = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ModuleSettingsProvider>
-          <AppRoutes />
-        </ModuleSettingsProvider>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ModuleSettingsProvider>
+            <AppRoutes />
+          </ModuleSettingsProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -1,0 +1,239 @@
+Create a complete premium modern CA exam preparation website with BOTH Dark Mode and Light Mode support. The design must feel handcrafted, realistic, and production-quality — NOT like a generic AI-generated template.
+
+Reference Style:
+- Dark Mode should follow a cinematic neon SaaS style like modern startup landing pages
+- Light Mode should feel soft, clean, minimal, elegant, and premium
+- User must be able to switch theme instantly using a toggle button in navbar
+- Save theme preference in localStorage
+- Smooth animated transition between themes
+
+Tech Stack:
+- React + Tailwind CSS
+- Framer Motion animations
+- Lucide React icons
+- Fully responsive
+- Clean reusable components
+- Optimized for Render deployment
+
+====================================================
+GLOBAL DESIGN SYSTEM
+====================================================
+
+Typography:
+- Use Inter or Satoshi font
+- Bold modern headings
+- Clean readable spacing
+- Strong visual hierarchy
+
+Border Radius:
+- rounded-2xl and rounded-3xl
+
+Animations:
+- Smooth hover transitions
+- Floating glow effects
+- Fade-up entrance animations
+- Smooth theme transition
+- Soft moving background particles
+- Subtle orbit animations
+
+====================================================
+DARK MODE DESIGN
+====================================================
+
+Theme Feel:
+Premium futuristic SaaS interface
+
+Background:
+- Deep navy
+- Dark purple gradient
+- Layered lighting
+- Glow effects
+- Soft radial gradients
+
+Colors:
+- #050816
+- #0B1026
+- #120B2E
+- Purple: #7C3AED
+- Pink: #EC4899
+- Blue: #3B82F6
+
+Hero Section:
+- Massive bold headline
+- Gradient colored “ICAB”
+- Floating icons around hero
+- Animated orbit lines
+- Glassmorphism effect
+- Glow CTA buttons
+
+Cards:
+- Transparent glass cards
+- Soft neon border glow
+- Hover lift animation
+- Realistic blur effect
+
+Buttons:
+Primary:
+- Purple → Pink gradient
+- Glow effect
+- Smooth hover animation
+
+Secondary:
+- Transparent dark glass
+- Border glow
+
+====================================================
+LIGHT MODE DESIGN
+====================================================
+
+Theme Feel:
+Minimal elegant startup website
+
+Background:
+- Soft white
+- Light lavender gradients
+- Clean pastel effects
+- Airy spacing
+
+Colors:
+- White: #FFFFFF
+- Soft Lavender: #F3F0FF
+- Soft Blue: #EEF4FF
+- Purple Accent: #7C3AED
+- Pink Accent: #EC4899
+
+Hero Section:
+- Soft floating icons
+- Minimal orbit line
+- Clean modern typography
+- Pastel gradients
+- Elegant subtle shadows
+
+Cards:
+- White cards
+- Soft shadows
+- Minimal borders
+- Floating effect on hover
+
+Buttons:
+Primary:
+- Purple → Pink gradient
+
+Secondary:
+- White background
+- Soft border
+- Clean hover shadow
+
+====================================================
+WEBSITE STRUCTURE
+====================================================
+
+1. Navbar
+- Premium logo
+- Theme toggle button
+- Navigation links
+- Sign In button
+- Start Free CTA
+- Sticky navbar with blur effect
+
+2. Hero Section
+Headline:
+“Crack Your ICAB CA Exams with Confidence”
+
+Subtitle:
+Purpose-built for Bangladeshi CA aspirants — chapter-wise MCQ practice, ICAB-aligned mock tests, and intelligent analytics.
+
+Features around hero:
+- Floating icons
+- Orbit effects
+- Animated glow circles
+
+CTA Buttons:
+- Start Preparing Free
+- Sign In
+
+Stats Cards:
+- 20K+ Students
+- 1000+ MCQs
+- 300+ Mock Tests
+- 95% Success Rate
+
+3. Features Section
+Premium feature cards:
+- Chapter-wise MCQ Practice
+- Mock Exams
+- Smart Analytics
+- Wrong Answer Review
+- AI Explanations
+- Bookmark System
+
+4. Dashboard Preview Section
+Show premium student dashboard preview
+- Charts
+- Progress tracking
+- Subject performance
+- Recent tests
+
+5. Why Choose Us Section
+Use modern comparison cards
+
+6. Testimonials Section
+Modern glass review cards
+
+7. Pricing Section
+- Free plan
+- Premium plan
+- Popular badge
+- Monthly/yearly switch
+
+8. FAQ Section
+Animated accordion
+
+9. Footer
+- Logo
+- Quick links
+- Social links
+- Copyright
+
+====================================================
+IMPORTANT DESIGN RULES
+====================================================
+
+- DO NOT make it look AI generated
+- Avoid overcrowded layouts
+- Use realistic spacing and alignment
+- Use subtle premium details
+- Add depth and hierarchy
+- Make the UI feel like a funded startup website
+- Use professional gradients only
+- Keep everything modern and clean
+- Add realistic hover states
+- Add smooth transitions everywhere
+- Mobile responsive perfectly
+- Tablet responsive perfectly
+- Professional desktop layout
+
+====================================================
+THEME TOGGLE FUNCTIONALITY
+====================================================
+
+- Add dark/light mode toggle in navbar
+- Smooth animated switching
+- Save selected theme using localStorage
+- Detect system theme initially
+- Use Tailwind dark mode properly
+
+====================================================
+BONUS PREMIUM TOUCHES
+====================================================
+
+- Background particle effects
+- Soft moving gradient blobs
+- Animated glow rings
+- Floating icons
+- Premium shadows
+- Glassmorphism navbar
+- Smooth page scroll
+- Motion effects using Framer Motion
+
+Build everything production-ready with clean code structure and modern UI/UX quality.

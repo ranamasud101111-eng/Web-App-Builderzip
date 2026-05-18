@@ -721,3 +721,40 @@ body {
 @media (max-width: 640px) {
   .stat-number { font-size: 2.25rem; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   Applied when <html data-theme="light">
+══════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background: #f8f7ff;
+  color: #1e1b4b;
+}
+
+/* Light mode scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(124,58,237,0.3), rgba(124,58,237,0.12));
+}
+
+/* Light mode selection */
+[data-theme="light"] ::selection {
+  background: rgba(124,58,237,0.18);
+  color: #1e1b4b;
+}
+
+/* Smooth theme transition on root elements */
+html {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Ensure animated bg only applies in dark mode */
+[data-theme="light"] .bg-animated-navy {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.06) 0%, transparent 60%),
+    linear-gradient(160deg, #f8f7ff 0%, #f3f0ff 40%, #f8f7ff 100%);
+  background-attachment: fixed;
+}
