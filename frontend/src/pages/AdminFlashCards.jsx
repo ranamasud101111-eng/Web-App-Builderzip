@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
   Zap, Plus, X, Edit2, Trash2, ChevronDown, ChevronUp,
-  BarChart3, Bell, BookOpen, Home, LogOut, Menu, Shield,
+  BarChart3, Bell, BookOpen, Home, LogOut, Shield,
   Brain, GraduationCap, Eye, EyeOff, Save, Loader2, Layers,
     Upload, FileText, AlignLeft, CheckCircle, AlertCircle, RefreshCw,
   HelpCircle,
@@ -65,8 +65,6 @@ export default function AdminFlashCards() {
   const navigate   = useNavigate();
   const location   = useLocation();
   const fileRef    = useRef(null);
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading,     setLoading]     = useState(true);
   const [saving,      setSaving]      = useState(false);
 
@@ -329,37 +327,11 @@ export default function AdminFlashCards() {
 
   /* ════ RENDER ════ */
   return (
-    <div className="flex min-h-screen" style={{ background:'#020818', paddingTop:'68px' }}>
+    <div className="flex flex-col">
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-[68px] h-[calc(100vh-68px)] overflow-y-auto">
-          <SidebarContent />
-        </div>
-      </div>
-
-      {/* Mobile sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-            className="fixed inset-0 lg:hidden" style={{ zIndex:8000 }}>
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <motion.div initial={{ x:-288 }} animate={{ x:0 }} exit={{ x:-288 }}
-              transition={{ type:'spring', damping:28, stiffness:300 }}
-              className="absolute left-0 top-0 bottom-0 w-72">
-              <div className="h-full overflow-y-auto pt-[68px]">
-                <SidebarContent onClose={() => setSidebarOpen(false)} />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top bar */}
-        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[68px] z-10">
+        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[56px] z-10">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-white/[0.06] rounded-lg flex-shrink-0">
             <Menu className="w-5 h-5 text-white/60" />
           </button>
@@ -567,7 +539,6 @@ export default function AdminFlashCards() {
             </motion.div>
           ))}
         </div>
-      </div>
 
       {/* ══ MODALS ══ */}
 

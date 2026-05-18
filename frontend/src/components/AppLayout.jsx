@@ -63,9 +63,9 @@ export default function AppLayout({ children }) {
     : '0 1px 0 rgba(124,58,237,0.06), 0 4px 16px rgba(0,0,0,0.04)';
 
   const titleColor = isDark ? 'text-white/90' : 'text-slate-800';
-  const subColor = isDark ? 'text-white/30' : 'text-slate-400';
+  const subColor = isDark ? 'text-white/30' : 'text-slate-500';
   const userNameColor = isDark ? 'text-white/85' : 'text-slate-700';
-  const userRoleColor = isDark ? 'text-white/30' : 'text-slate-400';
+  const userRoleColor = isDark ? 'text-white/30' : 'text-slate-500';
   const dividerColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(124,58,237,0.1)';
 
   return (

@@ -24,8 +24,6 @@ export default function AdminCompletions() {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const navItems = [
     { to: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { to: '/admin/subjects', label: 'Subjects & Chapters', icon: <BookOpen className="w-4 h-4" /> },
@@ -115,26 +113,7 @@ export default function AdminCompletions() {
   );
 
   return (
-    <div className="flex">
-      <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40">
-        <Sidebar />
-      </div>
-      {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="relative w-72 h-full z-10"><Sidebar mobile /></div>
-        </div>
-      )}
-
-      <div className="flex-1 lg:ml-64 p-6 lg:p-8 overflow-auto">
-        <div className="lg:hidden flex items-center justify-between mb-6">
-          <button onClick={() => setSidebarOpen(true)} className="glass p-2.5 rounded-xl">
-            <Menu className="w-5 h-5" />
-          </button>
-          <span className="font-bold text-white">Completions</span>
-          <div className="w-10" />
-        </div>
-
+    <div className="px-6 lg:px-8 pb-8">
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center gap-2 mb-1">
             <Link to="/admin" className="text-white/35 hover:text-white text-sm transition-colors">Overview</Link>
@@ -313,7 +292,6 @@ export default function AdminCompletions() {
             </motion.div>
           </>
         )}
-      </div>
     </div>
   );
 }

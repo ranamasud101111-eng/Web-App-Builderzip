@@ -45,7 +45,6 @@ export default function AdminNotifications() {
   const [editItem, setEditItem] = useState(null);
   const [sending, setSending] = useState(false);
   const [users, setUsers] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [form, setForm] = useState({ title: '', message: '', type: 'announcement', target: 'all', target_value: '', is_important: false, scheduled_at: '' });
 
   const navItems = [
@@ -134,24 +133,7 @@ export default function AdminNotifications() {
 
   return (
     <>
-    <div className="flex">
-      <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40"><Sidebar /></div>
-
-      {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="relative w-72 h-full z-10"><Sidebar mobile /></div>
-        </div>
-      )}
-
-      <div className="flex-1 lg:ml-64 p-6 lg:p-8 overflow-auto">
-        {/* Mobile header */}
-        <div className="lg:hidden flex items-center justify-between mb-6">
-          <button onClick={() => setSidebarOpen(true)} className="glass p-2.5 rounded-xl"><Menu className="w-5 h-5" /></button>
-          <span className="font-bold text-white">Notifications</span>
-          <div className="w-10" />
-        </div>
-
+    <div className="px-6 lg:px-8 pb-8">
         {/* Page header */}
         <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
           <div>
@@ -236,7 +218,6 @@ export default function AdminNotifications() {
             })}
           </div>
         )}
-      </div>
     </div>
 
     {createPortal(

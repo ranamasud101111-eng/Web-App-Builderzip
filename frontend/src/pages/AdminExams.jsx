@@ -46,7 +46,6 @@ export default function AdminExams() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
   const navItems = [
@@ -201,27 +200,7 @@ export default function AdminExams() {
 
   return (
     <>
-    <div className="flex">
-      <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40">
-        <Sidebar />
-      </div>
-
-      {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="relative w-72 h-full z-10"><Sidebar mobile /></div>
-        </div>
-      )}
-
-      <div className="flex-1 lg:ml-64 p-6 lg:p-8 overflow-auto">
-        <div className="lg:hidden flex items-center justify-between mb-6">
-          <button onClick={() => setSidebarOpen(true)} className="glass p-2.5 rounded-xl">
-            <Menu className="w-5 h-5" />
-          </button>
-          <span className="font-bold text-white">Exam Manager</span>
-          <div className="w-10" />
-        </div>
-
+    <div className="px-6 lg:px-8 pb-8">
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-black text-white mb-1">Exam Manager</h1>
@@ -367,7 +346,6 @@ export default function AdminExams() {
             ))}
           </div>
         )}
-      </div>
     </div>
 
     {createPortal(

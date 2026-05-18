@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
   Layers, Plus, X, Edit2, Trash2, ChevronDown, ChevronUp,
-  BarChart3, Bell, BookOpen, Home, LogOut, Menu, Shield,
+  BarChart3, Bell, BookOpen, Home, LogOut, Shield,
   Brain, GraduationCap, Eye, EyeOff, Youtube, Save, Loader2,
   Zap, FileText, HelpCircle,
 } from 'lucide-react';
@@ -68,8 +68,6 @@ export default function AdminClasses() {
   const { refresh: refreshModules } = useModuleSettings();
   const navigate   = useNavigate();
   const location   = useLocation();
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading,     setLoading]     = useState(true);
   const [saving,      setSaving]      = useState(false);
 
@@ -278,44 +276,12 @@ export default function AdminClasses() {
 
   /* ════════════════════════════════════════ */
   return (
-    <motion.div className="flex min-h-screen" style={{ background: '#020818', paddingTop: '68px' }}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }}>
+    <div className="flex flex-col">
 
-      {/* ── Desktop sidebar (sticky, starts below navbar) ── */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-[68px] h-[calc(100vh-68px)] overflow-y-auto">
-          <SidebarContent />
-        </div>
-      </div>
-
-      {/* ── Mobile sidebar overlay ── */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 lg:hidden" style={{ zIndex: 8000 }}>
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-            <motion.div
-              initial={{ x: -288 }} animate={{ x: 0 }} exit={{ x: -288 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="absolute left-0 top-0 bottom-0 w-72">
-              <div className="h-full overflow-y-auto pt-[68px]">
-                <SidebarContent onClose={() => setSidebarOpen(false)} />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Main content area ── */}
-      <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top bar */}
-        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[68px] z-10">
+        <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[56px] z-10">
           {/* Mobile hamburger */}
-          <button onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 hover:bg-white/[0.06] rounded-lg flex-shrink-0">
-            <Menu className="w-5 h-5 text-white/60" />
-          </button>
 
           {/* Title */}
           <div className="flex items-center gap-2.5 mr-auto min-w-0">
@@ -559,7 +525,6 @@ export default function AdminClasses() {
             </motion.div>
           ))}
         </div>
-      </div>
 
       {/* ════ MODALS ════ */}
 
@@ -824,6 +789,6 @@ export default function AdminClasses() {
           </Modal>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

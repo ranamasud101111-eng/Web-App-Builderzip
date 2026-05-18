@@ -50,8 +50,6 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   useEffect(() => {
     Promise.all([api.get('/users/stats'), api.get('/users')])
       .then(([sRes, uRes]) => {
@@ -140,33 +138,7 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="flex">
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40">
-        <Sidebar />
-      </div>
-
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="relative w-72 h-full z-10">
-            <Sidebar mobile />
-          </div>
-        </div>
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 lg:ml-64 p-6 lg:p-8 overflow-auto">
-        {/* Mobile header */}
-        <div className="lg:hidden flex items-center justify-between mb-6">
-          <button onClick={() => setSidebarOpen(true)} className="glass p-2.5 rounded-xl">
-            <Menu className="w-5 h-5" />
-          </button>
-          <span className="font-bold text-white">Admin Dashboard</span>
-          <div className="w-10" />
-        </div>
-
+    <div className="px-6 lg:px-8 pb-8">
         {/* Page title */}
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-3xl font-black text-white mb-1">Overview</h1>
@@ -279,7 +251,6 @@ export default function AdminDashboard() {
             </table>
           </div>
         </motion.div>
-      </div>
     </div>
   );
 }
