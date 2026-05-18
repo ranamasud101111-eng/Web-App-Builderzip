@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useModuleSettings } from '../context/ModuleSettingsContext';
 import { motion } from 'framer-motion';
 import {
@@ -180,6 +181,7 @@ const ExploreCard = ({ s, enrolled, onEnroll, index }) => (
 /* ════════════════════════════════════════════════════════════════════════════ */
 export default function Dashboard() {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const { modules, loading: mLoading } = useModuleSettings();
   const isAdmin = user?.role === 'admin';
 
@@ -237,22 +239,35 @@ export default function Dashboard() {
       {/* ═══ HERO SECTION ═══════════════════════════════════════════════════ */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
         className="relative rounded-3xl overflow-hidden"
-        style={{
+        style={isDark ? {
           background: 'linear-gradient(135deg, rgba(14,8,50,0.95) 0%, rgba(8,4,32,0.98) 50%, rgba(4,8,28,0.99) 100%)',
           border: '1px solid rgba(139,92,246,0.18)',
           boxShadow: '0 0 80px rgba(124,58,237,0.1), inset 0 1px 0 rgba(139,92,246,0.15)',
+        } : {
+          background: 'linear-gradient(135deg, #ffffff 0%, #faf5ff 40%, #f3eeff 100%)',
+          border: '1px solid rgba(124,58,237,0.12)',
+          boxShadow: '0 4px 24px rgba(124,58,237,0.08), 0 1px 4px rgba(0,0,0,0.04)',
         }}>
 
-        {/* Background glows */}
-        <div className="absolute -top-20 -left-10 w-72 h-72 rounded-full opacity-20 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)', filter: 'blur(40px)' }} />
-        <div className="absolute -bottom-10 right-20 w-48 h-48 rounded-full opacity-10 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)', filter: 'blur(40px)' }} />
-        <div className="absolute top-0 left-0 right-0 h-[1px]"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.6), rgba(6,182,212,0.3), transparent)' }} />
+        {/* Background glows — dark mode only */}
+        {isDark && <>
+          <div className="absolute -top-20 -left-10 w-72 h-72 rounded-full opacity-20 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          <div className="absolute -bottom-10 right-20 w-48 h-48 rounded-full opacity-10 pointer-events-none"
+            style={{ background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          <div className="absolute top-0 left-0 right-0 h-[1px]"
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.6), rgba(6,182,212,0.3), transparent)' }} />
+        </>}
+
+        {/* Subtle accent top border — light mode */}
+        {!isDark && (
+          <div className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.4), rgba(167,139,250,0.6), rgba(124,58,237,0.4), transparent)' }} />
+        )}
 
         {/* Dot grid overlay */}
-        <div className="absolute inset-0 opacity-[0.025] pointer-events-none hero-grid" />
+        <div className="absolute inset-0 pointer-events-none hero-grid"
+          style={{ opacity: isDark ? 0.025 : 0.04 }} />
 
         <div className="relative p-7 sm:p-10">
           <div className="flex flex-col lg:flex-row lg:items-center gap-8">
@@ -262,22 +277,29 @@ export default function Dashboard() {
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
                 className="flex items-center gap-2 mb-4">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-                  style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                  <Flame className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-[11px] font-black text-amber-400 tracking-wide uppercase">Study streak active</span>
+                  style={isDark
+                    ? { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }
+                    : { background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  <Flame className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[11px] font-black text-amber-600 tracking-wide uppercase">Study streak active</span>
                 </div>
               </motion.div>
 
               <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.08] mb-3">
+                className="text-3xl sm:text-4xl lg:text-5xl font-black leading-[1.08] mb-3"
+                style={{ color: isDark ? 'white' : '#1e1b4b' }}>
                 Welcome back,<br />
-                <span style={{ background: 'linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 40%, #06b6d4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                <span style={{ background: isDark
+                  ? 'linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 40%, #06b6d4 100%)'
+                  : 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                   {user?.name?.split(' ')[0]} 👋
                 </span>
               </motion.h1>
 
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                className="text-white/40 text-[15px] leading-relaxed max-w-md mb-7">
+                className="text-[15px] leading-relaxed max-w-md mb-7"
+                style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#6b7280' }}>
                 Every chapter you complete brings you closer to cracking your ICAB CA exams. Keep the momentum going!
               </motion.p>
 
@@ -288,9 +310,17 @@ export default function Dashboard() {
                 </Link>
                 <Link to="/exams"
                   className="inline-flex items-center gap-2 text-sm py-3 px-6 rounded-2xl font-semibold transition-all duration-200"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
+                  style={isDark
+                    ? { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }
+                    : { background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', color: '#5b21b6' }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = isDark ? 'rgba(139,92,246,0.12)' : 'rgba(124,58,237,0.14)';
+                    e.currentTarget.style.borderColor = isDark ? 'rgba(139,92,246,0.3)' : 'rgba(124,58,237,0.35)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(124,58,237,0.07)';
+                    e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(124,58,237,0.2)';
+                  }}>
                   <Target className="w-4 h-4" /> Mock Test
                 </Link>
               </motion.div>
@@ -302,25 +332,27 @@ export default function Dashboard() {
               {/* Big progress ring */}
               <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}
                 className="flex items-center gap-5 p-5 rounded-2xl"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                style={isDark
+                  ? { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }
+                  : { background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.12)' }}>
                 <div className="relative">
                   <GlowRing pct={overallPct} size={100} stroke={8} color="#8b5cf6" glow />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-white leading-none">{overallPct}%</span>
-                    <span className="text-[9px] text-white/35 font-bold mt-0.5">Done</span>
+                    <span className="text-xl font-black leading-none" style={{ color: isDark ? 'white' : '#1e1b4b' }}>{overallPct}%</span>
+                    <span className="text-[9px] font-bold mt-0.5" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : '#9ca3af' }}>Done</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-white font-black text-[15px] leading-none">{totalDone}</p>
-                  <p className="text-white/35 text-[11px] font-medium mt-0.5">Chapters done</p>
+                  <p className="font-black text-[15px] leading-none" style={{ color: isDark ? 'white' : '#1e1b4b' }}>{totalDone}</p>
+                  <p className="text-[11px] font-medium mt-0.5" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : '#9ca3af' }}>Chapters done</p>
                   <div className="mt-3 space-y-1.5">
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                      <span className="text-[10px] text-white/40">{progress.length} subjects enrolled</span>
+                      <span className="text-[10px]" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>{progress.length} subjects enrolled</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                      <span className="text-[10px] text-white/40">{totalChaps} total chapters</span>
+                      <span className="text-[10px]" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>{totalChaps} total chapters</span>
                     </div>
                   </div>
                 </div>
@@ -335,8 +367,8 @@ export default function Dashboard() {
                   <Flame className="w-5 h-5 text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-amber-400/70 font-bold uppercase tracking-wide">Study Streak</p>
-                  <p className="text-white font-black text-[18px] leading-none">7 <span className="text-[12px] text-white/40 font-semibold">days</span></p>
+                  <p className="text-[11px] text-amber-500 font-bold uppercase tracking-wide">Study Streak</p>
+                  <p className="font-black text-[18px] leading-none" style={{ color: isDark ? 'white' : '#1e1b4b' }}>7 <span className="text-[12px] font-semibold" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>days</span></p>
                 </div>
               </motion.div>
             </div>
@@ -362,7 +394,8 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Zap className="w-4 h-4 text-violet-400" />
-              <h2 className="text-[11px] font-black text-white/40 uppercase tracking-[0.16em]">Quick Actions</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.16em]"
+                style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>Quick Actions</h2>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {quickActions.map((a, i) => (
@@ -406,11 +439,13 @@ export default function Dashboard() {
                     <stop offset="100%" stopColor="#6d28d9" stopOpacity={0.5} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="d" tick={{ fill: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 9 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="d" tick={{ fill: isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db', fontSize: 9 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: 'rgba(5,9,30,0.95)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12, fontSize: 11, color: 'white' }}
-                  cursor={{ fill: 'rgba(139,92,246,0.06)' }}
+                  contentStyle={isDark
+                    ? { background: 'rgba(5,9,30,0.95)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12, fontSize: 11, color: 'white' }
+                    : { background: '#ffffff', border: '1px solid rgba(124,58,237,0.15)', borderRadius: 12, fontSize: 11, color: '#111827', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+                  cursor={{ fill: isDark ? 'rgba(139,92,246,0.06)' : 'rgba(124,58,237,0.04)' }}
                   formatter={(v) => [`${v} Qs`, 'Answered']} />
                 <Bar dataKey="v" fill="url(#barGrad)" radius={[6, 6, 0, 0]} maxBarSize={36} />
               </BarChart>
@@ -422,15 +457,18 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-violet-400" />
-                <h2 className="text-[11px] font-black text-white/40 uppercase tracking-[0.16em]">Subjects</h2>
+                <h2 className="text-[11px] font-black uppercase tracking-[0.16em]"
+                  style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>Subjects</h2>
               </div>
               <div className="flex gap-1.5">
                 {['enrolled', 'explore'].map(t => (
                   <button key={t} onClick={() => setTab(t)}
                     className="px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all duration-200"
                     style={tab === t
-                      ? { background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', color: 'white', boxShadow: '0 0 20px rgba(124,58,237,0.35)' }
-                      : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }}>
+                      ? { background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', color: 'white', boxShadow: '0 4px 16px rgba(124,58,237,0.35)' }
+                      : isDark
+                        ? { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }
+                        : { background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.12)', color: '#6b7280' }}>
                     {t === 'enrolled' ? `My Courses (${progress.length})` : `Explore (${allSubjects.length})`}
                   </button>
                 ))}
@@ -440,9 +478,9 @@ export default function Dashboard() {
             {tab === 'enrolled' ? (
               progress.length === 0 ? (
                 <div className="card-premium rounded-2xl py-16 text-center">
-                  <BookOpen className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                  <h3 className="text-white font-bold text-base mb-2">No courses yet</h3>
-                  <p className="text-white/30 text-sm mb-5">Switch to Explore to find and enroll in subjects.</p>
+                  <BookOpen className="w-12 h-12 mx-auto mb-4" style={{ color: isDark ? 'rgba(255,255,255,0.1)' : '#d1d5db' }} />
+                  <h3 className="font-bold text-base mb-2" style={{ color: isDark ? 'white' : '#1e1b4b' }}>No courses yet</h3>
+                  <p className="text-sm mb-5" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>Switch to Explore to find and enroll in subjects.</p>
                   <button onClick={() => setTab('explore')} className="btn-primary inline-flex items-center gap-2">
                     Explore Subjects <ArrowRight className="w-4 h-4" />
                   </button>
@@ -478,14 +516,17 @@ export default function Dashboard() {
               {RECENT.map((r, i) => (
                 <div key={i} className="flex items-start gap-3 group">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: `${r.color}12`, border: `1px solid ${r.color}20`, color: r.color }}>
+                    style={{ background: `${r.color}15`, border: `1px solid ${r.color}25`, color: r.color }}>
                     <r.icon className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white/80 leading-tight truncate">{r.label}</p>
-                    <p className="text-[10px] text-white/30 mt-0.5 truncate">{r.sub}</p>
+                    <p className="text-[12px] font-semibold leading-tight truncate"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.8)' : '#374151' }}>{r.label}</p>
+                    <p className="text-[10px] mt-0.5 truncate"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>{r.sub}</p>
                   </div>
-                  <span className="text-[10px] text-white/20 flex-shrink-0 font-medium">{r.time}</span>
+                  <span className="text-[10px] flex-shrink-0 font-medium"
+                    style={{ color: isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }}>{r.time}</span>
                 </div>
               ))}
             </div>
@@ -504,21 +545,27 @@ export default function Dashboard() {
             <div className="space-y-3">
               {UPCOMING.map((t, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
-                  style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  style={isDark
+                    ? { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }
+                    : { background: 'rgba(124,58,237,0.03)', border: '1px solid rgba(124,58,237,0.08)' }}>
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: t.color, boxShadow: `0 0 6px ${t.color}` }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-white/80 truncate">{t.name}</p>
-                    <p className="text-[10px] text-white/30 mt-0.5">{t.date}</p>
+                    <p className="text-[11px] font-bold truncate"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.8)' : '#374151' }}>{t.name}</p>
+                    <p className="text-[10px] mt-0.5"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af' }}>{t.date}</p>
                   </div>
                   {t.urgent && (
-                    <span className="text-[9px] font-black text-red-400 bg-red-500/10 border border-red-500/20 rounded-full px-2 py-0.5 uppercase tracking-wide flex-shrink-0">Today</span>
+                    <span className="text-[9px] font-black text-red-500 bg-red-50 border border-red-200 rounded-full px-2 py-0.5 uppercase tracking-wide flex-shrink-0">Today</span>
                   )}
                 </div>
               ))}
             </div>
             <Link to="/exams"
               className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-[12px] font-bold transition-all"
-              style={{ background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.15)', color: 'rgba(6,182,212,0.8)' }}>
+              style={isDark
+                ? { background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.15)', color: 'rgba(6,182,212,0.8)' }
+                : { background: 'rgba(6,182,212,0.06)', border: '1px solid rgba(6,182,212,0.2)', color: '#0891b2' }}>
               <Target className="w-3.5 h-3.5" /> View All Exams
             </Link>
           </motion.div>
@@ -533,22 +580,26 @@ export default function Dashboard() {
             </div>
             <div className="grid grid-cols-7 gap-1 mb-2">
               {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-                <div key={i} className="text-center text-[9px] text-white/25 font-bold">{d}</div>
+                <div key={i} className="text-center text-[9px] font-bold"
+                  style={{ color: isDark ? 'rgba(255,255,255,0.25)' : '#d1d5db' }}>{d}</div>
               ))}
             </div>
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: 28 }, (_, i) => {
                 const intensity = i < 7 ? 0 : i < 14 ? 1 : i < 21 ? 2 : 3;
                 const active = Math.random() > 0.35;
-                const colors = ['rgba(255,255,255,0.04)', 'rgba(139,92,246,0.25)', 'rgba(139,92,246,0.5)', 'rgba(139,92,246,0.85)'];
+                const darkColors = ['rgba(255,255,255,0.04)', 'rgba(139,92,246,0.25)', 'rgba(139,92,246,0.5)', 'rgba(139,92,246,0.85)'];
+                const lightColors = ['rgba(124,58,237,0.06)', 'rgba(124,58,237,0.2)', 'rgba(124,58,237,0.45)', 'rgba(124,58,237,0.8)'];
+                const colors = isDark ? darkColors : lightColors;
                 return (
                   <div key={i}
                     className="aspect-square rounded-sm transition-all hover:scale-110 cursor-default"
-                    style={{ background: active ? colors[intensity] : colors[0], boxShadow: active && intensity > 1 ? '0 0 4px rgba(139,92,246,0.4)' : 'none' }} />
+                    style={{ background: active ? colors[intensity] : colors[0], boxShadow: active && intensity > 1 ? '0 0 4px rgba(124,58,237,0.4)' : 'none' }} />
                 );
               })}
             </div>
-            <p className="text-[10px] text-white/25 mt-3 text-center">Last 4 weeks of activity</p>
+            <p className="text-[10px] mt-3 text-center"
+              style={{ color: isDark ? 'rgba(255,255,255,0.25)' : '#d1d5db' }}>Last 4 weeks of activity</p>
           </motion.div>
 
           {/* Module cards */}
@@ -563,13 +614,17 @@ export default function Dashboard() {
                 {moduleCards.map(m => (
                   <Link key={m.key} to={m.to}
                     className="flex items-center gap-3 p-3 rounded-xl group transition-all hover:-translate-x-0.5"
-                    style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    style={isDark
+                      ? { background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }
+                      : { background: 'rgba(124,58,237,0.03)', border: '1px solid rgba(124,58,237,0.08)' }}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${m.color}12`, border: `1px solid ${m.color}20`, color: m.color }}>
+                      style={{ background: `${m.color}15`, border: `1px solid ${m.color}25`, color: m.color }}>
                       <m.icon className="w-4 h-4" />
                     </div>
-                    <span className="text-[12px] font-semibold text-white/70 group-hover:text-white transition-colors flex-1">{m.label}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/50 transition-colors" />
+                    <span className="text-[12px] font-semibold transition-colors flex-1"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.7)' : '#4b5563' }}>{m.label}</span>
+                    <ChevronRight className="w-3.5 h-3.5 transition-colors"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db' }} />
                   </Link>
                 ))}
               </div>
@@ -592,8 +647,10 @@ export default function Dashboard() {
               ].map(p => (
                 <div key={p.label}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] text-white/40 font-semibold">{p.label}</span>
-                    <span className="text-[11px] font-black text-white/70">{p.val}%</span>
+                    <span className="text-[11px] font-semibold"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }}>{p.label}</span>
+                    <span className="text-[11px] font-black"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.7)' : '#374151' }}>{p.val}%</span>
                   </div>
                   <div className="progress-bar">
                     <div className="progress-fill" style={{ width: `${p.val}%`, background: `linear-gradient(90deg,${p.color}99,${p.color})` }} />

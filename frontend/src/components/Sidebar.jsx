@@ -94,21 +94,21 @@ function NavItem({ to, icon: Icon, label, onClick, isDark }) {
     <Link to={to} onClick={onClick} className={`sidebar-item group relative ${isActive ? 'active' : ''}`}>
       <Icon className={`w-[16px] h-[16px] flex-shrink-0 transition-colors duration-200 ${
         isActive
-          ? 'text-violet-500'
+          ? isDark ? 'text-violet-400' : 'text-white'
           : isDark
             ? 'text-white/30 group-hover:text-white/60'
             : 'text-slate-400 group-hover:text-violet-600'
       }`} />
-      <span className={`text-[13px] font-medium truncate transition-colors duration-200 ${
+      <span className={`text-[13px] font-semibold truncate transition-colors duration-200 ${
         isActive
-          ? isDark ? 'text-violet-300' : 'text-violet-700'
+          ? isDark ? 'text-violet-300' : 'text-white'
           : isDark
             ? 'text-white/45 group-hover:text-white/80'
             : 'text-slate-500 group-hover:text-violet-700'
       }`}>
         {label}
       </span>
-      {isActive && (
+      {isActive && isDark && (
         <motion.span layoutId="nav-pill"
           className="absolute left-0 top-1/4 bottom-1/4 w-[3px] rounded-r-full bg-gradient-to-b from-violet-400 to-purple-600" />
       )}

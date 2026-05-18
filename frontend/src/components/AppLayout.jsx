@@ -56,7 +56,11 @@ export default function AppLayout({ children }) {
 
   const headerBorder = isDark
     ? 'rgba(255,255,255,0.04)'
-    : 'rgba(124,58,237,0.1)';
+    : 'rgba(124,58,237,0.08)';
+
+  const headerShadow = isDark
+    ? 'none'
+    : '0 1px 0 rgba(124,58,237,0.06), 0 4px 16px rgba(0,0,0,0.04)';
 
   const titleColor = isDark ? 'text-white/90' : 'text-slate-800';
   const subColor = isDark ? 'text-white/30' : 'text-slate-400';
@@ -68,11 +72,13 @@ export default function AppLayout({ children }) {
     <div className="min-h-screen bg-animated-navy transition-colors duration-300">
       <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
       <div className="lg:ml-[220px] min-h-screen flex flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between px-5 h-[52px] flex-shrink-0 transition-all duration-300"
+        <header className="sticky top-0 z-30 flex items-center justify-between px-5 h-[56px] flex-shrink-0 transition-all duration-300"
           style={{
             background: headerBg,
-            backdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
             borderBottom: `1px solid ${headerBorder}`,
+            boxShadow: headerShadow,
           }}>
           <div className="flex items-center gap-3">
             <button onClick={() => setMobileOpen(true)}
