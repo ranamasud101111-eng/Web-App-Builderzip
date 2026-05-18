@@ -1,8 +1,6 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-// In production (Render): set DATABASE_URL to your Supabase connection string.
-// In development (Replit): DATABASE_URL is automatically the Replit PostgreSQL.
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
@@ -10,17 +8,28 @@ if (!connectionString) {
   process.exit(1);
 }
 
-const isSupabase = connectionString.includes('supabase.co');
+const isSupabase =
+  connectionString.includes('supabase.co') ||
+  connectionString.includes('pooler.supabase.com');
+
+const isPooler = connectionString.includes('pooler.supabase.com');
 
 const pool = new Pool({
   connectionString,
   ssl: isSupabase || process.env.NODE_ENV === 'production'
     ? { rejectUnauthorized: false }
     : false,
+  // Pooler-safe settings — avoid prepared statements on transaction pooler
+  ...(isPooler ? { max: 10, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 } : {}),
 });
 
 pool.on('connect', () => {
-  console.log(`[DB] Connected — ${isSupabase ? 'Supabase PostgreSQL' : 'Replit PostgreSQL'}`);
+  const label = isPooler
+    ? 'Supabase Pooler'
+    : isSupabase
+    ? 'Supabase PostgreSQL'
+    : 'Replit PostgreSQL';
+  console.log(`[DB] Connected — ${label}`);
 });
 
 pool.on('error', (err) => {
