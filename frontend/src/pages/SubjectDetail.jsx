@@ -44,7 +44,7 @@ export default function SubjectDetail() {
   );
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4">
+    <div className="pb-16 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Back */}
         <button onClick={() => navigate('/dashboard')}

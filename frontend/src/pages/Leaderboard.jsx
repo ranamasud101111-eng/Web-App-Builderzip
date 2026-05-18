@@ -45,7 +45,7 @@ export default function Leaderboard() {
   const myRank = users.findIndex(u => u.id === user?.id) + 1;
 
   return (
-    <div className="min-h-screen pt-24 pb-20 px-4">
+    <div className="pb-20 px-4">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}

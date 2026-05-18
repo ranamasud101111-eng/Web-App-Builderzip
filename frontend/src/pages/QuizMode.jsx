@@ -164,7 +164,7 @@ export default function QuizMode() {
     const { correct, total, pct, timeTaken, answers: rAnswers, autoSubmit } = result;
     const unanswered = total - Object.keys(answers).length;
     return (
-      <div className="min-h-screen pt-20 pb-16 px-4">
+      <div className="pb-16 px-4">
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Score card */}
@@ -254,7 +254,7 @@ export default function QuizMode() {
   const answeredCount = Object.keys(answers).length;
 
   return (
-    <div className="min-h-screen pt-20 pb-10 px-4">
+    <div className="pb-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">

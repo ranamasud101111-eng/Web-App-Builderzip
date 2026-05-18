@@ -155,7 +155,7 @@ export default function CustomExam() {
 
   // ── Build Phase ──
   if (phase === 'build') return (
-    <div className="min-h-screen pt-20 pb-16 px-4">
+    <div className="pb-16 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Link to="/practice" className="flex items-center gap-2 text-white/35 hover:text-white text-sm group transition-colors">
@@ -266,7 +266,7 @@ export default function CustomExam() {
     const q = questions[current];
     const answeredCount = Object.keys(answers).length;
     return (
-      <div className="min-h-screen pt-20 pb-10 px-4">
+      <div className="pb-10 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
@@ -398,7 +398,7 @@ export default function CustomExam() {
     const grade = pct >= 80 ? 'A' : pct >= 65 ? 'B' : pct >= 50 ? 'C' : pct >= 35 ? 'D' : 'F';
     const gradeColor = pct >= 80 ? '#10b981' : pct >= 65 ? '#3b82f6' : pct >= 50 ? '#f59e0b' : pct >= 35 ? '#f97316' : '#f43f5e';
     return (
-      <div className="min-h-screen pt-20 pb-16 px-4">
+      <div className="pb-16 px-4">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="card-premium rounded-3xl p-8 mb-8 relative overflow-hidden">

@@ -1,0 +1,186 @@
+Build a modern dark-themed responsive dashboard web app for a CA Mock / Exam Preparation platform using React + Tailwind CSS + shadcn/ui.
+
+UI STYLE:
+- Premium modern SaaS dashboard
+- Dark navy background with purple/blue neon gradients
+- Smooth glassmorphism cards
+- Soft glow effects
+- Rounded corners (20px+)
+- Sidebar based layout (NO top navigation menu except small top utility bar)
+- Professional student learning platform vibe
+- Fully responsive for desktop/tablet/mobile
+
+MAIN LAYOUT:
+- Left fixed sidebar
+- Right main content area
+- Small top bar only for profile, notifications, theme toggle
+
+SIDEBAR ITEMS:
+- Dashboard
+- Enrolled Subjects
+- MCQ Practice
+- Mock Tests
+- Bookmarks
+- Analytics
+- Study Materials
+- Notes
+- Flashcards
+- Leaderboard
+- Achievements
+- Settings
+- Help & Support
+
+DASHBOARD FEATURES:
+1. Welcome Section
+- Greeting with student name
+- Motivational subtitle
+- Current streak card
+- Overall progress ring
+
+2. Statistics Cards
+- Enrolled Subjects
+- Completed Subjects
+- Total Chapters
+- Progress %
+- Mock Tests Attempted
+
+3. Enrolled Subjects Section
+IMPORTANT FLOW:
+- When user clicks "Enrolled Subjects"
+- First show 3 category cards:
+   • Certificate
+   • Professional
+   • Advance
+
+- Admin can dynamically:
+   • Add new levels
+   • Delete levels
+   • Edit level names
+   • Reorder levels
+
+After selecting a level:
+- Show all subjects under that level
+- Each subject card contains:
+   • Subject icon
+   • Subject title
+   • Small description
+   • Progress bar
+   • Total chapters
+   • Enroll button
+   • "Free" badge for now
+
+SUBJECT FLOW:
+Level → Subjects → Chapters → MCQ Practice
+
+4. MCQ PRACTICE SYSTEM
+- Practice by:
+   • Level
+   • Subject
+   • Chapter
+
+Features:
+- Timer
+- Question palette
+- Instant result
+- Wrong answer review
+- Bookmark questions
+- Difficulty tags
+
+5. MOCK TEST SECTION
+- Upcoming tests
+- Previous attempts
+- Live countdown
+- Rank after submission
+- Performance analytics
+
+6. ANALYTICS PAGE
+Beautiful charts and insights:
+- Subject-wise progress
+- Accuracy %
+- Weak chapters
+- Time spent
+- Daily study graph
+- Mock performance trends
+
+7. ADMIN PANEL FEATURES
+Admin Dashboard:
+- Add/Edit/Delete Levels
+- Add/Edit/Delete Subjects
+- Add/Edit/Delete Chapters
+- Manage MCQs
+- Manage Mock Tests
+- Manage Students
+- View Analytics
+- Control Free/Premium access
+- Drag & drop ordering
+
+8. DESIGN DETAILS
+- Animated hover effects
+- Smooth transitions
+- Progress ring animations
+- Neon active sidebar indicator
+- Interactive cards
+- Clean typography
+- Minimal but premium UI
+- Use Lucide React icons
+- Use Recharts for graphs
+- Use Framer Motion animations
+
+9. TECH STACK
+Frontend:
+- React
+- Tailwind CSS
+- shadcn/ui
+- Framer Motion
+- Recharts
+
+Backend:
+- Node.js + Express
+OR Supabase/Firebase
+
+Database:
+- PostgreSQL or Firebase
+
+Authentication:
+- Student login/signup
+- Admin login
+- Role-based access
+
+10. EXTRA PREMIUM FEATURES
+- Dark/Light mode
+- Daily study streak
+- Achievement badges
+- Search subjects
+- Filter by level
+- Recent activity feed
+- Notifications panel
+- Mobile responsive sidebar
+- Skeleton loaders
+- Empty states
+- Toast notifications
+
+11. COLOR PALETTE
+Primary:
+- Purple (#7C3AED)
+- Indigo (#4F46E5)
+- Cyan accents (#06B6D4)
+
+Background:
+- Deep Navy (#050816)
+- Card background (#0B1120)
+
+12. IMPORTANT UX REQUIREMENTS
+- Sidebar should remain fixed
+- Smooth page transitions
+- No cluttered UI
+- Highly professional appearance
+- Clean spacing
+- Modern exam platform feel like premium edtech SaaS
+
+Generate:
+- Complete dashboard UI
+- Multiple pages
+- Reusable components
+- Responsive layouts
+- Modern animations
+- Production-ready clean code

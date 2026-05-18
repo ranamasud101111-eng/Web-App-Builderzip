@@ -47,7 +47,7 @@ export default function SessionHistory() {
   const totalSessions = sessions.length;
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4">
+    <div className="pb-16 px-4">
       <div className="max-w-3xl mx-auto">
         <button onClick={() => navigate(`/chapter/${chapterId}`)}
           className="flex items-center gap-2 text-white/35 hover:text-white text-sm mb-8 group transition-colors">

@@ -653,7 +653,7 @@ export default function AdminMCQ() {
   ];
 
   return (
-    <div className="flex min-h-screen pt-[68px]">
+    <div className="flex">
       <div className="hidden lg:block flex-shrink-0 fixed left-0 top-[68px] bottom-0 w-64 z-40"><Sidebar /></div>
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">

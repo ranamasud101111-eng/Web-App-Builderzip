@@ -73,7 +73,7 @@ export default function Bookmarks() {
   );
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4">
+    <div className="pb-16 px-4">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}

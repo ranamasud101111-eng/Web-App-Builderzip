@@ -227,7 +227,7 @@ export default function PracticeMode() {
   const correctCount = Object.values(answers).filter(a => a.is_correct).length;
 
   return (
-    <div className="min-h-screen pt-20 pb-10 px-4">
+    <div className="pb-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import AppLayout from './components/AppLayout';
 import PageTransition from './components/PageTransition';
 import { PageLoader } from './components/Skeleton';
 import Home from './pages/Home';
@@ -65,55 +66,60 @@ const Wrap = ({ children }) => (
   <PageTransition>{children}</PageTransition>
 );
 
+const AuthWrap = ({ children }) => (
+  <AppLayout><PageTransition>{children}</PageTransition></AppLayout>
+);
+
 const AppRoutes = () => {
   const { user } = useAuth();
   const location = useLocation();
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="min-h-screen bg-animated-navy">
-      <Navbar />
+    <>
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Wrap><Home /></Wrap>} />
-          <Route path="/login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <Wrap><Login /></Wrap>} />
-          <Route path="/admin-login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <Wrap><AdminLogin /></Wrap>} />
-          <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Wrap><Register /></Wrap>} />
-          <Route path="/verify-email" element={<Wrap><VerifyEmail /></Wrap>} />
+          {/* Public pages — keep top navbar */}
+          <Route path="/" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><Home /></Wrap></div>} />
+          <Route path="/login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><Login /></Wrap></div>} />
+          <Route path="/admin-login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><AdminLogin /></Wrap></div>} />
+          <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><Register /></Wrap></div>} />
+          <Route path="/verify-email" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><VerifyEmail /></Wrap></div>} />
 
-          <Route path="/dashboard" element={<ProtectedRoute><Wrap><Dashboard /></Wrap></ProtectedRoute>} />
-          <Route path="/leaderboard" element={<ProtectedRoute><Wrap><Leaderboard /></Wrap></ProtectedRoute>} />
-          <Route path="/subject/:id" element={<ProtectedRoute><Wrap><SubjectDetail /></Wrap></ProtectedRoute>} />
-          <Route path="/chapter/:id" element={<ProtectedRoute><Wrap><ChapterDetail /></Wrap></ProtectedRoute>} />
-          <Route path="/chapter/:id/practice" element={<ProtectedRoute><Wrap><PracticeMode /></Wrap></ProtectedRoute>} />
-          <Route path="/chapter/:id/quiz" element={<ProtectedRoute><Wrap><QuizMode /></Wrap></ProtectedRoute>} />
-          <Route path="/chapter/:id/exam" element={<ProtectedRoute><Wrap><ExamMode /></Wrap></ProtectedRoute>} />
-          <Route path="/chapter/:id/results" element={<ProtectedRoute><Wrap><SessionHistory /></Wrap></ProtectedRoute>} />
+          {/* Authenticated pages — sidebar layout */}
+          <Route path="/dashboard" element={<ProtectedRoute><AuthWrap><Dashboard /></AuthWrap></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><AuthWrap><Leaderboard /></AuthWrap></ProtectedRoute>} />
+          <Route path="/subject/:id" element={<ProtectedRoute><AuthWrap><SubjectDetail /></AuthWrap></ProtectedRoute>} />
+          <Route path="/chapter/:id" element={<ProtectedRoute><AuthWrap><ChapterDetail /></AuthWrap></ProtectedRoute>} />
+          <Route path="/chapter/:id/practice" element={<ProtectedRoute><AuthWrap><PracticeMode /></AuthWrap></ProtectedRoute>} />
+          <Route path="/chapter/:id/quiz" element={<ProtectedRoute><AuthWrap><QuizMode /></AuthWrap></ProtectedRoute>} />
+          <Route path="/chapter/:id/exam" element={<ProtectedRoute><AuthWrap><ExamMode /></AuthWrap></ProtectedRoute>} />
+          <Route path="/chapter/:id/results" element={<ProtectedRoute><AuthWrap><SessionHistory /></AuthWrap></ProtectedRoute>} />
 
-          <Route path="/admin" element={<ProtectedRoute adminOnly><Wrap><AdminDashboard /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/notifications" element={<ProtectedRoute adminOnly><Wrap><AdminNotifications /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/subjects" element={<ProtectedRoute adminOnly><Wrap><AdminSubjects /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/mcqs" element={<ProtectedRoute adminOnly><Wrap><AdminMCQ /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/exams" element={<ProtectedRoute adminOnly><Wrap><AdminExams /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/students" element={<ProtectedRoute adminOnly><Wrap><AdminStudents /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/enrollments" element={<ProtectedRoute adminOnly><Wrap><AdminEnrollments /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/completions" element={<ProtectedRoute adminOnly><Wrap><AdminCompletions /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/classes" element={<ProtectedRoute adminOnly><Wrap><AdminClasses /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/flashcards" element={<ProtectedRoute adminOnly><Wrap><AdminFlashCards /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/shortnotes" element={<ProtectedRoute adminOnly><Wrap><AdminShortNotes /></Wrap></ProtectedRoute>} />
-          <Route path="/admin/question-bank" element={<ProtectedRoute adminOnly><Wrap><AdminQuestionBank /></Wrap></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute adminOnly><AuthWrap><AdminDashboard /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/notifications" element={<ProtectedRoute adminOnly><AuthWrap><AdminNotifications /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/subjects" element={<ProtectedRoute adminOnly><AuthWrap><AdminSubjects /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/mcqs" element={<ProtectedRoute adminOnly><AuthWrap><AdminMCQ /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/exams" element={<ProtectedRoute adminOnly><AuthWrap><AdminExams /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/students" element={<ProtectedRoute adminOnly><AuthWrap><AdminStudents /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/enrollments" element={<ProtectedRoute adminOnly><AuthWrap><AdminEnrollments /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/completions" element={<ProtectedRoute adminOnly><AuthWrap><AdminCompletions /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/classes" element={<ProtectedRoute adminOnly><AuthWrap><AdminClasses /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/flashcards" element={<ProtectedRoute adminOnly><AuthWrap><AdminFlashCards /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/shortnotes" element={<ProtectedRoute adminOnly><AuthWrap><AdminShortNotes /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/question-bank" element={<ProtectedRoute adminOnly><AuthWrap><AdminQuestionBank /></AuthWrap></ProtectedRoute>} />
 
-          <Route path="/exams" element={<ProtectedRoute><Wrap><StudentExams /></Wrap></ProtectedRoute>} />
-          <Route path="/progress" element={<ProtectedRoute><Wrap><StudentProgress /></Wrap></ProtectedRoute>} />
-          <Route path="/practice" element={<ProtectedRoute><Wrap><PracticeHub /></Wrap></ProtectedRoute>} />
-          <Route path="/wrong-answers" element={<ProtectedRoute><Wrap><WrongAnswers /></Wrap></ProtectedRoute>} />
-          <Route path="/bookmarks" element={<ProtectedRoute><Wrap><Bookmarks /></Wrap></ProtectedRoute>} />
-          <Route path="/custom-exam" element={<ProtectedRoute><Wrap><CustomExam /></Wrap></ProtectedRoute>} />
+          <Route path="/exams" element={<ProtectedRoute><AuthWrap><StudentExams /></AuthWrap></ProtectedRoute>} />
+          <Route path="/progress" element={<ProtectedRoute><AuthWrap><StudentProgress /></AuthWrap></ProtectedRoute>} />
+          <Route path="/practice" element={<ProtectedRoute><AuthWrap><PracticeHub /></AuthWrap></ProtectedRoute>} />
+          <Route path="/wrong-answers" element={<ProtectedRoute><AuthWrap><WrongAnswers /></AuthWrap></ProtectedRoute>} />
+          <Route path="/bookmarks" element={<ProtectedRoute><AuthWrap><Bookmarks /></AuthWrap></ProtectedRoute>} />
+          <Route path="/custom-exam" element={<ProtectedRoute><AuthWrap><CustomExam /></AuthWrap></ProtectedRoute>} />
 
-          <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><Wrap><Classes /></Wrap></ModuleRoute></ProtectedRoute>} />
-          <Route path="/flashcards" element={<ProtectedRoute><ModuleRoute moduleKey="flashcards"><Wrap><FlashCards /></Wrap></ModuleRoute></ProtectedRoute>} />
-          <Route path="/shortnotes" element={<ProtectedRoute><ModuleRoute moduleKey="shortnotes"><Wrap><ShortNotes /></Wrap></ModuleRoute></ProtectedRoute>} />
-          <Route path="/question-bank" element={<ProtectedRoute><ModuleRoute moduleKey="qbank"><Wrap><QuestionBank /></Wrap></ModuleRoute></ProtectedRoute>} />
+          <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><AuthWrap><Classes /></AuthWrap></ModuleRoute></ProtectedRoute>} />
+          <Route path="/flashcards" element={<ProtectedRoute><ModuleRoute moduleKey="flashcards"><AuthWrap><FlashCards /></AuthWrap></ModuleRoute></ProtectedRoute>} />
+          <Route path="/shortnotes" element={<ProtectedRoute><ModuleRoute moduleKey="shortnotes"><AuthWrap><ShortNotes /></AuthWrap></ModuleRoute></ProtectedRoute>} />
+          <Route path="/question-bank" element={<ProtectedRoute><ModuleRoute moduleKey="qbank"><AuthWrap><QuestionBank /></AuthWrap></ModuleRoute></ProtectedRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -127,7 +133,7 @@ const AppRoutes = () => {
         pauseOnHover
         draggable
       />
-    </div>
+    </>
   );
 };
 

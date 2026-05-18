@@ -82,7 +82,7 @@ export default function PracticeHub() {
   ];
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4">
+    <div className="pb-16 px-4">
       <div className="max-w-3xl mx-auto">
 
         {/* Header */}

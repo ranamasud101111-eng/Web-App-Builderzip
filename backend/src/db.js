@@ -23,13 +23,13 @@ const pool = new Pool({
   ...(isPooler ? { max: 10, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 } : {}),
 });
 
+let dbLoggedOnce = false;
 pool.on('connect', () => {
-  const label = isPooler
-    ? 'Supabase Pooler'
-    : isSupabase
-    ? 'Supabase PostgreSQL'
-    : 'Replit PostgreSQL';
-  console.log(`[DB] Connected — ${label}`);
+  if (!dbLoggedOnce) {
+    const label = isPooler ? 'Supabase Pooler' : isSupabase ? 'Supabase PostgreSQL' : 'Replit PostgreSQL';
+    console.log(`[DB] Connected — ${label}`);
+    dbLoggedOnce = true;
+  }
 });
 
 pool.on('error', (err) => {

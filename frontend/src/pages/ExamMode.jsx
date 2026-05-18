@@ -194,7 +194,7 @@ export default function ExamMode() {
     const grade = pct >= 80 ? 'A' : pct >= 65 ? 'B' : pct >= 50 ? 'C' : pct >= 35 ? 'D' : 'F';
     const gradeColor = pct >= 80 ? '#10b981' : pct >= 65 ? '#3b82f6' : pct >= 50 ? '#f59e0b' : pct >= 35 ? '#f97316' : '#f43f5e';
     return (
-      <div className="min-h-screen pt-20 pb-16 px-4">
+      <div className="pb-16 px-4">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Result header */}
@@ -296,7 +296,7 @@ export default function ExamMode() {
   const q = questions[current];
   const answeredCount = Object.keys(answers).length;
   return (
-    <div className="min-h-screen pt-20 pb-10 px-4">
+    <div className="pb-10 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-5">

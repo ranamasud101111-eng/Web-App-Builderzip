@@ -96,7 +96,7 @@ export default function ChapterDetail() {
   const qCount = mcqStats?.question_count || 0;
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4">
+    <div className="pb-16 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Back */}
         <button onClick={() => navigate(`/subject/${chapter.subject_id}`)}
