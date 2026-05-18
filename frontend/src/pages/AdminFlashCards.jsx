@@ -332,9 +332,6 @@ export default function AdminFlashCards() {
 
         {/* Top bar */}
         <div className="flex flex-wrap items-center gap-3 px-4 sm:px-6 py-4 border-b border-white/[0.07] bg-[#020818]/80 backdrop-blur-sm sticky top-[56px] z-10">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-white/[0.06] rounded-lg flex-shrink-0">
-            <Menu className="w-5 h-5 text-white/60" />
-          </button>
           <div className="flex items-center gap-2.5 mr-auto min-w-0">
             <div className="w-8 h-8 rounded-lg bg-yellow-500/15 flex items-center justify-center flex-shrink-0">
               <Zap className="w-4 h-4 text-yellow-400" />

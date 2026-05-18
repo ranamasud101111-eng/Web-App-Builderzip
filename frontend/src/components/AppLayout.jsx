@@ -15,6 +15,7 @@ const PAGE_TITLES = {
   '/bookmarks': { title: 'Bookmarks', sub: 'Saved questions' },
   '/wrong-answers': { title: 'Wrong Answers', sub: 'Review your mistakes' },
   '/custom-exam': { title: 'Custom Exam', sub: 'Build your own exam' },
+  '/quiz': { title: 'Quick Quiz', sub: '10 questions · 10 minutes' },
   '/classes': { title: 'Study Materials', sub: 'Watch lecture videos' },
   '/flashcards': { title: 'Flash Cards', sub: 'Smart study cards' },
   '/shortnotes': { title: 'Notes', sub: 'Quick reference PDFs' },

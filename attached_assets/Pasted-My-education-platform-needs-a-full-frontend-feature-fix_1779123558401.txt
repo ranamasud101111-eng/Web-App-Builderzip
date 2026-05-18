@@ -1,0 +1,160 @@
+My education platform needs a full frontend + feature fix. Please carefully fix all issues without breaking backend, Supabase database, authentication, or existing APIs.
+
+IMPORTANT:
+- Keep all existing data and backend logic unchanged
+- Do not remove any current pages/features
+- Fix everything smoothly and test all pages after changes
+
+========================
+1. LIGHT MODE UI FIX
+========================
+In light theme, many texts are white/faded and hard to read.
+
+Fix:
+- In light mode, NO text should be white on light background
+- Use proper readable colors (dark gray, black, deep purple accents)
+- Improve contrast for headers, cards, section titles, buttons
+- Remove washed-out look
+- Make UI look premium and clean in light mode
+- Keep dark mode compatibility if exists
+
+========================
+2. FLASH CARD ADMIN FIX
+========================
+Flash Cards section in admin panel is not working.
+
+Fix:
+- Admin can create flash card sets
+- Admin can edit/delete flash cards
+- Students can open and use flash cards
+- Ensure database save/load works
+- Fix routing and page rendering
+
+========================
+3. STUDENT LOGIN PAGE FIX
+========================
+Student login/signup page has bad input alignment:
+- Email/password icons and input fields overlap
+- UI looks broken
+
+Fix:
+- Properly align icons inside inputs
+- Modern clean login form
+- Responsive design
+- Professional styling
+
+Also:
+- Make "phone number" and "level" OPTIONAL fields during signup/login
+- User can register with only:
+  email + password + name
+- Number/level can be updated later from profile
+
+========================
+4. STUDENT DASHBOARD ROUTING FIX
+========================
+Many student dashboard sections do not open.
+
+Fix:
+- Check all sidebar navigation routes
+- Every menu item must open correctly
+- Fix broken links/components
+- Ensure page transitions work smoothly
+
+Especially fix:
+- Enroll Subject page not opening
+- Subject details not opening
+- Chapter page not opening
+- Practice/MCQ sections not opening
+
+========================
+5. ADD CUSTOM EXAM FEATURE
+========================
+Add new student dashboard section:
+- Custom Exam
+
+Flow:
+Step 1 → show 3 levels:
+- Certificate
+- Professional
+- Advanced
+
+Step 2 → after level selected:
+show subjects
+
+Step 3 → after subject selected:
+show chapters
+
+Step 4:
+student starts exam from selected chapter(s)
+
+Admin panel control:
+- Admin can configure custom exam
+- Admin can assign MCQ count
+- Admin can set duration
+- Admin can choose chapters
+- Admin can publish/unpublish
+
+========================
+6. ADD QUIZ FEATURE
+========================
+Add another student section:
+- Quiz
+
+Flow:
+Step 1 → show 3 levels:
+- Certificate
+- Professional
+- Advanced
+
+Step 2 → select subject
+
+Step 3 → select chapter
+
+Quiz rules:
+- exactly 10 MCQ
+- 10 minutes timer
+- auto submit when time ends
+- instant score after finish
+
+Admin control:
+- Admin can choose quiz questions
+- Admin can set duration
+- Admin can enable/disable quiz
+- Admin can assign chapter-wise quizzes
+
+========================
+7. ADMIN PANEL CONTROL
+========================
+Admin panel should have fully working management for:
+- Subjects
+- Chapters
+- MCQs
+- Exams
+- Custom Exam
+- Quiz
+- Flash Cards
+- Students
+- Enrollments
+
+All CRUD pages should work:
+- add
+- edit
+- delete
+- publish
+- hide
+
+========================
+8. FINAL DESIGN IMPROVEMENT
+========================
+After all fixes:
+- redesign entire UI to look modern premium
+- smooth animations
+- proper spacing
+- no broken cards
+- no invisible text
+- no sidebar glitches
+- responsive for desktop/mobile
+- verify every route works
+
+Finally:
+Run the full project and automatically test all admin + student pages to confirm everything works.

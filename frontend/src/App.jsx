@@ -42,6 +42,7 @@ import PracticeHub from './pages/PracticeHub';
 import WrongAnswers from './pages/WrongAnswers';
 import Bookmarks from './pages/Bookmarks';
 import CustomExam from './pages/CustomExam';
+import QuizHub from './pages/QuizHub';
 import VerifyEmail from './pages/VerifyEmail';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -116,6 +117,7 @@ const AppRoutes = () => {
           <Route path="/wrong-answers" element={<ProtectedRoute><AuthWrap><WrongAnswers /></AuthWrap></ProtectedRoute>} />
           <Route path="/bookmarks" element={<ProtectedRoute><AuthWrap><Bookmarks /></AuthWrap></ProtectedRoute>} />
           <Route path="/custom-exam" element={<ProtectedRoute><AuthWrap><CustomExam /></AuthWrap></ProtectedRoute>} />
+          <Route path="/quiz" element={<ProtectedRoute><AuthWrap><QuizHub /></AuthWrap></ProtectedRoute>} />
 
           <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><AuthWrap><Classes /></AuthWrap></ModuleRoute></ProtectedRoute>} />
           <Route path="/flashcards" element={<ProtectedRoute><ModuleRoute moduleKey="flashcards"><AuthWrap><FlashCards /></AuthWrap></ModuleRoute></ProtectedRoute>} />

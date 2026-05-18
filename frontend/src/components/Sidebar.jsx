@@ -8,7 +8,7 @@ import {
   GraduationCap, LayoutDashboard, BookOpen, Brain, FileText, Zap,
   Trophy, BarChart3, Bookmark, XCircle, Shuffle, HelpCircle, Layers,
   LogOut, Shield, Video, TrendingUp, Award, Settings, User,
-  HeadphonesIcon, Target, Flame
+  HeadphonesIcon, Target, Flame, ClipboardList
 } from 'lucide-react';
 
 const STUDENT_SECTIONS = [
@@ -16,10 +16,16 @@ const STUDENT_SECTIONS = [
     label: 'Main',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { to: '/dashboard?tab=subjects', icon: BookOpen, label: 'Enrolled Subjects' },
       { to: '/practice', icon: Brain, label: 'MCQ Practice' },
+      { to: '/quiz', icon: Zap, label: 'Quick Quiz' },
       { to: '/exams', icon: Target, label: 'Mock Tests' },
-      { to: '/progress', icon: BarChart3, label: 'Analytics' },
+      { to: '/custom-exam', icon: Shuffle, label: 'Custom Exam' },
+    ],
+  },
+  {
+    label: 'Subjects',
+    items: [
+      { to: '/dashboard', icon: BookOpen, label: 'My Subjects' },
     ],
   },
   {
@@ -27,24 +33,17 @@ const STUDENT_SECTIONS = [
     moduleItems: [
       { to: '/classes', icon: Video, label: 'Study Materials', moduleKey: 'classes' },
       { to: '/shortnotes', icon: FileText, label: 'Notes', moduleKey: 'shortnotes' },
-      { to: '/flashcards', icon: Zap, label: 'Flashcards', moduleKey: 'flashcards' },
+      { to: '/flashcards', icon: ClipboardList, label: 'Flashcards', moduleKey: 'flashcards' },
       { to: '/question-bank', icon: HelpCircle, label: 'Question Bank', moduleKey: 'qbank' },
     ],
   },
   {
     label: 'Performance',
     items: [
-      { to: '/progress', icon: TrendingUp, label: 'Progress' },
+      { to: '/progress', icon: TrendingUp, label: 'Analytics' },
       { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
       { to: '/bookmarks', icon: Bookmark, label: 'Bookmarks' },
       { to: '/wrong-answers', icon: XCircle, label: 'Wrong Answers' },
-    ],
-  },
-  {
-    label: 'Settings',
-    items: [
-      { to: '/dashboard', icon: User, label: 'Profile' },
-      { to: '/custom-exam', icon: Shuffle, label: 'Custom Exam' },
     ],
   },
 ];
