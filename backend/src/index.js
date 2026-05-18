@@ -77,6 +77,46 @@ app.get('/api/health', (req, res) =>
   res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' })
 );
 
+// ── Database connection test ───────────────────────────────────────────────────
+app.get('/api/test-db', async (req, res) => {
+  try {
+    // 1. Basic connectivity
+    const pingResult = await pool.query('SELECT NOW() AS server_time, version() AS pg_version');
+    const { server_time, pg_version } = pingResult.rows[0];
+
+    // 2. Insert a test record
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS _db_test (
+        id SERIAL PRIMARY KEY,
+        message TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await pool.query(`INSERT INTO _db_test (message) VALUES ($1)`, ['connection-test']);
+
+    // 3. Fetch it back
+    const fetchResult = await pool.query(`SELECT * FROM _db_test ORDER BY id DESC LIMIT 5`);
+
+    // 4. Clean up
+    await pool.query(`DROP TABLE IF EXISTS _db_test`);
+
+    res.json({
+      status: 'ok',
+      database: process.env.SUPABASE_DATABASE_URL ? 'Supabase PostgreSQL' : 'Replit PostgreSQL',
+      server_time,
+      pg_version: pg_version.split(' ').slice(0, 2).join(' '),
+      insert_test: 'passed',
+      fetch_test: `passed — ${fetchResult.rows.length} row(s) fetched`,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      message: err.message,
+      database: process.env.SUPABASE_DATABASE_URL ? 'Supabase PostgreSQL' : 'Replit PostgreSQL',
+    });
+  }
+});
+
 // ── Database schema (development only) ───────────────────────────────────────
 async function initDb() {
   try {

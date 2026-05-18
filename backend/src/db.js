@@ -1,24 +1,30 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
-const isSupabase = !!process.env.SUPABASE_DATABASE_URL;
+// In production (Render): set DATABASE_URL to your Supabase connection string.
+// In development (Replit): DATABASE_URL is automatically the Replit PostgreSQL.
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('FATAL: DATABASE_URL environment variable is not set.');
+  process.exit(1);
+}
+
+const isSupabase = connectionString.includes('supabase.co');
 
 const pool = new Pool({
   connectionString,
-  ssl: isSupabase
+  ssl: isSupabase || process.env.NODE_ENV === 'production'
     ? { rejectUnauthorized: false }
-    : process.env.NODE_ENV === 'production'
-      ? { rejectUnauthorized: false }
-      : false,
+    : false,
 });
 
 pool.on('connect', () => {
-  console.log(`DB connected [${isSupabase ? 'Supabase' : 'Replit PostgreSQL'}]`);
+  console.log(`[DB] Connected — ${isSupabase ? 'Supabase PostgreSQL' : 'Replit PostgreSQL'}`);
 });
 
 pool.on('error', (err) => {
-  console.error('Database pool error:', err.message);
+  console.error('[DB] Pool error:', err.message);
 });
 
 export default pool;
