@@ -46,4 +46,3 @@ run = ["bash", "-c", "cd /home/runner/workspace/server && node src/index.js & cd
 
 [userenv.shared]
 FRONTEND_URL = "https://a8e3e8f4-dc8d-4f99-a821-512047cb2853-00-1e52iisgsit16.sisko.replit.dev"
-JWT_SECRET = "226ee33c0f06020e2951c7988b0a165d0171873cf61a376faac5de3d52f3b372184d24730bb633d1e05b60fa72ff452d20f946b76701e869661b7a755df956ef"
