@@ -1,0 +1,128 @@
+Fix all Light Mode UI bugs and responsive issues across the entire CA Aspire BD website.
+
+Current Problems To Fix:
+
+1. Login page becomes washed out / faded in Light Mode
+- Text becomes invisible
+- White text stays white on white background
+- Low contrast issue
+- Form visibility breaks
+
+2. Input field issues
+- Email/phone icon and placeholder text overlap
+- Input padding is broken
+- Icons are too close to text
+- Fix alignment properly
+
+3. Dashboard and all pages must support BOTH themes correctly
+- Dark Mode → existing dark design
+- Light Mode → clean white UI
+- Every component must adapt properly
+
+4. Theme switching issues
+- Some components do not update colors
+- Some cards remain dark in light mode
+- Some texts stay white
+- Borders and shadows inconsistent
+
+5. Fix all form fields globally
+- Proper spacing
+- Proper placeholder visibility
+- Correct icon alignment
+- Responsive input heights
+
+IMPORTANT:
+Audit and fix the ENTIRE app globally.
+
+Implement a professional scalable theme system.
+
+Use:
+- Tailwind CSS
+- CSS variables
+- dark class strategy
+
+Create proper semantic theme variables:
+
+:root {
+  --bg: #ffffff;
+  --card: #f8fafc;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --input-bg: #ffffff;
+}
+
+.dark {
+  --bg: #060816;
+  --card: #111827;
+  --text: #ffffff;
+  --text-muted: #9ca3af;
+  --border: #1f2937;
+  --input-bg: #0f172a;
+}
+
+Fix ALL text contrast issues:
+- Never allow white text on white background
+- Never allow dark text on dark background
+- Use semantic text classes everywhere
+
+Required Tailwind fixes:
+Replace hardcoded colors like:
+- text-white
+- bg-white
+- border-gray-800
+
+With semantic theme classes:
+- text-[var(--text)]
+- bg-[var(--bg)]
+- border-[var(--border)]
+
+Fix input fields globally:
+
+Inputs should have:
+- pl-12 when icon exists
+- properly centered icons
+- visible placeholder
+- adaptive theme colors
+
+Correct structure example:
+
+<div className="relative">
+  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+  <input
+    type="email"
+    className="w-full pl-12 pr-4 py-3 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-muted)]"
+    placeholder="Email address"
+  />
+</div>
+
+Fix login page specifically:
+- Proper contrast
+- Proper card background
+- Proper heading visibility
+- Responsive form sizing
+- Better spacing
+- Remove faded appearance
+
+Fix responsiveness:
+- Mobile
+- Tablet
+- Desktop
+
+Add smooth transitions:
+transition-colors duration-300
+
+Ensure:
+- ALL pages work in dark and light mode
+- Dashboard
+- Login
+- Navbar
+- Cards
+- Inputs
+- Tables
+- Sidebar
+- Modals
+- Dropdowns
+
+Final goal:
+A polished premium SaaS UI with flawless dark/light mode support and zero visual bugs.

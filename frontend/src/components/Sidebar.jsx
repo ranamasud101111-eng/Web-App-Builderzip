@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useModuleSettings } from '../context/ModuleSettingsContext';
 import {
   GraduationCap, LayoutDashboard, BookOpen, Brain, FileText, Zap,
@@ -84,17 +85,27 @@ const ADMIN_SECTIONS = [
   },
 ];
 
-function NavItem({ to, icon: Icon, label, onClick }) {
+function NavItem({ to, icon: Icon, label, onClick, isDark }) {
   const location = useLocation();
   const isActive = location.pathname === to ||
     (to !== '/dashboard' && to !== '/progress' && !to.includes('?') && location.pathname.startsWith(to));
 
   return (
     <Link to={to} onClick={onClick} className={`sidebar-item group relative ${isActive ? 'active' : ''}`}>
-      <Icon className={`w-[16px] h-[16px] flex-shrink-0 transition-colors duration-200
-        ${isActive ? 'text-violet-300' : 'text-white/30 group-hover:text-white/60'}`} />
-      <span className={`text-[13px] font-medium truncate transition-colors duration-200
-        ${isActive ? 'text-violet-200' : 'text-white/45 group-hover:text-white/80'}`}>
+      <Icon className={`w-[16px] h-[16px] flex-shrink-0 transition-colors duration-200 ${
+        isActive
+          ? 'text-violet-500'
+          : isDark
+            ? 'text-white/30 group-hover:text-white/60'
+            : 'text-slate-400 group-hover:text-violet-600'
+      }`} />
+      <span className={`text-[13px] font-medium truncate transition-colors duration-200 ${
+        isActive
+          ? isDark ? 'text-violet-300' : 'text-violet-700'
+          : isDark
+            ? 'text-white/45 group-hover:text-white/80'
+            : 'text-slate-500 group-hover:text-violet-700'
+      }`}>
         {label}
       </span>
       {isActive && (
@@ -107,6 +118,7 @@ function NavItem({ to, icon: Icon, label, onClick }) {
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
   const { user, logout } = useAuth();
+  const { isDark } = useTheme();
   const { modules, loading: modulesLoading } = useModuleSettings();
   const navigate = useNavigate();
   const isAdmin = user?.role === 'admin';
@@ -115,6 +127,14 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
   const handleLogout = () => { logout(); navigate('/'); onMobileClose?.(); };
 
   const sections = isAdmin ? ADMIN_SECTIONS : STUDENT_SECTIONS;
+
+  const brandTextColor = isDark ? 'text-white' : 'text-slate-800';
+  const userNameColor = isDark ? 'text-white/90' : 'text-slate-700';
+  const userRoleColor = isDark ? 'text-white/30' : 'text-slate-400';
+  const sectionLabelColor = isDark ? 'rgba(255,255,255,0.18)' : '#94a3b8';
+  const userCardBg = isDark ? 'rgba(124,58,237,0.07)' : 'rgba(124,58,237,0.05)';
+  const userCardBorder = isDark ? 'rgba(124,58,237,0.14)' : 'rgba(124,58,237,0.12)';
+  const signOutBorderColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(124,58,237,0.08)';
 
   const content = (
     <div className="flex flex-col h-full overflow-hidden">
@@ -125,28 +145,29 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg shadow-violet-900/40 group-hover:shadow-violet-500/50 transition-all duration-300">
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border-2 border-[#030a1a]" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 border-2"
+              style={{ borderColor: isDark ? '#030a1a' : '#ffffff' }} />
           </div>
           <div>
-            <p className="text-[14px] font-bold text-white leading-none tracking-tight">CA Aspire BD</p>
-            <p className="text-[9px] text-amber-400/80 font-bold tracking-[0.15em] uppercase mt-0.5">ICAB Prep Platform</p>
+            <p className={`text-[14px] font-bold leading-none tracking-tight ${brandTextColor}`}>CA Aspire BD</p>
+            <p className="text-[9px] text-amber-500 font-bold tracking-[0.15em] uppercase mt-0.5">ICAB Prep Platform</p>
           </div>
         </Link>
       </div>
 
       {/* User card */}
       <div className="px-3 mb-4 flex-shrink-0">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-2xl"
-          style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.14)' }}>
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors duration-300"
+          style={{ background: userCardBg, border: `1px solid ${userCardBorder}` }}>
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white font-bold text-[13px] flex-shrink-0 shadow-md shadow-violet-900/40">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-bold text-white/90 truncate leading-none">{user?.name?.split(' ')[0]}</p>
-            <p className="text-[10px] text-white/30 capitalize mt-0.5 leading-none font-medium">{user?.role}</p>
+            <p className={`text-[12px] font-bold truncate leading-none ${userNameColor}`}>{user?.name?.split(' ')[0]}</p>
+            <p className={`text-[10px] capitalize mt-0.5 leading-none font-medium ${userRoleColor}`}>{user?.role}</p>
           </div>
           {isAdmin && (
-            <span className="text-[8px] font-black text-violet-300 bg-violet-500/15 border border-violet-500/25 rounded-full px-1.5 py-0.5 uppercase tracking-wider flex-shrink-0">Admin</span>
+            <span className="text-[8px] font-black text-violet-400 bg-violet-500/15 border border-violet-500/25 rounded-full px-1.5 py-0.5 uppercase tracking-wider flex-shrink-0">Admin</span>
           )}
         </div>
       </div>
@@ -161,12 +182,12 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           if (all.length === 0) return null;
           return (
             <div key={section.label}>
-              <p className="text-[9.5px] font-black text-white/18 uppercase tracking-[0.18em] px-3 mb-2 select-none"
-                style={{ color: 'rgba(255,255,255,0.18)' }}>
+              <p className="text-[9.5px] font-black uppercase tracking-[0.18em] px-3 mb-2 select-none"
+                style={{ color: sectionLabelColor }}>
                 {section.label}
               </p>
               <div className="space-y-0.5">
-                {all.map(item => <NavItem key={item.to} {...item} onClick={onMobileClose} />)}
+                {all.map(item => <NavItem key={item.to} {...item} onClick={onMobileClose} isDark={isDark} />)}
               </div>
             </div>
           );
@@ -174,12 +195,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       </nav>
 
       {/* Sign out */}
-      <div className="px-3 py-4 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+      <div className="px-3 py-4 flex-shrink-0 transition-colors duration-300"
+        style={{ borderTop: `1px solid ${signOutBorderColor}` }}>
         <button onClick={handleLogout}
           className="sidebar-item w-full text-left group"
-          style={{ color: 'rgba(248,113,113,0.55)' }}>
-          <LogOut className="w-[15px] h-[15px] flex-shrink-0 transition-colors group-hover:text-red-400" style={{ color: 'inherit' }} />
-          <span className="text-[13px] font-medium transition-colors group-hover:text-red-400" style={{ color: 'inherit' }}>Sign Out</span>
+          style={{ color: isDark ? 'rgba(248,113,113,0.6)' : 'rgba(220,38,38,0.7)' }}>
+          <LogOut className="w-[15px] h-[15px] flex-shrink-0 transition-colors group-hover:text-red-500" style={{ color: 'inherit' }} />
+          <span className="text-[13px] font-medium transition-colors group-hover:text-red-500" style={{ color: 'inherit' }}>Sign Out</span>
         </button>
       </div>
     </div>
