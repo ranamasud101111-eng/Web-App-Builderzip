@@ -4,6 +4,35 @@ import { authenticate, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const DEFAULT_FEATURES = [
+  'All ICAB subjects unlocked',
+  'Unlimited MCQ practice',
+  'Full mock exam access',
+  'Deep analytics & insights',
+  'Wrong answer review',
+  'Flash cards & short notes',
+  'Priority support',
+];
+
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS pricing_settings (
+        id INTEGER PRIMARY KEY DEFAULT 1,
+        premium_visible BOOLEAN DEFAULT FALSE,
+        premium_price INTEGER DEFAULT 499,
+        premium_features JSONB DEFAULT '${JSON.stringify(DEFAULT_FEATURES)}'::jsonb,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      INSERT INTO pricing_settings (id, premium_visible, premium_price, premium_features)
+      VALUES (1, false, 499, '${JSON.stringify(DEFAULT_FEATURES)}'::jsonb)
+      ON CONFLICT (id) DO NOTHING
+    `);
+  } catch {}
+})();
+
 router.get('/modules', async (req, res) => {
   try {
     const [c, f, s, q, p] = await Promise.all([
@@ -53,7 +82,6 @@ router.put('/progress-tracker', authenticate, requireAdmin, async (req, res) => 
       show_exam_progress,
       show_quiz_progress,
     } = req.body;
-
     await pool.query(`
       UPDATE progress_tracker_settings SET
         progress_tracker_visible = COALESCE($1, progress_tracker_visible),
@@ -74,11 +102,42 @@ router.put('/progress-tracker', authenticate, requireAdmin, async (req, res) => 
       show_exam_progress ?? null,
       show_quiz_progress ?? null,
     ]);
-
     res.json({ success: true });
   } catch (err) {
     console.error('Progress tracker settings error:', err.message);
     res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+router.get('/pricing', async (req, res) => {
+  try {
+    const r = await pool.query('SELECT * FROM pricing_settings WHERE id = 1');
+    res.json(r.rows[0] ?? { premium_visible: false, premium_price: 499, premium_features: DEFAULT_FEATURES });
+  } catch (err) {
+    console.error('Pricing settings error:', err.message);
+    res.json({ premium_visible: false, premium_price: 499, premium_features: DEFAULT_FEATURES });
+  }
+});
+
+router.put('/pricing', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { premium_visible, premium_price, premium_features } = req.body;
+    await pool.query(`
+      UPDATE pricing_settings SET
+        premium_visible  = COALESCE($1, premium_visible),
+        premium_price    = COALESCE($2, premium_price),
+        premium_features = COALESCE($3::jsonb, premium_features),
+        updated_at       = NOW()
+      WHERE id = 1
+    `, [
+      premium_visible ?? null,
+      premium_price   ?? null,
+      premium_features ? JSON.stringify(premium_features) : null,
+    ]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Update pricing error:', err.message);
+    res.status(500).json({ error: 'Failed to update pricing settings' });
   }
 });
 

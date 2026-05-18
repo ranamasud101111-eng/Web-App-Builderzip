@@ -1,0 +1,149 @@
+Please perform a FULL WEBSITE AUDIT and implement the following updates carefully without breaking backend, Supabase, authentication, database, or any existing working features.
+
+IMPORTANT:
+- Keep all current functionality
+- Auto detect hidden issues
+- Fix all frontend/backend bugs
+- Test all pages after changes
+
+===================================
+1. FULL WEBSITE AUDIT + FIX ALL ISSUES
+===================================
+Scan and test the complete project:
+
+Public website:
+- Homepage
+- Pricing
+- Login
+- Register
+- Forgot password
+- Footer pages
+
+Student dashboard:
+- All sidebar/menu pages
+- Subjects
+- Classes / Class Materials
+- Flash Cards
+- Notes
+- Question Bank
+- Enroll Subject
+- Exams
+- Quiz
+- Custom Exam
+- Progress
+- Profile/settings
+
+Admin panel:
+- All sections
+- All CRUD pages
+- All feature management routes
+
+Fix automatically:
+- broken routes
+- blank pages
+- crashes
+- invisible content
+- non-working buttons
+- form issues
+- API issues
+- theme bugs
+- console errors
+
+===================================
+2. IMPROVE LIGHT THEME
+===================================
+Improve light mode across full website.
+
+Make light theme:
+- more attractive
+- premium
+- modern
+- smooth
+
+Use:
+- soft white background
+- elegant purple accents
+- better card design
+- readable text
+- balanced contrast
+- cleaner hover effects
+
+Fix:
+- faded text
+- white text on light background
+- dark cards in light mode
+- inconsistent colors
+- unreadable sections
+
+===================================
+3. HIDE PREMIUM PLAN FOR NOW
+===================================
+Pricing section update:
+
+- Hide Premium Plan card from public homepage
+- Show only Free Plan
+- All current features remain free
+- Entire platform should appear free to users
+
+===================================
+4. ADMIN CONTROL FOR PREMIUM PLAN
+===================================
+Add admin section:
+"Subscription Management"
+
+Admin can:
+- show/hide premium plan
+- set price later
+- edit plan features
+- enable premium anytime
+- switch free/premium mode
+
+Until enabled:
+- premium hidden
+- all students use free version
+
+===================================
+5. FOOTER IMPROVEMENT
+===================================
+Add professional footer pages:
+
+Footer links:
+- About Us
+- Contact Us
+- Privacy Policy
+- Terms & Conditions
+- FAQ
+- Help Center
+
+Extra:
+- Facebook placeholder link
+- Email contact
+- Copyright
+- responsive footer
+
+===================================
+6. ADMIN CAN REMOVE STUDENTS
+===================================
+Admin panel → Students section
+
+Add:
+- View student
+- Edit student
+- Delete/remove student
+- Suspend student
+- Restore student
+
+Delete:
+- hard delete or soft delete
+- confirmation popup before delete
+
+===================================
+7. FINAL TESTING
+===================================
+After all updates:
+- run full project
+- test public + student + admin
+- ensure no crashes
+- ensure all routes work
+- ensure responsive design
+- ensure theme switching works

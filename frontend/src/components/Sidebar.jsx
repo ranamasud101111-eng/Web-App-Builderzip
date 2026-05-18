@@ -8,7 +8,7 @@ import {
   GraduationCap, LayoutDashboard, BookOpen, Brain, FileText, Zap,
   Trophy, BarChart3, Bookmark, XCircle, Shuffle, HelpCircle, Layers,
   LogOut, Shield, Video, TrendingUp, Award, Settings, User,
-  HeadphonesIcon, Target, Flame, ClipboardList, Activity
+  HeadphonesIcon, Target, Flame, ClipboardList, Activity, CreditCard
 } from 'lucide-react';
 
 const STUDENT_SECTIONS = [
@@ -84,6 +84,7 @@ const ADMIN_SECTIONS = [
     items: [
       { to: '/admin/notifications', icon: Flame, label: 'Notifications' },
       { to: '/admin/settings', icon: Settings, label: 'Settings' },
+      { to: '/admin/subscription', icon: CreditCard, label: 'Subscription' },
     ],
   },
 ];

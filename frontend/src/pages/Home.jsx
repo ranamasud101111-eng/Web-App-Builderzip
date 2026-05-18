@@ -161,6 +161,7 @@ export default function Home() {
   const { user } = useAuth();
   const { isDark } = useTheme();
   const [subjects, setSubjects] = useState([]);
+  const [showPremium, setShowPremium] = useState(false);
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
@@ -168,6 +169,7 @@ export default function Home() {
 
   useEffect(() => {
     api.get('/subjects').then(r => setSubjects(r.data.slice(0, 6))).catch(() => {});
+    api.get('/settings/pricing').then(r => setShowPremium(r.data.premium_visible ?? false)).catch(() => {});
   }, []);
 
   const bg1 = isDark ? '#050816' : '#faf9ff';
@@ -702,7 +704,7 @@ export default function Home() {
             <p className="text-lg" style={{ color: textSecondary }}>No hidden charges. No surprises. Upgrade only when you're ready.</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className={`grid grid-cols-1 gap-6 mx-auto ${showPremium ? 'md:grid-cols-2 max-w-3xl' : 'max-w-md'}`}>
             {/* Free */}
             <NeonCard color="#8b5cf6" delay={0} className="p-8" isDark={isDark}>
               <div className="text-[10px] font-black uppercase tracking-widest mb-4" style={{ color: textMuted }}>Free Plan</div>
@@ -730,6 +732,7 @@ export default function Home() {
             </NeonCard>
 
             {/* Premium */}
+            {showPremium && (
             <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} viewport={{ once: true }}
               whileHover={{ y: -8, transition: { duration: 0.25 } }}
               className="p-8 rounded-2xl relative overflow-hidden"
@@ -768,6 +771,7 @@ export default function Home() {
                 Start Free Trial
               </Link>
             </motion.div>
+            )}
           </div>
         </div>
       </section>
@@ -866,26 +870,88 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════════════ */}
       {/* FOOTER                                                            */}
       {/* ══════════════════════════════════════════════════════════════════ */}
-      <footer className="py-12 px-4 border-t transition-colors duration-500" style={{ background: bg2, borderColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(124,58,237,0.1)' }}>
+      <footer className="px-4 pt-16 pb-8 border-t transition-colors duration-500"
+        style={{ background: bg2, borderColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(124,58,237,0.1)' }}>
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg">
-                <GraduationCap className="w-[18px] h-[18px] text-white" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b"
+            style={{ borderColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(124,58,237,0.1)' }}>
+
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center shadow-lg">
+                  <GraduationCap className="w-[18px] h-[18px] text-white" />
+                </div>
+                <div>
+                  <div className="text-[15px] font-bold" style={{ color: textPrimary }}>CA Aspire BD</div>
+                  <div className="text-[9px] font-semibold text-amber-500 tracking-[0.12em] uppercase">ICAB Prep Platform</div>
+                </div>
               </div>
-              <div>
-                <div className="text-[16px] font-bold" style={{ color: textPrimary }}>CA Aspire BD</div>
-                <div className="text-[9px] font-semibold text-amber-500 tracking-[0.12em] uppercase">ICAB Prep Platform</div>
+              <p className="text-[13px] leading-relaxed mb-4" style={{ color: textSecondary }}>
+                Bangladesh's leading ICAB CA exam preparation platform, trusted by 20,000+ aspirants.
+              </p>
+              <a href="mailto:support@caaspirebd.com" className="text-[13px] hover:text-violet-500 transition-colors" style={{ color: textMuted }}>
+                support@caaspirebd.com
+              </a>
+            </div>
+
+            {/* Platform */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-widest mb-4" style={{ color: textMuted }}>Platform</h4>
+              <div className="space-y-2.5">
+                {[
+                  { to: '/login', label: 'Sign In' },
+                  { to: '/register', label: 'Create Account' },
+                  { to: '/dashboard', label: 'Dashboard' },
+                  { to: '/admin-login', label: 'Admin Login' },
+                ].map(l => (
+                  <Link key={l.to} to={l.to} className="block text-[13px] hover:text-violet-500 transition-colors" style={{ color: textSecondary }}>
+                    {l.label}
+                  </Link>
+                ))}
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-6 text-[13px] font-medium" style={{ color: textSecondary }}>
-              <Link to="/login" className="hover:text-violet-500 transition-colors">Sign In</Link>
-              <Link to="/register" className="hover:text-violet-500 transition-colors">Register</Link>
-              <Link to="/admin-login" className="hover:text-violet-500 transition-colors">Admin</Link>
+
+            {/* Resources */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-widest mb-4" style={{ color: textMuted }}>Resources</h4>
+              <div className="space-y-2.5">
+                {[
+                  { to: '/about', label: 'About Us' },
+                  { to: '/help', label: 'Help Center' },
+                  { to: '/contact', label: 'Contact Us' },
+                ].map(l => (
+                  <Link key={l.to} to={l.to} className="block text-[13px] hover:text-violet-500 transition-colors" style={{ color: textSecondary }}>
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-            <div className="text-[12px]" style={{ color: textMuted }}>
+
+            {/* Legal */}
+            <div>
+              <h4 className="text-[11px] font-black uppercase tracking-widest mb-4" style={{ color: textMuted }}>Legal</h4>
+              <div className="space-y-2.5">
+                {[
+                  { to: '/privacy', label: 'Privacy Policy' },
+                  { to: '/terms', label: 'Terms & Conditions' },
+                ].map(l => (
+                  <Link key={l.to} to={l.to} className="block text-[13px] hover:text-violet-500 transition-colors" style={{ color: textSecondary }}>
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[12px]" style={{ color: textMuted }}>
               © {new Date().getFullYear()} CA Aspire BD. All rights reserved.
-            </div>
+            </p>
+            <p className="text-[12px]" style={{ color: textMuted }}>
+              Empowering every Bangladeshi CA aspirant.
+            </p>
           </div>
         </div>
       </footer>

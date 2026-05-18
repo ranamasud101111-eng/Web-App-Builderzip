@@ -48,6 +48,12 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ProgressTracker from './pages/ProgressTracker';
 import AdminSettings from './pages/AdminSettings';
+import AdminSubscription from './pages/AdminSubscription';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
+import HelpCenter from './pages/HelpCenter';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -127,6 +133,13 @@ const AppRoutes = () => {
           <Route path="/progress-tracker" element={<ProtectedRoute><ModuleRoute moduleKey="progressTracker"><AuthWrap><ProgressTracker /></AuthWrap></ModuleRoute></ProtectedRoute>} />
 
           <Route path="/admin/settings" element={<ProtectedRoute adminOnly><AuthWrap><AdminSettings /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/subscription" element={<ProtectedRoute adminOnly><AuthWrap><AdminSubscription /></AuthWrap></ProtectedRoute>} />
+
+          <Route path="/about" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><AboutUs /></Wrap></div>} />
+          <Route path="/contact" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><ContactUs /></Wrap></div>} />
+          <Route path="/privacy" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><PrivacyPolicy /></Wrap></div>} />
+          <Route path="/terms" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><TermsConditions /></Wrap></div>} />
+          <Route path="/help" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><HelpCenter /></Wrap></div>} />
 
           <Route path="/classes" element={<ProtectedRoute><ModuleRoute moduleKey="classes"><AuthWrap><Classes /></AuthWrap></ModuleRoute></ProtectedRoute>} />
           <Route path="/flashcards" element={<ProtectedRoute><ModuleRoute moduleKey="flashcards"><AuthWrap><FlashCards /></AuthWrap></ModuleRoute></ProtectedRoute>} />
