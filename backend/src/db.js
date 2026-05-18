@@ -13,13 +13,13 @@ const isSupabase =
   connectionString.includes('pooler.supabase.com');
 
 const isPooler = connectionString.includes('pooler.supabase.com');
+const isReplit = !isSupabase;
 
 const pool = new Pool({
   connectionString,
-  ssl: isSupabase || process.env.NODE_ENV === 'production'
+  ssl: isSupabase
     ? { rejectUnauthorized: false }
     : false,
-  // Pooler-safe settings — avoid prepared statements on transaction pooler
   ...(isPooler ? { max: 10, idleTimeoutMillis: 30000, connectionTimeoutMillis: 10000 } : {}),
 });
 

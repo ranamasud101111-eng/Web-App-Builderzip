@@ -102,9 +102,7 @@ async function initDb() {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 async function start() {
-  if (!IS_PRODUCTION) {
-    await initDb();
-  }
+  await initDb();
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`CA Mock API running on port ${PORT} [${process.env.NODE_ENV || 'development'}]`);
   });

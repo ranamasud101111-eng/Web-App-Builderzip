@@ -1,9 +1,15 @@
 #!/bin/bash
+# Install backend dependencies if needed
+cd /home/runner/workspace/backend && npm install --silent
+
 # Start the backend server in background
-cd /home/runner/workspace/backend && node src/index.js &
+node src/index.js &
 
 # Give server a moment to start
 sleep 2
 
+# Install frontend dependencies if needed
+cd /home/runner/workspace/frontend && npm install --silent
+
 # Start the frontend
-cd /home/runner/workspace/frontend && npx vite --host 0.0.0.0 --port 5000
+npx vite --host 0.0.0.0 --port 5000
