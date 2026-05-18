@@ -1,0 +1,107 @@
+Build a modern responsive ICAB preparation platform website named “CA Aspire BD” with FULL Dark Mode + Light Mode support.
+
+IMPORTANT:
+- Keep the current existing dark design exactly as it is.
+- Create a brand new Light version inspired by the attached reference image.
+- User can switch between Dark and Light mode using a toggle button in the navbar.
+- Theme change must affect the ENTIRE website globally.
+- Save selected theme in localStorage so refresh/page reload keeps the selected theme.
+
+Tech Stack:
+- React + Tailwind CSS
+- Use Context API or Zustand for global theme management
+- Fully responsive for desktop, tablet, and mobile
+- Smooth transitions between themes
+
+Theme Requirements:
+
+DARK MODE:
+- Premium dark navy/black background
+- Neon purple/pink glow effects
+- Gradient buttons
+- Glassmorphism navbar/cards
+- Keep current branding/colors
+
+LIGHT MODE:
+- Clean white background
+- Soft purple/pink gradients
+- Minimal shadows
+- Elegant clean cards
+- Same layout as dark version
+- Similar to modern SaaS landing pages
+
+Navbar:
+- Logo left
+- Menu items center
+- Theme toggle right
+- Sign In button
+- Start Free CTA button
+- Sticky navbar with blur effect
+
+Hero Section:
+- Big heading:
+  “Crack Your ICAB CA Exams with Confidence”
+- Gradient highlighted text
+- Supporting paragraph
+- CTA buttons
+- Floating feature icons around hero
+- Animated background particles/glow
+
+Stats Cards:
+- Active Students
+- MCQs
+- Mock Tests
+- Success Rate
+
+Feature Section:
+- Chapter-wise MCQ Practice
+- ICAB Aligned Mock Tests
+- Smart Analytics & Progress
+- Detailed Explanations
+- Available on All Devices
+
+Theme Toggle Requirements:
+- Animated toggle
+- Sun icon for light mode
+- Moon icon for dark mode
+- Smooth color transitions
+- Entire site updates instantly
+
+Global Theme System:
+Use CSS variables or Tailwind dark classes.
+
+Example:
+:root {
+  --bg: #ffffff;
+  --text: #111827;
+}
+
+.dark {
+  --bg: #060816;
+  --text: #ffffff;
+}
+
+Persist theme:
+- Save theme in localStorage
+- Auto-load previous theme on refresh
+
+Animations:
+- Framer Motion
+- Smooth hover effects
+- Glow animations
+- Floating icons
+- Fade-in sections
+
+Design Style:
+- Premium SaaS landing page
+- Modern fintech/edtech aesthetic
+- Beautiful spacing and typography
+- Clean UI/UX
+- Mobile-first responsive
+
+Deliver:
+- Complete React components
+- Tailwind setup
+- Theme context/provider
+- Reusable components
+- Fully working responsive UI
