@@ -239,13 +239,13 @@ export default function Home() {
             <span style={{
               background: 'linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 30%, #ec4899 65%, #f97316 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>ICAB CA</span>
+            }}>CA Journey</span>
             <br />
-            <span style={{ color: textPrimary }}>Exams with </span>
+            <span style={{ color: textPrimary }}>with Smart </span>
             <span style={{
               background: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #f97316 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>Confidence</span>
+            }}>Preparation</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -253,8 +253,9 @@ export default function Home() {
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
             style={{ color: textSecondary, fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}
             className="max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
-            Purpose-built for Bangladeshi CA aspirants — chapter-wise MCQ practice,
-            ICAB-aligned mock tests, and intelligent analytics to help you ace every level.
+            Prepare smarter, practice chapter-by-chapter, and build real exam confidence with
+            Bangladesh's modern learning platform for CA aspirants. From daily MCQs to full mock
+            exams, everything you need to succeed is in one place.
           </motion.p>
 
           {/* CTAs */}
