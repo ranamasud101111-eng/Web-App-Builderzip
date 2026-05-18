@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle, ChevronRight } from 'lucide-react';
+import api from '../api';
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle, ChevronRight, Send } from 'lucide-react';
 
 const benefits = [
   'Access to all CA subjects and chapters',
@@ -19,19 +20,74 @@ export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', class_level: '' });
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
-      const user = await register(form.name, form.email, form.password, form.class_level);
-      toast.success(`Welcome to CA Mock, ${user.name.split(' ')[0]}!`);
-      navigate('/dashboard');
+      await register(form.name, form.email, form.password, form.class_level);
+      setRegisteredEmail(form.email);
+      setSubmitted(true);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Registration failed');
+      const data = err.response?.data;
+      if (data?.code === 'EMAIL_NOT_VERIFIED') {
+        setRegisteredEmail(form.email);
+        setSubmitted(true);
+      } else {
+        toast.error(data?.error || 'Registration failed');
+      }
     } finally { setLoading(false); }
   };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email: registeredEmail });
+      toast.success('Verification email resent! Check your inbox.');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to resend');
+    } finally { setResending(false); }
+  };
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 pt-16"
+        style={{ background: 'linear-gradient(160deg, #020818 0%, #060c24 100%)' }}>
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          className="w-full max-w-md">
+          <div className="rounded-3xl p-8 border border-white/[0.07] text-center"
+            style={{ background: 'rgba(10,15,46,0.85)', backdropFilter: 'blur(20px)' }}>
+            <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5">
+              <Mail className="w-7 h-7 text-indigo-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Check your email</h2>
+            <p className="text-white/50 text-sm leading-relaxed mb-2">
+              We sent a verification link to
+            </p>
+            <p className="text-indigo-300 font-semibold text-sm mb-6">{registeredEmail}</p>
+            <p className="text-white/35 text-xs leading-relaxed mb-7">
+              Click the link in the email to activate your account. The link expires in 24 hours. Check your spam folder if you don't see it.
+            </p>
+            <button onClick={handleResend} disabled={resending}
+              className="w-full py-3 rounded-xl font-semibold text-sm text-white flex items-center justify-center gap-2 mb-4 disabled:opacity-50 border border-white/10 hover:border-indigo-500/40 transition-colors"
+              style={{ background: 'rgba(79,70,229,0.15)' }}>
+              {resending
+                ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <Send className="w-4 h-4" />}
+              Resend verification email
+            </button>
+            <Link to="/login" className="text-white/35 hover:text-white/60 text-sm transition-colors">
+              Back to Login
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex overflow-hidden pt-16">

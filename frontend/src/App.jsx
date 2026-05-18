@@ -41,6 +41,7 @@ import PracticeHub from './pages/PracticeHub';
 import WrongAnswers from './pages/WrongAnswers';
 import Bookmarks from './pages/Bookmarks';
 import CustomExam from './pages/CustomExam';
+import VerifyEmail from './pages/VerifyEmail';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -78,6 +79,7 @@ const AppRoutes = () => {
           <Route path="/login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <Wrap><Login /></Wrap>} />
           <Route path="/admin-login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <Wrap><AdminLogin /></Wrap>} />
           <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Wrap><Register /></Wrap>} />
+          <Route path="/verify-email" element={<Wrap><VerifyEmail /></Wrap>} />
 
           <Route path="/dashboard" element={<ProtectedRoute><Wrap><Dashboard /></Wrap></ProtectedRoute>} />
           <Route path="/leaderboard" element={<ProtectedRoute><Wrap><Leaderboard /></Wrap></ProtectedRoute>} />

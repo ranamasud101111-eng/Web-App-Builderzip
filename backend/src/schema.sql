@@ -6,8 +6,18 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) DEFAULT 'student',
     class_level VARCHAR(50),
     avatar_url TEXT,
+    email_verified BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
+    verification_token_expires TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migrate existing tables: add email verification columns if missing
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP;
+-- Existing users (admin) are pre-verified
+UPDATE users SET email_verified = TRUE WHERE email_verified IS NULL OR (role = 'admin' AND email_verified = FALSE);
 
 CREATE TABLE IF NOT EXISTS subjects (
     id SERIAL PRIMARY KEY,
