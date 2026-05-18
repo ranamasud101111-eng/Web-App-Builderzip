@@ -1350,3 +1350,134 @@ html {
 [data-theme="light"] main .overflow-y-auto,
 [data-theme="light"] main .overflow-x-auto { scrollbar-color: rgba(124,58,237,0.2) transparent; }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — CLASSES & FLASHCARDS CARD VISUAL OVERHAUL
+   Fixes: dark navy level/subject/chapter cards, flashcard face inline backgrounds,
+   gradient overlay stripping on level cards — Admin + Student, all four pages.
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── A. bg-[#080f2e] opacity variants (Admin Classes/FlashCards level rows &
+         Student FlashCards subject + chapter rows) ─────────────────────── */
+[data-theme="light"] main .bg-\[\#080f2e\]\/90,
+[data-theme="light"] main .bg-\[\#080f2e\]\/80,
+[data-theme="light"] main .bg-\[\#080f2e\]\/70,
+[data-theme="light"] main .bg-\[\#080f2e\]\/60,
+[data-theme="light"] main .bg-\[\#020818\]\/70,
+[data-theme="light"] main .bg-\[\#020818\]\/60 {
+  background-color: rgba(250, 248, 255, 0.92) !important;
+  border-color: rgba(139, 92, 246, 0.10) !important;
+}
+
+/* Hover state for these converted dark cards */
+[data-theme="light"] main .bg-\[\#080f2e\]\/80:hover,
+[data-theme="light"] main .bg-\[\#080f2e\]\/60:hover {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border-color: rgba(124, 58, 237, 0.18) !important;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.09) !important;
+}
+
+/* ── B. card-premium WITH gradient overlay → strip gradient, keep white ── */
+[data-theme="light"] .card-premium.bg-gradient-to-br {
+  background-image: none !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+[data-theme="light"] .card-premium.bg-gradient-to-br:hover {
+  background-image: none !important;
+  background-color: rgba(255, 255, 255, 0.97) !important;
+}
+
+/* ── C. Standalone gradient level buttons (FlashCards student, no card-premium)
+         e.g. rounded-2xl border bg-gradient-to-br from-yellow-600/20 ... ── */
+[data-theme="light"] main button.bg-gradient-to-br {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  background-image: none !important;
+  border-color: rgba(139, 92, 246, 0.12) !important;
+  box-shadow: 0 2px 16px rgba(139, 92, 246, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] main button.bg-gradient-to-br:hover {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border-color: rgba(124, 58, 237, 0.22) !important;
+  box-shadow: 0 6px 28px rgba(124, 58, 237, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-3px);
+}
+
+/* ── D. Neutralise dark gradient CSS variables so residual background-image
+         reads as near-transparent, not deep purple/amber/cyan ─────────── */
+[data-theme="light"] main .from-purple-600\/20 { --tw-gradient-from: rgba(124,58,237,0.06) var(--tw-gradient-from-position) !important; }
+[data-theme="light"] main .to-violet-800\/10   { --tw-gradient-to:   rgba(109,40,217,0.03) var(--tw-gradient-to-position)   !important; }
+[data-theme="light"] main .from-yellow-600\/20 { --tw-gradient-from: rgba(234,179,8,0.06)  var(--tw-gradient-from-position) !important; }
+[data-theme="light"] main .to-amber-800\/10    { --tw-gradient-to:   rgba(180,83,9,0.02)   var(--tw-gradient-to-position)   !important; }
+[data-theme="light"] main .from-cyan-600\/20   { --tw-gradient-from: rgba(8,145,178,0.05)  var(--tw-gradient-from-position) !important; }
+[data-theme="light"] main .to-sky-700\/10      { --tw-gradient-to:   rgba(3,105,161,0.02)  var(--tw-gradient-to-position)   !important; }
+[data-theme="light"] main .from-amber-600\/20  { --tw-gradient-from: rgba(217,119,6,0.05)  var(--tw-gradient-from-position) !important; }
+[data-theme="light"] main .to-yellow-700\/10   { --tw-gradient-to:   rgba(161,98,7,0.02)   var(--tw-gradient-to-position)   !important; }
+
+/* ── E. FlashCard flip faces — override inline background styles ────────── */
+/* Front face */
+[data-theme="light"] .fc-face {
+  background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.18) !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.10), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+/* Back face (has class fc-back in addition to fc-face) */
+[data-theme="light"] .fc-face.fc-back {
+  background: linear-gradient(135deg, #faf8ff 0%, #ede9fe 55%, #f0ebff 100%) !important;
+  border: 1px solid rgba(124, 58, 237, 0.24) !important;
+  color: #1e1b4b !important;
+}
+
+/* Badge chips inside the flashcard faces */
+[data-theme="light"] .fc-face .bg-yellow-500\/15 { background: rgba(245,158,11,0.10) !important; }
+[data-theme="light"] .fc-face .bg-purple-500\/15 { background: rgba(124,58,237,0.08) !important; }
+[data-theme="light"] .fc-face .text-white\/10     { color: rgba(139,92,246,0.12) !important; }
+[data-theme="light"] .fc-face .text-white\/15     { color: rgba(124,58,237,0.18) !important; }
+[data-theme="light"] .fc-face .text-white         { color: #1e293b !important; }
+[data-theme="light"] .fc-face .text-white\/90     { color: #1e293b !important; }
+
+/* ── F. FlashCard navigation row buttons ───────────────────────────────── */
+/* "Previous" / "Flip" border-based buttons on light background */
+[data-theme="light"] main button[class*="border-white\/10"] {
+  border-color: rgba(139, 92, 246, 0.18) !important;
+  color: #4b5563 !important;
+  background: rgba(255,255,255,0.70) !important;
+}
+[data-theme="light"] main button[class*="border-white\/10"]:hover {
+  border-color: rgba(124, 58, 237, 0.32) !important;
+  color: #1e293b !important;
+  background: rgba(255,255,255,0.95) !important;
+}
+[data-theme="light"] main button[class*="border-white\/25"]:hover {
+  border-color: rgba(124, 58, 237, 0.40) !important;
+  color: #0f172a !important;
+}
+
+/* ── G. "Back to Chapters" button in FlashCards done screen ────────────── */
+[data-theme="light"] main button[class*="border-white\/10"][class*="text-white"] {
+  border-color: rgba(139, 92, 246, 0.18) !important;
+  color: #4b5563 !important;
+}
+
+/* ── H. Admin Classes & FlashCards — level row inner divider ───────────── */
+[data-theme="light"] main div[class*="border-t"][class*="border-white\/\[0\.06\]"],
+[data-theme="light"] main div[class*="border-t"][class*="border-white\/\[0\.05\]"] {
+  border-color: rgba(139, 92, 246, 0.09) !important;
+}
+
+/* ── I. Chapter rows inside expanded subjects (admin & student) ─────────── */
+/* bg-white/[0.02] rows inside accordion panels */
+[data-theme="light"] main div[class*="rounded-lg"][class*="bg-white\/\[0\.02\]"] {
+  background-color: rgba(248, 246, 255, 0.70) !important;
+  border-color: rgba(139, 92, 246, 0.08) !important;
+}
+[data-theme="light"] main div[class*="rounded-lg"][class*="bg-white\/\[0\.02\]"]:hover {
+  background-color: rgba(255, 255, 255, 0.90) !important;
+  border-color: rgba(124, 58, 237, 0.14) !important;
+}
+
+/* ── J. "No classes/flashcards" empty state styling ────────────────────── */
+[data-theme="light"] main div[class*="rounded-2xl"][class*="border-white\/\[0\.07\]"] {
+  border-color: rgba(139, 92, 246, 0.10) !important;
+  background-color: rgba(248, 246, 255, 0.60) !important;
+}
+
