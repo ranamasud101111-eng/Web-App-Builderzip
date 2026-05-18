@@ -131,7 +131,7 @@ export default function Home() {
           <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass-navy border border-gold-500/25 mb-8">
               <MapPin className="w-3.5 h-3.5 text-gold-400" />
-              <span className="text-gold-400 text-sm font-semibold tracking-wide">Bangladesh's #1 ICAB CA Preparation Platform</span>
+              <span className="text-gold-400 text-sm font-semibold tracking-wide">Bangladesh's CA Preparation Platform</span>
             </div>
           </motion.div>
 
