@@ -133,27 +133,23 @@ export default function ShortNotes() {
 
   /* ─── Page loading ─── */
   if (pageLoading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#020818' }}>
+    <div className="flex items-center justify-center py-24">
       <Loader2 size={32} className="animate-spin text-purple-400" />
     </div>
   );
 
   /* ─── Hidden ─── */
   if (!globalVisible) return (
-    <div className="min-h-screen flex items-center justify-center px-6 pt-[68px]" style={{ background: '#020818' }}>
-      <div className="text-center max-w-sm">
-        <EyeOff size={48} className="mx-auto mb-4 text-white/20" />
-        <h2 className="text-xl font-bold text-white/70 mb-2">Short Notes Unavailable</h2>
-        <p className="text-white/40 text-sm">Short Notes are currently not available. Please check back later.</p>
-      </div>
+    <div className="flex flex-col items-center justify-center py-24 text-center px-6">
+      <EyeOff size={48} className="mx-auto mb-4 text-white/20" />
+      <h2 className="text-xl font-bold text-white/70 mb-2">Short Notes Unavailable</h2>
+      <p className="text-white/40 text-sm">Short Notes are currently not available. Please check back later.</p>
     </div>
   );
 
-  const bg = '#020818';
-
   return (
-    <div className="min-h-screen" style={{ background: bg }}>
-      <div className="max-w-4xl mx-auto px-4 pt-[84px] pb-8 space-y-6">
+    <div>
+      <div className="max-w-4xl mx-auto px-4 pb-8 space-y-6">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4">

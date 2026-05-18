@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Play, ArrowLeft, Layers, BookOpen, Youtube, Lock, EyeOff } from 'lucide-react';
+import { ChevronRight, Play, ArrowLeft, Layers, BookOpen, Youtube, Lock, EyeOff, Loader2 } from 'lucide-react';
 import { PageLoader } from '../components/Skeleton';
 import api from '../api';
 
