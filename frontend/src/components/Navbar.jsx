@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useModuleSettings } from '../context/ModuleSettingsContext';
 import NotificationBell from './NotificationBell';
-import { BookOpen, LayoutDashboard, LogOut, Settings, Menu, X, ChevronDown, Trophy, Shield, Layers, Zap, FileText, HelpCircle } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, LogOut, Settings, Menu, X, ChevronDown, Trophy, Shield, Layers, Zap, FileText, HelpCircle, BookOpen } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -56,13 +56,13 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-violet-800 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/40 transition-all duration-300 group-hover:scale-105">
-                <BookOpen className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" />
+                <GraduationCap className="w-[18px] h-[18px] text-white" />
               </div>
               <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-gold-500 border-2 border-navy-900"></div>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-[17px] font-bold tracking-tight text-white">CA Mock</span>
-              <span className="text-[9px] font-semibold text-gold-500 tracking-[0.12em] uppercase">Premium Platform</span>
+              <span className="text-[17px] font-bold tracking-tight text-white">CA Aspire BD</span>
+              <span className="text-[9px] font-semibold text-gold-500 tracking-[0.12em] uppercase">ICAB Prep Platform</span>
             </div>
           </Link>
 

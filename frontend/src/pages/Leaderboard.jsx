@@ -55,7 +55,7 @@ export default function Leaderboard() {
             <span className="text-gold-400 text-sm font-bold tracking-wide">National Rankings</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
-            CA Mock <span className="gradient-text-gold">Leaderboard</span>
+            CA Aspire BD <span className="gradient-text-gold">Leaderboard</span>
           </h1>
           <p className="text-white/40 text-base">Rankings based on chapters completed. Keep studying to climb higher!</p>
 

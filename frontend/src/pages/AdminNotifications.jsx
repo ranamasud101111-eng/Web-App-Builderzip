@@ -111,7 +111,7 @@ export default function AdminNotifications() {
           <BookOpen className="w-4 h-4 text-white" />
         </div>
         <div>
-          <div className="text-white font-bold text-base">CA Mock</div>
+          <div className="text-white font-bold text-base">CA Aspire BD</div>
           <div className="text-[9px] text-gold-500 font-semibold tracking-widest uppercase">Admin Panel</div>
         </div>
         {mobile && <button onClick={() => setSidebarOpen(false)} className="ml-auto p-1.5 hover:bg-white/[0.06] rounded-lg"><X className="w-4 h-4 text-white/40" /></button>}
@@ -294,7 +294,7 @@ export default function AdminNotifications() {
                       <select value={form.target_value} onChange={e => setForm(p => ({ ...p, target_value: e.target.value }))} required
                         className="input-field" style={{ background: 'rgba(255,255,255,0.04)', color: 'white' }}>
                         <option value="" style={{ background: '#06112e' }}>Select Level</option>
-                        {['Foundation','Intermediate','Final',6,7,8,9,10,11,12].map(c => (
+                        {['Certificate','Professional','Advanced'].map(c => (
                           <option key={c} value={c} style={{ background: '#06112e' }}>{isNaN(c) ? `CA ${c}` : `Class ${c}`}</option>
                         ))}
                       </select>

@@ -63,25 +63,25 @@ export default function Login() {
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-bold text-lg">CA Mock</div>
-              <div className="text-gold-500 text-[9px] font-semibold tracking-widest uppercase">Premium Platform</div>
+              <div className="text-white font-bold text-lg">CA Aspire BD</div>
+              <div className="text-gold-500 text-[9px] font-semibold tracking-widest uppercase">ICAB Prep Platform</div>
             </div>
           </Link>
 
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-            India's Most Trusted<br />
-            <span className="gradient-text-gold">CA Exam Platform</span>
+            Bangladesh's #1<br />
+            <span className="gradient-text-gold">ICAB CA Exam Platform</span>
           </h2>
           <p className="text-white/50 text-base leading-relaxed mb-10">
-            Join 50,000+ CA aspirants who trust CA Mock for their exam preparation.
+            Join 20,000+ Bangladeshi CA aspirants who trust CA Aspire BD for their ICAB preparation.
           </p>
 
           <div className="flex flex-col gap-4">
             {[
-              { icon: '🎯', text: '5,000+ MCQs across all CA subjects' },
+              { icon: '🎯', text: '5,000+ MCQs across all ICAB subjects' },
               { icon: '📊', text: 'Detailed performance analytics' },
-              { icon: '🏆', text: 'National leaderboard rankings' },
-              { icon: '📝', text: 'Expertly curated mock tests' },
+              { icon: '🏆', text: 'Bangladesh leaderboard rankings' },
+              { icon: '📝', text: 'ICAB-aligned chapter-wise mock tests' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <span className="text-lg">{item.icon}</span>
@@ -96,10 +96,10 @@ export default function Login() {
             {['👨‍💼','👩‍💼','👨‍🎓','👩‍🎓','👨‍💻'].map((e,i) => (
               <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-violet-800 flex items-center justify-center text-sm border-2 border-navy-900">{e}</div>
             ))}
-            <span className="text-white/60 text-xs ml-1">+50k students</span>
+            <span className="text-white/60 text-xs ml-1">+20k students</span>
           </div>
-          <p className="text-white/70 text-xs leading-relaxed italic">"CA Mock helped me clear my CA Final on the first attempt. The mock tests are exactly like the real exam!"</p>
-          <p className="text-gold-400 text-xs font-semibold mt-1">— Priya Sharma, CA Final 2024</p>
+          <p className="text-white/70 text-xs leading-relaxed italic">"CA Aspire BD helped me pass my CA Professional Level on the first attempt. The ICAB-aligned mock tests are exactly like the real exams!"</p>
+          <p className="text-gold-400 text-xs font-semibold mt-1">— Tanvir Ahmed, CA Professional Level 2024</p>
         </div>
       </div>
 
@@ -164,7 +164,7 @@ export default function Login() {
           </div>
 
           <p className="text-center text-white/35 mt-6 text-sm">
-            New to CA Mock?{' '}
+            New to CA Aspire BD?{' '}
             <Link to="/register" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
               Create free account <ChevronRight className="w-3 h-3 inline" />
             </Link>

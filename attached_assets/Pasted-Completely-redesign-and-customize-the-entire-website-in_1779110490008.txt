@@ -1,0 +1,95 @@
+Completely redesign and customize the entire website into a premium Bangladesh-focused CA learning platform.
+
+Brand name:
+CA Aspire BD
+
+Main goal:
+This website is for Bangladeshi CA students (ICAB / CA Certificate Level / Professional Level preparation).
+The whole platform should feel specifically built for Bangladesh CA aspirants, not a generic learning site.
+
+1. Full website redesign:
+- redesign all pages
+- much more premium
+- modern educational platform
+- attractive professional UI
+- elegant spacing
+- visually rich cards
+- smoother animations
+- premium gradients
+- better icons
+- stronger readability
+- high-end commercial look
+
+2. Student dashboard redesign:
+Make the student dashboard much better and more advanced.
+
+Add:
+- beautiful subject cards
+- chapter progress cards
+- recent practice history
+- upcoming exams section
+- bookmarked MCQs
+- wrong answers review
+- leaderboard
+- study statistics
+- performance analytics
+- motivational widgets
+- progress charts
+- notification center
+
+Design:
+- very attractive
+- larger text
+- better card layout
+- premium dashboard style
+- interactive widgets
+
+3. Login page redesign:
+Create a much more beautiful login experience.
+
+Requirements:
+- premium login page
+- separate student login
+- separate admin login
+- modern split layout
+- CA-themed background
+- elegant form design
+- show/hide password
+- forgot password
+- remember me
+- animated illustrations
+- mobile friendly
+
+4. Home page:
+Make homepage professionally written for Bangladesh CA students.
+
+Homepage text should mention:
+- ICAB preparation
+- CA Certificate Level
+- CA Professional Level
+- chapter-wise mock tests
+- exam preparation
+- MCQ practice
+- smart learning for Bangladeshi CA students
+
+Use professional English copywriting.
+
+5. Color improvements:
+Improve the entire color system.
+
+Use:
+- deep navy blue
+- premium royal purple
+- white
+- soft gold accents
+- subtle gradients
+- modern educational theme
+
+Avoid dull or plain colors.
+
+6. Branding:
+Replace all old names with:
+CA Aspire BD
+
+7. Final goal:
+Make the entire platform look like a premium, trusted, high-quality Bangladeshi CA exam preparation website.

@@ -45,7 +45,7 @@ export default function AdminLogin() {
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-bold text-lg">CA Mock</div>
+              <div className="text-white font-bold text-lg">CA Aspire BD</div>
               <div className="text-[9px] font-semibold tracking-widest uppercase" style={{ color: '#818cf8' }}>Administration</div>
             </div>
           </Link>
@@ -147,7 +147,7 @@ export default function AdminLogin() {
                 <BookOpen className="w-4 h-4 text-white" />
               </div>
               <div>
-                <div className="text-white font-bold text-sm">CA Mock</div>
+                <div className="text-white font-bold text-sm">CA Aspire BD</div>
                 <div className="text-[9px] font-semibold tracking-widest uppercase" style={{ color: '#818cf8' }}>Admin Dashboard</div>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function AdminLogin() {
                   <input
                     type="email"
                     required
-                    placeholder="admin@camock.com"
+                    placeholder="admin@caaspirebd.com"
                     value={form.email}
                     onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                     className="w-full rounded-xl px-4 py-3 pl-11 text-sm text-white placeholder-white/20 outline-none transition-all border border-white/[0.07] focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20"

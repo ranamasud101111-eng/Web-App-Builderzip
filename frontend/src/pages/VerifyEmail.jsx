@@ -63,7 +63,7 @@ export default function VerifyEmail() {
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-800 flex items-center justify-center">
             <BookOpen className="w-4.5 h-4.5 text-white" />
           </div>
-          <div className="text-white font-bold text-lg">CA Mock</div>
+          <div className="text-white font-bold text-lg">CA Aspire BD</div>
         </Link>
 
         <div className="rounded-3xl p-8 border border-white/[0.07]"

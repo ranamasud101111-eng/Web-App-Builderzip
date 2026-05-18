@@ -77,7 +77,7 @@ export default function AdminEnrollments() {
           <BookOpen className="w-4 h-4 text-white" />
         </div>
         <div>
-          <div className="text-white font-bold text-base leading-tight">CA Mock</div>
+          <div className="text-white font-bold text-base leading-tight">CA Aspire BD</div>
           <div className="text-[9px] text-gold-500 font-semibold tracking-widest uppercase">Admin Panel</div>
         </div>
         {mobile && (

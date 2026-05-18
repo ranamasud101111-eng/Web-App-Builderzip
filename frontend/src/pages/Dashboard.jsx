@@ -136,7 +136,7 @@ export default function Dashboard() {
           <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
             Welcome, <span className="gradient-text">{user?.name?.split(' ')[0]}</span>
           </h1>
-          <p className="text-white/35 mt-2 text-base">Keep pushing — every chapter gets you closer to your CA.</p>
+          <p className="text-white/35 mt-2 text-base">Keep pushing — every chapter brings you closer to your ICAB CA dream.</p>
         </motion.div>
 
         {/* Stat cards */}
@@ -198,7 +198,7 @@ export default function Dashboard() {
             </div>
             <div className="flex-1">
               <p className="font-semibold text-white text-sm">Leaderboard</p>
-              <p className="text-white/35 text-xs">See your national ranking</p>
+              <p className="text-white/35 text-xs">See your Bangladesh ranking</p>
             </div>
             <ChevronRight className="w-4 h-4 text-white/25 group-hover:text-white/60 transition-colors" />
           </Link>

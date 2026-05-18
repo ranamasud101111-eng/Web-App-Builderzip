@@ -297,7 +297,7 @@ export default function AdminFlashCards() {
           <Zap className="w-4 h-4 text-black" />
         </div>
         <div className="min-w-0">
-          <div className="text-white font-bold text-sm leading-tight">CA Mock</div>
+          <div className="text-white font-bold text-sm leading-tight">CA Aspire BD</div>
           <div className="text-[9px] text-yellow-400 font-semibold tracking-widest uppercase">Admin Panel</div>
         </div>
         {onClose && (

@@ -166,7 +166,7 @@ export default function AdminExams() {
           <BookOpen className="w-4 h-4 text-white" />
         </div>
         <div>
-          <div className="text-white font-bold text-base leading-tight">CA Mock</div>
+          <div className="text-white font-bold text-base leading-tight">CA Aspire BD</div>
           <div className="text-[9px] text-gold-500 font-semibold tracking-widest uppercase">Admin Panel</div>
         </div>
         {mobile && (
@@ -398,7 +398,7 @@ export default function AdminExams() {
                 {/* Title */}
                 <div>
                   <label className="block text-xs font-semibold text-white/50 mb-1.5 uppercase tracking-wide">Exam Title *</label>
-                  <input type="text" required placeholder="e.g. CA Foundation — Accounting Paper 1"
+                  <input type="text" required placeholder="e.g. CA Certificate Level — Financial Accounting Paper"
                     value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                     className="input-field" />
                 </div>

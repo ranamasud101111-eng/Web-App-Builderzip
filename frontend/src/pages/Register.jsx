@@ -104,17 +104,17 @@ export default function Register() {
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-bold text-lg">CA Mock</div>
-              <div className="text-gold-500 text-[9px] font-semibold tracking-widest uppercase">Premium Platform</div>
+              <div className="text-white font-bold text-lg">CA Aspire BD</div>
+              <div className="text-gold-500 text-[9px] font-semibold tracking-widest uppercase">ICAB Prep Platform</div>
             </div>
           </Link>
 
           <div className="badge-gold mb-5 w-fit">Free Registration</div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-            Join 50,000+<br />
-            <span className="gradient-text-gold">CA Aspirants</span>
+            Join 20,000+<br />
+            <span className="gradient-text-gold">ICAB CA Aspirants</span>
           </h2>
-          <p className="text-white/50 mb-10">Start your CA journey with India's most trusted exam preparation platform.</p>
+          <p className="text-white/50 mb-10">Start your ICAB CA journey with Bangladesh's most trusted exam preparation platform.</p>
 
           <div className="flex flex-col gap-4">
             {benefits.map((b, i) => (
@@ -130,7 +130,7 @@ export default function Register() {
 
         <div className="relative z-10 grid grid-cols-3 gap-3">
           {[
-            { value: '50K+', label: 'Students' },
+            { value: '20K+', label: 'Students' },
             { value: '5K+', label: 'MCQs' },
             { value: '98%', label: 'Pass Rate' },
           ].map((s, i) => (
@@ -179,11 +179,10 @@ export default function Register() {
                 <select value={form.class_level} onChange={e => setForm(p => ({ ...p, class_level: e.target.value }))}
                   className="input-field pl-11 appearance-none"
                   style={{ color: form.class_level ? 'white' : 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.04)' }}>
-                  <option value="" style={{ background: '#06112e' }}>Select Level (Optional)</option>
-                  <option value="Foundation" style={{ background: '#06112e' }}>CA Foundation</option>
-                  <option value="Intermediate" style={{ background: '#06112e' }}>CA Intermediate</option>
-                  <option value="Final" style={{ background: '#06112e' }}>CA Final</option>
-                  {[6,7,8,9,10,11,12].map(c => <option key={c} value={c} style={{ background: '#06112e' }}>Class {c}</option>)}
+                  <option value="" style={{ background: '#06112e' }}>Select ICAB Level (Optional)</option>
+                  <option value="Certificate" style={{ background: '#06112e' }}>CA Certificate Level</option>
+                  <option value="Professional" style={{ background: '#06112e' }}>CA Professional Level</option>
+                  <option value="Advanced" style={{ background: '#06112e' }}>CA Advanced Level</option>
                 </select>
               </div>
               <button type="submit" disabled={loading}

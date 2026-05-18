@@ -9,8 +9,8 @@ import api from '../api';
 import { toast } from 'react-toastify';
 
 const LEVELS = [
-  { name: 'Certificate', icon: '📜', color: '#3b82f6', desc: 'Foundation level — start your CA journey' },
-  { name: 'Professional', icon: '💼', color: '#8b5cf6', desc: 'Intermediate level — build your expertise' },
+  { name: 'Certificate', icon: '📜', color: '#3b82f6', desc: 'Certificate Level — begin your ICAB CA journey' },
+  { name: 'Professional', icon: '💼', color: '#8b5cf6', desc: 'Professional Level — build advanced competency' },
   { name: 'Advanced', icon: '🏆', color: '#f59e0b', desc: 'Advanced level — master the curriculum' },
 ];
 
