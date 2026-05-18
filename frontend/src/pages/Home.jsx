@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowRight, BookOpen, Users, Trophy, Zap, Star, Lock,
   ChevronRight, BarChart3, Shield, CheckCircle, Target, Clock,
   Award, TrendingUp, FileText, ChevronDown, GraduationCap, MapPin,
-  Sparkles, Brain, XCircle, Bookmark, Play, Flame, BarChart2
+  Sparkles, Brain, Play, Flame, BarChart2, Layers, HelpCircle,
+  Medal, Lightbulb, BookMarked, Cpu
 } from 'lucide-react';
 import api from '../api';
 
-/* ─── Animated counter ─────────────────────────────────────────────────────── */
-const Counter = ({ end, suffix = '', prefix = '' }) => {
+/* ─── Animated number counter ────────────────────────────────────────────── */
+const Counter = ({ end, suffix = '', duration = 1800 }) => {
   const [val, setVal] = useState(0);
   const [started, setStarted] = useState(false);
   const ref = useRef(null);
@@ -20,477 +20,543 @@ const Counter = ({ end, suffix = '', prefix = '' }) => {
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !started) {
         setStarted(true);
-        let cur = 0;
-        const step = end / 70;
-        const t = setInterval(() => { cur += step; if (cur >= end) { setVal(end); clearInterval(t); } else setVal(Math.floor(cur)); }, 22);
+        const startTime = performance.now();
+        const update = (now) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setVal(Math.floor(eased * end));
+          if (progress < 1) requestAnimationFrame(update);
+          else setVal(end);
+        };
+        requestAnimationFrame(update);
       }
-    }, { threshold: 0.4 });
+    }, { threshold: 0.3 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, [end, started]);
-  return <span ref={ref}>{prefix}{val.toLocaleString()}{suffix}</span>;
+  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
 };
 
-/* ─── FAQ item ──────────────────────────────────────────────────────────────── */
-const FAQ = ({ q, a, isDark }) => {
+/* ─── FAQ accordion ──────────────────────────────────────────────────────── */
+const FAQ = ({ q, a }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer ${
-      isDark
-        ? open ? 'border border-violet-500/30 bg-violet-500/5' : 'border border-white/[0.07] bg-white/[0.025]'
-        : open ? 'border border-violet-300 bg-violet-50' : 'border border-slate-200 bg-white'
-    }`}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-6 py-5 text-left gap-4">
-        <span className={`font-semibold text-sm pr-4 ${isDark ? 'text-white/90' : 'text-slate-800'}`}>{q}</span>
-        <ChevronDown className={`w-4 h-4 flex-shrink-0 text-violet-500 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && <div className={`px-6 pb-5 text-sm leading-relaxed ${isDark ? 'text-white/50' : 'text-slate-500'}`}>{a}</div>}
-    </div>
+    <motion.div
+      layout
+      onClick={() => setOpen(!open)}
+      className="rounded-2xl cursor-pointer overflow-hidden transition-all duration-300"
+      style={{
+        background: open ? 'rgba(124,58,237,0.06)' : 'rgba(255,255,255,0.02)',
+        border: `1px solid ${open ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.06)'}`,
+      }}>
+      <div className="flex items-center justify-between px-6 py-5 gap-4">
+        <span className="font-semibold text-[14px] text-white/90 leading-snug">{q}</span>
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${open ? 'bg-violet-600 rotate-180' : 'bg-white/5'}`}>
+          <ChevronDown className="w-3.5 h-3.5 text-white" />
+        </div>
+      </div>
+      {open && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-6 pb-5 text-white/50 text-[13px] leading-relaxed">
+          {a}
+        </motion.div>
+      )}
+    </motion.div>
   );
 };
 
-const STATS = [
-  { end: 20000, suffix: '+', label: 'Students Enrolled', icon: Users },
-  { end: 5000, suffix: '+', label: 'MCQs & Mock Tests', icon: FileText },
-  { end: 98, suffix: '%', label: 'Student Satisfaction', icon: Star },
-  { end: 300, suffix: '+', label: 'ICAB Topics Covered', icon: BookOpen },
-];
-
-const FEATURES = [
-  { icon: Target, title: 'ICAB-Pattern MCQs', desc: 'Questions precisely aligned with ICAB Certificate and Professional Level exam patterns and syllabus', color: '#7c3aed' },
-  { icon: BarChart3, title: 'Deep Analytics', desc: 'Identify your weak areas with chapter-wise performance breakdowns and score trends', color: '#f59e0b' },
-  { icon: Trophy, title: 'National Leaderboard', desc: 'Compete with CA aspirants across Bangladesh and see where you stand nationwide', color: '#10b981' },
-  { icon: Zap, title: 'Instant Feedback', desc: 'Learn from every mistake immediately with detailed answer explanations and references', color: '#06b6d4' },
-  { icon: Shield, title: 'Expert Content', desc: 'Study material prepared by ICAB-qualified faculty and CA examination toppers', color: '#8b5cf6' },
-  { icon: Clock, title: 'Timed Mock Tests', desc: 'Simulate real ICAB exam conditions with chapter-wise and full-length timed papers', color: '#f43f5e' },
-];
-
-const TESTIMONIALS = [
-  { name: 'Tanvir Ahmed', level: 'CA Professional Level — Top Performer', text: 'CA Aspire BD is the most focused platform for ICAB preparation in Bangladesh. The mock tests are exactly like the real exams. Passed Professional Level on the first attempt!', stars: 5, initials: 'TA', color: '#7c3aed' },
-  { name: 'Nusrat Jahan', level: 'CA Certificate Level — First Attempt', text: 'The chapter-wise practice helped me understand exactly where I was weak. The analytics are brilliant. CA Aspire BD made my Certificate Level preparation structured and effective.', stars: 5, initials: 'NJ', color: '#10b981' },
-  { name: 'Mahmudul Hasan', level: 'CA Certificate Level Topper', text: 'As a Bangladeshi CA student, I needed a platform built for ICAB — not ICAI. CA Aspire BD is exactly that. The leaderboard kept me motivated throughout my preparation.', stars: 5, initials: 'MH', color: '#f59e0b' },
-];
-
-const FAQS = [
-  { q: 'Is CA Aspire BD suitable for all ICAB levels?', a: 'Yes. CA Aspire BD covers both the CA Certificate Level and CA Professional Level under ICAB. Each subject is organized by level with appropriate difficulty and syllabus alignment.' },
-  { q: 'How many mock tests are available for ICAB preparation?', a: 'We have 5,000+ MCQs across all ICAB subjects, organized into topic-wise and chapter-wise practice sets fully aligned with the ICAB syllabus and exam format.' },
-  { q: 'Is the platform free to use?', a: 'CA Aspire BD offers a free tier with access to selected chapters and preview questions. Full access to all chapters, mock tests, and analytics is available with premium enrollment.' },
-  { q: 'How closely do mock tests match real ICAB exams?', a: 'Our content is prepared by ICAB-qualified faculty and regularly reviewed against the latest ICAB syllabi. The question pattern, difficulty level, and marking scheme closely mirror actual ICAB examinations.' },
-  { q: 'Can I track my progress over time?', a: 'Yes. Your dashboard shows detailed progress analytics including chapters completed, MCQ scores, time spent studying, wrong answer reviews, and your ranking on the national leaderboard.' },
-];
-
-/* ─── Floating icon bubble ─────────────────────────────────────────────────── */
-const FloatIcon = ({ icon: Icon, color, style, delay = 0 }) => (
+/* ─── Floating glow icon ─────────────────────────────────────────────────── */
+const GlowIcon = ({ icon: Icon, color, x, y, delay = 0, size = 48 }) => (
   <motion.div
-    animate={{ y: [0, -18, 0], rotate: [0, 4, -2, 0] }}
-    transition={{ duration: 6 + delay, repeat: Infinity, ease: 'easeInOut', delay }}
-    className="absolute hidden lg:flex items-center justify-center w-12 h-12 rounded-2xl shadow-xl"
-    style={{ ...style, background: `${color}18`, border: `1px solid ${color}30`, backdropFilter: 'blur(12px)' }}>
-    <Icon className="w-5 h-5" style={{ color }} />
+    initial={{ opacity: 0, scale: 0.5 }}
+    animate={{ opacity: 1, scale: 1, y: [0, -16, 0] }}
+    transition={{ opacity: { delay, duration: 0.5 }, scale: { delay, duration: 0.5 }, y: { delay, duration: 5 + delay, repeat: Infinity, ease: 'easeInOut' } }}
+    className="absolute hidden xl:flex items-center justify-center rounded-2xl"
+    style={{
+      left: x, top: y, width: size, height: size,
+      background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+      border: `1px solid ${color}30`,
+      boxShadow: `0 0 20px ${color}20, inset 0 1px 0 ${color}15`,
+      backdropFilter: 'blur(12px)',
+    }}>
+    <Icon style={{ color, width: size * 0.42, height: size * 0.42 }} />
   </motion.div>
 );
 
-/* ─── Dashboard preview mockup ─────────────────────────────────────────────── */
-const DashboardPreview = ({ isDark }) => (
-  <div className={`rounded-2xl overflow-hidden shadow-2xl border ${isDark ? 'border-violet-500/15 bg-[#08091e]' : 'border-violet-200 bg-slate-50'}`}>
-    {/* Window chrome */}
-    <div className={`flex items-center gap-2 px-4 py-3 ${isDark ? 'bg-[#0d0f2b] border-b border-white/[0.05]' : 'bg-white border-b border-slate-100'}`}>
-      <div className="w-3 h-3 rounded-full bg-red-400" />
-      <div className="w-3 h-3 rounded-full bg-amber-400" />
-      <div className="w-3 h-3 rounded-full bg-emerald-400" />
-      <div className={`flex-1 mx-4 rounded-full text-center text-[10px] py-1 px-3 ${isDark ? 'bg-white/5 text-white/25' : 'bg-slate-100 text-slate-400'}`}>caaspirebd.com/dashboard</div>
-    </div>
-    {/* Content */}
-    <div className="p-5 space-y-4">
-      {/* Stat row */}
-      <div className="grid grid-cols-4 gap-3">
-        {[['5', 'Subjects', '#8b5cf6'], ['72%', 'Progress', '#10b981'], ['38', 'Chapters', '#06b6d4'], ['3', 'Tests', '#f59e0b']].map(([v, l, c]) => (
-          <div key={l} className={`rounded-xl p-3 ${isDark ? 'bg-white/[0.04] border border-white/[0.05]' : 'bg-white border border-slate-100 shadow-sm'}`}>
-            <div className="text-lg font-black" style={{ color: c }}>{v}</div>
-            <div className={`text-[9px] font-semibold uppercase tracking-wider mt-0.5 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>{l}</div>
-          </div>
-        ))}
-      </div>
-      {/* Chart placeholder */}
-      <div className={`rounded-xl p-4 ${isDark ? 'bg-white/[0.03] border border-white/[0.04]' : 'bg-white border border-slate-100 shadow-sm'}`}>
-        <div className={`text-[11px] font-bold mb-3 ${isDark ? 'text-white/60' : 'text-slate-600'}`}>Weekly Activity</div>
-        <div className="flex items-end gap-1.5 h-14">
-          {[45, 72, 58, 89, 63, 95, 78].map((h, i) => (
-            <div key={i} className="flex-1 rounded-t-md transition-all" style={{ height: `${h}%`, background: `linear-gradient(to top, #7c3aed88, #8b5cf666)` }} />
-          ))}
-        </div>
-        <div className="flex justify-between mt-1.5">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, idx) => (
-            <span key={idx} className={`flex-1 text-center text-[8px] ${isDark ? 'text-white/20' : 'text-slate-300'}`}>{d}</span>
-          ))}
-        </div>
-      </div>
-      {/* Subject cards */}
-      <div className="space-y-2">
-        {[['Financial Accounting', 78, '#7c3aed'], ['Business Law', 45, '#10b981'], ['Auditing', 92, '#f59e0b']].map(([name, pct, color]) => (
-          <div key={name} className={`flex items-center gap-3 p-3 rounded-xl ${isDark ? 'bg-white/[0.03] border border-white/[0.04]' : 'bg-white border border-slate-100 shadow-sm'}`}>
-            <div className="flex-1">
-              <div className={`text-[11px] font-semibold mb-1.5 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>{name}</div>
-              <div className={`h-1.5 rounded-full overflow-hidden ${isDark ? 'bg-white/[0.08]' : 'bg-slate-100'}`}>
-                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}80, ${color})` }} />
-              </div>
-            </div>
-            <span className="text-[11px] font-black" style={{ color }}>{pct}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
+/* ─── Neon card border shine ─────────────────────────────────────────────── */
+const NeonCard = ({ children, color = '#8b5cf6', className = '', delay = 0, hover = true }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 24 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.5 }}
+    viewport={{ once: true }}
+    whileHover={hover ? { y: -6, transition: { duration: 0.25 } } : {}}
+    className={`relative rounded-2xl overflow-hidden ${className}`}
+    style={{
+      background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+      border: `1px solid rgba(255,255,255,0.07)`,
+      boxShadow: `0 0 0 0 ${color}00`,
+      transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+    }}
+    onMouseEnter={e => {
+      if (!hover) return;
+      e.currentTarget.style.borderColor = `${color}35`;
+      e.currentTarget.style.boxShadow = `0 0 30px ${color}18, inset 0 0 30px ${color}06`;
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
+      e.currentTarget.style.boxShadow = '0 0 0 0 transparent';
+    }}>
+    {children}
+  </motion.div>
 );
+
+/* ─── Data ───────────────────────────────────────────────────────────────── */
+const STATS = [
+  { end: 20000, suffix: '+', label: 'Students Enrolled', sub: 'across Bangladesh', icon: Users, color: '#8b5cf6' },
+  { end: 5000, suffix: '+', label: 'MCQ Questions', sub: 'ICAB-aligned', icon: FileText, color: '#ec4899' },
+  { end: 98, suffix: '%', label: 'Satisfaction Rate', sub: 'from student surveys', icon: Star, color: '#f59e0b' },
+  { end: 300, suffix: '+', label: 'Topics Covered', sub: 'cert & professional', icon: BookOpen, color: '#06b6d4' },
+];
+
+const FEATURES = [
+  { icon: Target, title: 'ICAB-Pattern MCQs', desc: 'Questions precisely mirroring ICAB Certificate and Professional Level exam patterns. Built with actual past paper analysis.', color: '#8b5cf6' },
+  { icon: BarChart3, title: 'Deep Analytics', desc: 'Chapter-wise accuracy breakdowns, score trends, and study streaks — know exactly where to focus next.', color: '#ec4899' },
+  { icon: Trophy, title: 'National Leaderboard', desc: 'Compete with thousands of CA aspirants across Bangladesh. See your rank, stay motivated, and climb.', color: '#f59e0b' },
+  { icon: Zap, title: 'Instant Feedback', desc: 'Every wrong answer comes with a detailed explanation and reference. Learn at the speed of mistakes.', color: '#06b6d4' },
+  { icon: Shield, title: 'Expert Content', desc: 'Study materials curated by ICAB-qualified faculty and CA examination toppers with real exam experience.', color: '#10b981' },
+  { icon: Clock, title: 'Timed Mock Tests', desc: 'Simulate real ICAB exam pressure with chapter-wise and full-length timed tests, exactly like the actual paper.', color: '#f43f5e' },
+];
+
+const TESTIMONIALS = [
+  { name: 'Tanvir Ahmed', role: 'CA Professional Level — Top Performer', text: 'CA Aspire BD\'s mock tests are the closest to the real ICAB exams I\'ve ever seen. Passed my Professional Level on first attempt with confidence.', color: '#8b5cf6' },
+  { name: 'Nusrat Jahan', role: 'CA Certificate Level — First Attempt Pass', text: 'The analytics showed me exactly where I was weak. Within two weeks of targeted practice, my scores jumped dramatically. This platform works.', color: '#10b981' },
+  { name: 'Mahmudul Hasan', role: 'CA Certificate Level Topper', text: 'Finally a platform built for ICAB, not ICAI. Every question, every format, every marking scheme is tailored for Bangladeshi CA students.', color: '#f59e0b' },
+];
+
+const FAQS = [
+  { q: 'Is CA Aspire BD suitable for all ICAB levels?', a: 'Yes — CA Aspire BD covers both the CA Certificate Level and CA Professional Level under ICAB. Each subject is organized by level with the appropriate difficulty and syllabus alignment.' },
+  { q: 'How many mock tests are available for ICAB preparation?', a: 'We have 5,000+ MCQs across all ICAB subjects, organized into topic-wise and chapter-wise practice sets fully aligned with the ICAB syllabus and exam format.' },
+  { q: 'Is the platform free to use?', a: 'CA Aspire BD offers a free tier with access to selected chapters and preview questions. Full access to all chapters, mock tests, and analytics is available with premium enrollment.' },
+  { q: 'How closely do mock tests match real ICAB exams?', a: 'Our content is prepared by ICAB-qualified faculty and regularly reviewed against the latest ICAB syllabi. The question pattern, difficulty, and marking scheme closely mirror actual ICAB examinations.' },
+  { q: 'Can I track my progress over time?', a: 'Yes. Your dashboard shows detailed analytics including chapters completed, MCQ scores, time spent, wrong answer reviews, and your ranking on the national leaderboard.' },
+];
 
 /* ════════════════════════════════════════════════════════════════════════════ */
 export default function Home() {
   const { user } = useAuth();
-  const { isDark } = useTheme();
   const [subjects, setSubjects] = useState([]);
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: heroRef });
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 0.6], [0, -60]);
 
   useEffect(() => {
     api.get('/subjects').then(r => setSubjects(r.data.slice(0, 6))).catch(() => {});
   }, []);
 
-  /* ── Theme-specific classes ──────────────────────────────────────────────── */
-  const pageBg = isDark
-    ? 'bg-[#050816]'
-    : 'bg-gradient-to-br from-[#fafaff] via-[#f5f3ff] to-[#eef4ff]';
-
-  const sectionMuted = isDark ? 'bg-[#06112e]/60' : 'bg-violet-50/70';
-
-  const headingPrimary = isDark ? 'text-white' : 'text-violet-950';
-  const textMuted = isDark ? 'text-white/45' : 'text-slate-500';
-  const textSubtle = isDark ? 'text-white/30' : 'text-slate-400';
-
-  const labelBg = isDark
-    ? 'bg-violet-500/10 border border-violet-500/20 text-violet-400'
-    : 'bg-violet-100 border border-violet-200 text-violet-600';
-
-  const cardBase = isDark
-    ? 'bg-white/[0.03] border border-white/[0.07] hover:border-violet-500/25 hover:bg-violet-500/[0.05]'
-    : 'bg-white border border-slate-200/70 hover:border-violet-300 shadow-sm hover:shadow-violet-100';
-
-  const statCard = isDark
-    ? 'bg-white/[0.03] border border-white/[0.06]'
-    : 'bg-white border border-slate-100 shadow-sm';
-
-  const testimonialCard = isDark
-    ? 'bg-white/[0.03] border border-white/[0.07]'
-    : 'bg-white border border-slate-200/70 shadow-sm';
-
-  const dividerColor = isDark ? 'border-white/[0.05]' : 'border-slate-200';
-  const footerLinkColor = isDark ? 'text-white/35 hover:text-white/70' : 'text-slate-400 hover:text-violet-600';
-
   return (
-    <div className={`min-h-screen overflow-x-hidden transition-colors duration-500 ${pageBg}`}>
+    <div className="min-h-screen overflow-x-hidden" style={{ background: '#050816', color: '#f1f5f9' }}>
 
-      {/* ═══ HERO ════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* HERO                                                              */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
 
-        {/* Background elements — dark only */}
-        {isDark && (
-          <>
-            <div className="orb w-[700px] h-[700px] opacity-[0.14]" style={{ background: '#7c3aed', top: '-15%', left: '-8%' }} />
-            <div className="orb w-[500px] h-[500px] opacity-[0.08]" style={{ background: '#ec4899', top: '40%', right: '-8%', animationDelay: '5s' }} />
-            <div className="orb w-[400px] h-[400px] opacity-[0.07]" style={{ background: '#3b82f6', bottom: '-12%', left: '35%', animationDelay: '9s' }} />
-            <div className="hero-grid absolute inset-0 opacity-40" />
-          </>
-        )}
+        {/* Ambient background orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute rounded-full" style={{ width: 900, height: 900, top: '-30%', left: '-20%', background: 'radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 65%)', filter: 'blur(1px)' }} />
+          <div className="absolute rounded-full" style={{ width: 700, height: 700, top: '20%', right: '-15%', background: 'radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 65%)', filter: 'blur(1px)', animationDelay: '5s' }} />
+          <div className="absolute rounded-full" style={{ width: 600, height: 600, bottom: '-10%', left: '30%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 65%)', animationDelay: '9s' }} />
+          <div className="absolute rounded-full" style={{ width: 400, height: 400, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(245,158,11,0.05) 0%, transparent 70%)' }} />
+        </div>
 
-        {/* Background elements — light only */}
-        {!isDark && (
-          <>
-            <div className="absolute top-0 left-0 right-0 h-[70vh] pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.07) 0%, transparent 65%)' }} />
-            <div className="absolute w-80 h-80 rounded-full pointer-events-none -top-20 -left-20 blur-3xl opacity-30"
-              style={{ background: 'radial-gradient(circle, #ede9fe, transparent)' }} />
-            <div className="absolute w-64 h-64 rounded-full pointer-events-none top-1/2 -right-20 blur-3xl opacity-20"
-              style={{ background: 'radial-gradient(circle, #dbeafe, transparent)' }} />
-          </>
-        )}
+        {/* Dot grid */}
+        <div className="hero-grid absolute inset-0 opacity-30 pointer-events-none" />
+
+        {/* Orbit rings */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[800px] h-[800px] rounded-full border" style={{ borderColor: 'rgba(124,58,237,0.06)', animation: 'spin 30s linear infinite' }} />
+          <div className="absolute w-[600px] h-[600px] rounded-full border" style={{ borderColor: 'rgba(236,72,153,0.05)', animation: 'spin 20s linear infinite reverse' }} />
+          <div className="absolute w-[400px] h-[400px] rounded-full border" style={{ borderColor: 'rgba(59,130,246,0.06)', animation: 'spin 15s linear infinite' }} />
+        </div>
 
         {/* Floating icons */}
-        <FloatIcon icon={Brain} color="#7c3aed" style={{ top: '22%', left: '8%' }} delay={0} />
-        <FloatIcon icon={Trophy} color="#f59e0b" style={{ top: '16%', right: '10%' }} delay={1.5} />
-        <FloatIcon icon={Target} color="#10b981" style={{ bottom: '28%', left: '6%' }} delay={0.8} />
-        <FloatIcon icon={BarChart3} color="#3b82f6" style={{ bottom: '24%', right: '8%' }} delay={2.2} />
-        <FloatIcon icon={Flame} color="#f43f5e" style={{ top: '55%', left: '13%' }} delay={1} />
-        <FloatIcon icon={Sparkles} color="#06b6d4" style={{ top: '40%', right: '14%' }} delay={1.8} />
+        <GlowIcon icon={Brain} color="#8b5cf6" x="7%" y="22%" delay={0.2} />
+        <GlowIcon icon={Trophy} color="#f59e0b" x="88%" y="18%" delay={0.5} />
+        <GlowIcon icon={Target} color="#10b981" x="5%" y="62%" delay={0.3} size={44} />
+        <GlowIcon icon={BarChart3} color="#06b6d4" x="89%" y="60%" delay={0.7} size={44} />
+        <GlowIcon icon={Flame} color="#f43f5e" x="12%" y="42%" delay={0.9} size={40} />
+        <GlowIcon icon={Sparkles} color="#a78bfa" x="85%" y="40%" delay={0.6} size={40} />
+        <GlowIcon icon={Cpu} color="#3b82f6" x="18%" y="78%" delay={1.1} size={36} />
+        <GlowIcon icon={Medal} color="#fbbf24" x="80%" y="76%" delay={0.8} size={36} />
 
-        {/* Orbit ring — dark only */}
-        {isDark && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[600px] h-[600px] rounded-full border border-violet-500/[0.06] animate-spin-slow" />
-            <div className="absolute w-[480px] h-[480px] rounded-full border border-violet-500/[0.04]" style={{ animation: 'spin 16s linear infinite reverse' }} />
-          </div>
-        )}
+        {/* Hero content */}
+        <motion.div style={{ opacity: heroOpacity, y: heroY }}
+          className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 text-center py-32">
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          {/* Location badge */}
-          <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-8 ${labelBg}`}>
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="text-sm font-semibold tracking-wide">Bangladesh's #1 CA Preparation Platform</span>
+          {/* Badge */}
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-10"
+              style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)', backdropFilter: 'blur(12px)' }}>
+              <MapPin className="w-3.5 h-3.5 text-violet-400" />
+              <span className="text-[12px] font-bold text-violet-300 tracking-wide uppercase">Bangladesh's #1 CA Preparation Platform</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             </div>
           </motion.div>
 
           {/* Main headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
-            className={`text-5xl md:text-7xl lg:text-8xl font-black leading-[1.04] mb-6 tracking-tight ${headingPrimary}`}>
-            Crack Your&nbsp;
-            <span style={{ background: 'linear-gradient(135deg,#c4b5fd 0%,#8b5cf6 40%,#ec4899 80%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ICAB CA</span>
-            <br />Exams with <span style={{ background: 'linear-gradient(135deg,#f59e0b,#fbbf24,#fde68a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Confidence</span>
+            initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
+            className="font-black leading-[1.03] tracking-tight mb-6"
+            style={{ fontSize: 'clamp(2.8rem, 8vw, 6rem)' }}>
+            <span className="text-white">Crack Your</span>{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 30%, #ec4899 65%, #f97316 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>ICAB CA</span>
+            <br />
+            <span className="text-white">Exams with </span>
+            <span style={{
+              background: 'linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #f97316 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>Confidence</span>
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-            className={`text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed ${textMuted}`}>
-            Purpose-built for Bangladeshi CA aspirants — chapter-wise MCQ practice, ICAB-aligned mock tests, and intelligent analytics to help you ace Certificate Level and Professional Level examinations.
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
+            style={{ color: 'rgba(255,255,255,0.45)', fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}
+            className="max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+            Purpose-built for Bangladeshi CA aspirants — chapter-wise MCQ practice,
+            ICAB-aligned mock tests, and intelligent analytics to help you ace every level.
           </motion.p>
 
-          {/* CTA buttons */}
+          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             {user ? (
               <Link to="/dashboard"
-                className="inline-flex items-center gap-2.5 text-base py-4 px-9 rounded-2xl font-bold text-white shadow-xl transition-all duration-300"
-                style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)', boxShadow: isDark ? '0 0 40px rgba(124,58,237,0.45)' : '0 8px 30px rgba(124,58,237,0.3)' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = isDark ? '0 0 60px rgba(124,58,237,0.6)' : '0 12px 40px rgba(124,58,237,0.4)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = isDark ? '0 0 40px rgba(124,58,237,0.45)' : '0 8px 30px rgba(124,58,237,0.3)'; }}>
+                className="inline-flex items-center gap-2.5 text-base py-4 px-9 rounded-2xl font-bold text-white transition-all duration-300 hover:-translate-y-1"
+                style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899,#f97316)', backgroundSize: '200% 200%', boxShadow: '0 0 50px rgba(124,58,237,0.5), 0 0 0 1px rgba(124,58,237,0.3)' }}>
                 Go to Dashboard <ArrowRight className="w-4 h-4" />
               </Link>
             ) : (
               <>
                 <Link to="/register"
-                  className="inline-flex items-center gap-2.5 text-base py-4 px-9 rounded-2xl font-bold text-white transition-all duration-300"
-                  style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)', boxShadow: isDark ? '0 0 40px rgba(124,58,237,0.45)' : '0 8px 30px rgba(124,58,237,0.3)' }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}>
-                  Start Preparing Free <ArrowRight className="w-4 h-4" />
+                  className="inline-flex items-center gap-2.5 text-base py-4 px-10 rounded-2xl font-bold text-white transition-all duration-300 hover:-translate-y-1 group"
+                  style={{ background: 'linear-gradient(135deg,#7c3aed 0%,#ec4899 60%,#f97316 100%)', boxShadow: '0 0 50px rgba(124,58,237,0.45), 0 0 0 1px rgba(139,92,246,0.3)', backgroundSize: '200% 200%' }}>
+                  Start Preparing Free
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link to="/login"
-                  className={`inline-flex items-center gap-2.5 text-base py-4 px-8 rounded-2xl font-semibold transition-all duration-200 ${
-                    isDark
-                      ? 'text-white/80 border border-white/12 hover:border-white/25 hover:bg-white/5 hover:text-white'
-                      : 'text-violet-700 border border-violet-200 hover:border-violet-400 hover:bg-violet-50 shadow-sm'
-                  }`}>
+                  className="inline-flex items-center gap-2.5 text-base py-4 px-8 rounded-2xl font-semibold transition-all duration-300 hover:-translate-y-0.5"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(12px)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.3)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
                   <Play className="w-4 h-4" /> Sign In
                 </Link>
               </>
             )}
           </motion.div>
 
-          {/* Trust badges */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-5 mb-16">
+          {/* Trust pills */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-20">
             {['Free registration', 'No credit card needed', 'ICAB syllabus aligned', '20K+ BD students'].map((t, i) => (
-              <span key={i} className={`flex items-center gap-1.5 text-xs font-medium ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+              <span key={i} className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> {t}
               </span>
             ))}
           </motion.div>
 
-          {/* Mini stat row */}
-          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-wrap items-center justify-center gap-4 max-w-sm mx-auto">
-            {[{ label: 'Students', value: '20K+', emoji: '👨‍🎓' }, { label: 'MCQs', value: '5K+', emoji: '📝' }, { label: 'Pass Rate', value: '98%', emoji: '🏆' }].map((s, i) => (
-              <div key={i} className={`flex-1 min-w-[90px] rounded-2xl p-4 text-center transition-all ${statCard}`}>
-                <div className="text-2xl mb-1">{s.emoji}</div>
-                <div className={`text-lg font-black ${headingPrimary}`}>{s.value}</div>
-                <div className={`text-[10px] font-medium mt-0.5 ${textSubtle}`}>{s.label}</div>
+          {/* Mini stats */}
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+            className="flex flex-wrap items-center justify-center gap-4 max-w-md mx-auto">
+            {[
+              { v: '20K+', l: 'Students', e: '👨‍🎓', c: '#8b5cf6' },
+              { v: '5K+', l: 'MCQs', e: '📝', c: '#ec4899' },
+              { v: '98%', l: 'Pass Rate', e: '🏆', c: '#f59e0b' },
+            ].map((s, i) => (
+              <div key={i} className="flex-1 min-w-[100px] text-center rounded-2xl py-4 px-3 transition-all duration-300"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', backdropFilter: 'blur(12px)' }}>
+                <div className="text-2xl mb-1">{s.e}</div>
+                <div className="text-xl font-black" style={{ color: s.c }}>{s.v}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{s.l}</div>
               </div>
             ))}
           </motion.div>
-        </div>
+        </motion.div>
+
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+          style={{ background: 'linear-gradient(to bottom, transparent, #050816)' }} />
       </section>
 
-      {/* ═══ ICAB LEVELS ════════════════════════════════════════════════════ */}
-      <section className="py-14 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className={`rounded-3xl overflow-hidden border ${isDark ? 'bg-white/[0.025] border-violet-500/10' : 'bg-white border-slate-200/70 shadow-sm'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.05]">
-              {[
-                { level: 'CA Certificate Level', desc: 'Foundation-stage preparation with full ICAB syllabus coverage, chapter-wise MCQs and mock papers.', icon: '🎓', color: '#7c3aed' },
-                { level: 'CA Professional Level', desc: 'Advanced-stage preparation with scenario-based questions and professional competency practice.', icon: '📊', color: '#f59e0b' },
-                { level: 'Chapter-wise Practice', desc: 'Targeted practice by individual chapters across all ICAB subjects — study smarter, not harder.', icon: '📋', color: '#10b981' },
-              ].map((item, i) => (
-                <div key={i} className={`p-7 flex flex-col gap-3 transition-all ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-violet-50/50'}`}>
-                  <div className="text-3xl">{item.icon}</div>
-                  <h3 className={`font-bold text-base ${headingPrimary}`}>{item.level}</h3>
-                  <p className={`text-sm leading-relaxed ${textMuted}`}>{item.desc}</p>
-                  <span className="text-xs font-semibold mt-1 flex items-center gap-1" style={{ color: item.color }}>
-                    Fully Available <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ STATS ══════════════════════════════════════════════════════════ */}
-      <section className={`py-20 px-4 ${sectionMuted}`}>
-        <div className="max-w-6xl mx-auto">
-          <div className={`rounded-3xl p-10 sm:p-14 border relative overflow-hidden ${isDark ? 'bg-white/[0.02] border-violet-500/10' : 'bg-white border-slate-200/70 shadow-sm'}`}>
-            {isDark && <div className="absolute inset-0 opacity-[0.04]" style={{ background: 'linear-gradient(135deg, #7c3aed, transparent 50%)' }} />}
-            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-10">
-              {STATS.map((s, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }} viewport={{ once: true }} className="text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 mx-auto mb-4">
-                    <s.icon className="w-6 h-6" />
-                  </div>
-                  <div className={`text-3xl sm:text-4xl font-black mb-1`}
-                    style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                    <Counter end={s.end} suffix={s.suffix} />
-                  </div>
-                  <div className={`text-xs font-medium ${textMuted}`}>{s.label}</div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ FEATURES ═══════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4">
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* STATS                                                             */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 px-4" style={{ background: '#0b1026' }}>
         <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-5 ${labelBg}`}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {STATS.map((s, i) => (
+              <NeonCard key={i} color={s.color} delay={i * 0.08} className="p-7">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: `${s.color}12`, border: `1px solid ${s.color}22`, color: s.color }}>
+                    <s.icon className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="text-4xl sm:text-5xl font-black leading-none mb-1" style={{
+                  background: `linear-gradient(135deg, white, ${s.color})`,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                }}>
+                  <Counter end={s.end} suffix={s.suffix} />
+                </div>
+                <div className="text-[13px] font-bold mt-2" style={{ color: 'rgba(255,255,255,0.75)' }}>{s.label}</div>
+                <div className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{s.sub}</div>
+              </NeonCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* FEATURES                                                          */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 px-4 relative overflow-hidden" style={{ background: '#050816' }}>
+        {/* Background accent */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 65%)' }} />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="text-center mb-20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-[12px] font-bold uppercase tracking-wider"
+              style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)', color: '#a78bfa' }}>
               <Zap className="w-3.5 h-3.5" /> Platform Features
             </div>
-            <h2 className={`text-4xl md:text-5xl font-black mb-4 ${headingPrimary}`}>
-              Everything You Need to <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Excel</span>
+            <h2 className="font-black mb-5 text-white" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
+              Everything You Need to{' '}
+              <span style={{ background: 'linear-gradient(135deg,#c4b5fd,#8b5cf6,#ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Excel</span>
             </h2>
-            <p className={`text-lg max-w-2xl mx-auto ${textMuted}`}>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.4)' }}>
               Comprehensive tools engineered specifically for serious ICAB CA aspirants in Bangladesh
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((f, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }} viewport={{ once: true }}
-                className={`rounded-2xl p-7 group cursor-default transition-all duration-300 hover:-translate-y-1.5 ${cardBase}`}>
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
-                  style={{ background: `${f.color}12`, color: f.color, border: `1px solid ${f.color}22` }}>
+              <NeonCard key={i} color={f.color} delay={i * 0.07} className="p-7 group">
+                <div className="w-13 h-13 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: `${f.color}12`, border: `1px solid ${f.color}22`, color: f.color }}>
                   <f.icon className="w-6 h-6" />
                 </div>
-                <h3 className={`text-base font-bold mb-2 ${headingPrimary}`}>{f.title}</h3>
-                <p className={`text-sm leading-relaxed ${textMuted}`}>{f.desc}</p>
-              </motion.div>
+                <h3 className="text-[16px] font-bold text-white mb-2.5">{f.title}</h3>
+                <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.42)' }}>{f.desc}</p>
+              </NeonCard>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ DASHBOARD PREVIEW ══════════════════════════════════════════════ */}
-      <section className={`py-24 px-4 ${sectionMuted}`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* DASHBOARD PREVIEW (Mock Test Section)                             */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0b1026 0%, #050816 100%)' }}>
+        {/* Background blobs */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.07) 0%, transparent 65%)', filter: 'blur(1px)' }} />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 65%)' }} />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+
+            {/* Left: text */}
             <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${labelBg}`}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-[12px] font-bold uppercase tracking-wider"
+                style={{ background: 'rgba(236,72,153,0.1)', border: '1px solid rgba(236,72,153,0.25)', color: '#f9a8d4' }}>
                 <BarChart2 className="w-3.5 h-3.5" /> Smart Dashboard
               </div>
-              <h2 className={`text-4xl md:text-5xl font-black mb-5 ${headingPrimary}`}>
-                Track Every Step of Your <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Preparation</span>
+              <h2 className="font-black mb-6 text-white" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+                Track Every Step of Your{' '}
+                <span style={{ background: 'linear-gradient(135deg,#ec4899,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Preparation</span>
               </h2>
-              <p className={`text-lg leading-relaxed mb-8 ${textMuted}`}>
-                Your personal command center — see your progress, spot weak areas, review wrong answers, and keep your study streak alive all in one place.
+              <p className="text-[15px] leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                Your personal command center — see your progress, spot weak areas, review wrong answers, and keep your study streak alive all in one gorgeous interface.
               </p>
-              <div className="space-y-3">
-                {[['Subject-wise progress rings', '#7c3aed'], ['Chapter completion tracking', '#10b981'], ['Score trends & accuracy', '#f59e0b'], ['National leaderboard rank', '#06b6d4']].map(([label, color]) => (
+              <div className="space-y-4 mb-10">
+                {[
+                  ['Subject-wise progress rings', '#8b5cf6'],
+                  ['Chapter completion tracking', '#10b981'],
+                  ['Score trends & accuracy analytics', '#f59e0b'],
+                  ['National leaderboard ranking', '#06b6d4'],
+                  ['Wrong answer review & bookmarks', '#ec4899'],
+                ].map(([label, color]) => (
                   <div key={label} className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                       style={{ background: `${color}15`, border: `1px solid ${color}30` }}>
                       <CheckCircle className="w-3 h-3" style={{ color }} />
                     </div>
-                    <span className={`text-sm font-medium ${isDark ? 'text-white/70' : 'text-slate-600'}`}>{label}</span>
+                    <span className="text-[14px] font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>{label}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-10">
-                <Link to={user ? '/dashboard' : '/register'}
-                  className="inline-flex items-center gap-2.5 font-bold py-4 px-8 rounded-2xl text-white transition-all duration-300"
-                  style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 8px 30px rgba(124,58,237,0.3)' }}>
-                  {user ? 'Open Dashboard' : 'Create Free Account'} <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+              <Link to={user ? '/dashboard' : '/register'}
+                className="inline-flex items-center gap-2.5 font-bold py-4 px-8 rounded-2xl text-white transition-all duration-300 hover:-translate-y-1"
+                style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)', boxShadow: '0 0 40px rgba(124,58,237,0.35)', border: '1px solid rgba(139,92,246,0.3)' }}>
+                {user ? 'Open Dashboard' : 'Create Free Account'} <ArrowRight className="w-4 h-4" />
+              </Link>
             </motion.div>
-            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} viewport={{ once: true }}
+
+            {/* Right: dashboard mockup */}
+            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} viewport={{ once: true }}
               className="relative">
-              {isDark && (
-                <div className="absolute -inset-4 rounded-3xl blur-3xl opacity-20"
-                  style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)' }} />
-              )}
-              <DashboardPreview isDark={isDark} />
+              {/* Glow behind mockup */}
+              <div className="absolute -inset-6 rounded-3xl pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse, rgba(124,58,237,0.2) 0%, transparent 70%)', filter: 'blur(16px)' }} />
+
+              {/* Mockup window */}
+              <div className="relative rounded-2xl overflow-hidden border"
+                style={{ background: 'linear-gradient(135deg,rgba(11,16,38,0.98),rgba(5,8,22,0.99))', border: '1px solid rgba(124,58,237,0.2)', boxShadow: '0 0 60px rgba(124,58,237,0.15), 0 40px 80px rgba(0,0,0,0.6)' }}>
+
+                {/* Window bar */}
+                <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)', background: 'rgba(255,255,255,0.02)' }}>
+                  <div className="w-3 h-3 rounded-full bg-red-400/60" />
+                  <div className="w-3 h-3 rounded-full bg-amber-400/60" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-400/60" />
+                  <div className="flex-1 mx-4 py-1 px-3 rounded-full text-center text-[10px]" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
+                    caaspirebd.com/dashboard
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-4">
+                  {/* Hero stat row */}
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {[['5', 'Subjects', '#8b5cf6'], ['72%', 'Progress', '#10b981'], ['38', 'Chapters', '#06b6d4'], ['3', 'Tests', '#f59e0b']].map(([v, l, c]) => (
+                      <div key={l} className="rounded-xl p-3 text-center" style={{ background: `${c}08`, border: `1px solid ${c}18` }}>
+                        <div className="text-lg font-black leading-none" style={{ color: c }}>{v}</div>
+                        <div className="text-[9px] font-bold uppercase tracking-wider mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bar chart */}
+                  <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.6)' }}>Weekly Activity</span>
+                      <span className="text-[10px] font-bold text-emerald-400">+24% ↑</span>
+                    </div>
+                    <div className="flex items-end gap-1.5 h-16">
+                      {[45, 72, 58, 89, 63, 95, 78].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-t-sm"
+                          style={{ height: `${h}%`, background: `linear-gradient(to top, rgba(124,58,237,0.7), rgba(236,72,153,0.4))` }} />
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-1.5">
+                      {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                        <span key={i} className="flex-1 text-center text-[8px]" style={{ color: 'rgba(255,255,255,0.2)' }}>{d}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Subject progress */}
+                  <div className="space-y-2">
+                    {[['Financial Accounting', 78, '#8b5cf6'], ['Business Law', 45, '#10b981'], ['Auditing', 92, '#f59e0b']].map(([name, pct, color]) => (
+                      <div key={name} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div className="flex-1">
+                          <div className="text-[11px] font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.75)' }}>{name}</div>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}80, ${color})` }} />
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-black" style={{ color }}>{pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Quick actions */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[['Practice MCQs', '#8b5cf6', Brain], ['Mock Test', '#ec4899', Target], ['Leaderboard', '#f59e0b', Trophy]].map(([l, c, Icon]) => (
+                      <div key={l} className="rounded-xl p-3 text-center cursor-pointer transition-all hover:scale-105"
+                        style={{ background: `${c}10`, border: `1px solid ${c}20` }}>
+                        <Icon className="w-4 h-4 mx-auto mb-1" style={{ color: c }} />
+                        <div className="text-[9px] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ═══ SUBJECTS ═══════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* SUBJECTS                                                          */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
       {subjects.length > 0 && (
-        <section className="py-24 px-4">
+        <section className="py-28 px-4" style={{ background: '#050816' }}>
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="flex items-end justify-between mb-14 flex-wrap gap-6">
+              className="flex items-end justify-between mb-16 flex-wrap gap-6">
               <div>
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4 ${labelBg}`}>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5 text-[12px] font-bold uppercase tracking-wider"
+                  style={{ background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', color: '#67e8f9' }}>
                   <BookOpen className="w-3.5 h-3.5" /> ICAB Course Library
                 </div>
-                <h2 className={`text-4xl md:text-5xl font-black ${headingPrimary}`}>
-                  Featured <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Subjects</span>
+                <h2 className="font-black text-white" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+                  Featured{' '}
+                  <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Subjects</span>
                 </h2>
               </div>
               <Link to={user ? '/dashboard' : '/register'}
-                className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${isDark ? 'text-violet-400 hover:text-violet-300' : 'text-violet-600 hover:text-violet-700'}`}>
+                className="flex items-center gap-1.5 text-[13px] font-bold transition-colors"
+                style={{ color: '#8b5cf6' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#a78bfa'}
+                onMouseLeave={e => e.currentTarget.style.color = '#8b5cf6'}>
                 Browse all subjects <ChevronRight className="w-4 h-4" />
               </Link>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {subjects.map((s, i) => (
-                <motion.div key={s.id}
-                  initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.09 }} viewport={{ once: true }}
-                  className={`rounded-2xl p-6 group cursor-pointer transition-all duration-300 hover:-translate-y-1.5 ${cardBase}`}>
+                <NeonCard key={s.id} color="#8b5cf6" delay={i * 0.07} className="p-6 cursor-pointer">
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-4xl">{s.icon}</div>
                     {s.class_level && (
-                      <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${isDark ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-200'}`}>
+                      <span className="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider"
+                        style={{ background: 'rgba(245,158,11,0.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)' }}>
                         {isNaN(s.class_level) ? s.class_level : `Level ${s.class_level}`}
                       </span>
                     )}
                   </div>
-                  <h3 className={`font-bold text-lg mb-1.5 ${headingPrimary}`}>{s.name}</h3>
-                  <p className={`text-sm mb-4 line-clamp-2 ${textMuted}`}>{s.description}</p>
+                  <h3 className="text-[16px] font-bold text-white mb-1.5">{s.name}</h3>
+                  <p className="text-[13px] mb-4 line-clamp-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>{s.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs flex items-center gap-1 ${textSubtle}`}>
+                    <span className="text-[11px] flex items-center gap-1 font-medium" style={{ color: 'rgba(255,255,255,0.28)' }}>
                       <FileText className="w-3 h-3" /> {s.chapter_count || 0} chapters
                     </span>
-                    <span className="text-xs text-violet-500 flex items-center gap-1 font-semibold group-hover:gap-2 transition-all">
+                    <span className="text-[12px] text-violet-400 flex items-center gap-1 font-bold">
                       Explore <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
-                </motion.div>
+                </NeonCard>
               ))}
             </div>
 
             {!user && (
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="mt-10 text-center">
-                <div className={`inline-flex items-center gap-3 rounded-2xl px-8 py-5 border ${isDark ? 'bg-white/[0.03] border-violet-500/15' : 'bg-white border-violet-200 shadow-sm'}`}>
+                className="mt-12 text-center">
+                <div className="inline-flex items-center gap-4 rounded-2xl px-8 py-5 border"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(124,58,237,0.2)', backdropFilter: 'blur(12px)' }}>
                   <Lock className="w-5 h-5 text-violet-500" />
-                  <span className={`text-sm ${textMuted}`}>Sign up to unlock all ICAB subjects and start practising</span>
+                  <span className="text-[14px]" style={{ color: 'rgba(255,255,255,0.45)' }}>Sign up to unlock all ICAB subjects and start practising</span>
                   <Link to="/register"
-                    className="text-sm py-2.5 px-5 rounded-xl font-bold text-white transition-all"
-                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>
+                    className="text-sm py-2.5 px-6 rounded-xl font-bold text-white transition-all hover:-translate-y-0.5"
+                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 0 20px rgba(245,158,11,0.3)' }}>
                     Unlock Access
                   </Link>
                 </div>
@@ -500,107 +566,133 @@ export default function Home() {
         </section>
       )}
 
-      {/* ═══ TESTIMONIALS ═══════════════════════════════════════════════════ */}
-      <section className={`py-24 px-4 ${sectionMuted}`}>
-        <div className="max-w-7xl mx-auto">
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* TESTIMONIALS                                                      */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 px-4 relative overflow-hidden" style={{ background: '#0b1026' }}>
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(124,58,237,0.05) 0%, transparent 70%)' }} />
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="text-center mb-16">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-5 ${labelBg}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-[12px] font-bold uppercase tracking-wider"
+              style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#fde68a' }}>
               <Star className="w-3.5 h-3.5" /> Student Stories
             </div>
-            <h2 className={`text-4xl md:text-5xl font-black ${headingPrimary}`}>
-              Trusted by <span style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ICAB Toppers</span>
+            <h2 className="font-black text-white" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+              Trusted by{' '}
+              <span style={{ background: 'linear-gradient(135deg,#fbbf24,#f59e0b,#f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ICAB Toppers</span>
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.12 }} viewport={{ once: true }}
-                className={`rounded-2xl p-7 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 ${testimonialCard}`}>
-                <div className="absolute top-0 left-0 right-0 h-[2px]"
-                  style={{ background: `linear-gradient(90deg, ${t.color}99, ${t.color}30, transparent)` }} />
+              <NeonCard key={i} color={t.color} delay={i * 0.12} className="p-7 relative">
+                <div className="absolute top-0 left-0 right-0 h-[1px] rounded-t-2xl"
+                  style={{ background: `linear-gradient(90deg, transparent, ${t.color}70, transparent)` }} />
                 <div className="flex gap-1 mb-5">
-                  {[...Array(t.stars)].map((_, j) => (
+                  {[...Array(5)].map((_, j) => (
                     <Star key={j} className="w-4 h-4 text-amber-400 fill-amber-400" />
                   ))}
                 </div>
-                <p className={`text-sm leading-relaxed mb-6 italic ${isDark ? 'text-white/60' : 'text-slate-500'}`}>"{t.text}"</p>
+                <p className="text-[13px] leading-relaxed mb-6 italic" style={{ color: 'rgba(255,255,255,0.55)' }}>"{t.text}"</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md"
-                    style={{ background: `linear-gradient(135deg, ${t.color}, ${t.color}aa)` }}>
-                    {t.initials}
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg"
+                    style={{ background: `linear-gradient(135deg, ${t.color}, ${t.color}90)`, boxShadow: `0 0 16px ${t.color}40` }}>
+                    {t.name[0]}
                   </div>
                   <div>
-                    <p className={`font-semibold text-sm ${headingPrimary}`}>{t.name}</p>
-                    <p className="text-amber-500 text-xs font-medium">{t.level}</p>
+                    <p className="font-bold text-[13px] text-white">{t.name}</p>
+                    <p className="text-[11px] text-amber-500/80 font-medium">{t.role}</p>
                   </div>
                 </div>
-              </motion.div>
+              </NeonCard>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ PRICING ════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4">
-        <div className="max-w-5xl mx-auto">
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* PRICING                                                           */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 px-4 relative overflow-hidden" style={{ background: '#050816' }}>
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 65%)' }} />
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.06) 0%, transparent 65%)' }} />
+
+        <div className="max-w-5xl mx-auto relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="text-center mb-16">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-5 ${labelBg}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-[12px] font-bold uppercase tracking-wider"
+              style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', color: '#6ee7b7' }}>
               <Award className="w-3.5 h-3.5" /> Simple Pricing
             </div>
-            <h2 className={`text-4xl md:text-5xl font-black mb-4 ${headingPrimary}`}>
-              Start <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Free</span>, Grow as You Go
+            <h2 className="font-black text-white mb-4" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+              Start{' '}
+              <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Free</span>
+              , Grow as You Go
             </h2>
-            <p className={`text-lg ${textMuted}`}>No hidden charges. Upgrade when you need more.</p>
+            <p className="text-lg" style={{ color: 'rgba(255,255,255,0.4)' }}>No hidden charges. No surprises. Upgrade only when you're ready.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Free plan */}
-            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} viewport={{ once: true }}
-              className={`rounded-2xl p-8 border transition-all duration-300 hover:-translate-y-1 ${isDark ? 'bg-white/[0.03] border-white/[0.08]' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <div className={`text-[11px] font-black uppercase tracking-widest mb-4 ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Free Plan</div>
-              <div className={`text-5xl font-black mb-1 ${headingPrimary}`}>৳0</div>
-              <p className={`text-sm mb-7 ${textMuted}`}>Forever free, no card needed</p>
+            {/* Free */}
+            <NeonCard color="#8b5cf6" delay={0} className="p-8">
+              <div className="text-[10px] font-black uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Free Plan</div>
+              <div className="text-5xl font-black text-white mb-1">৳0</div>
+              <p className="text-[13px] mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>Forever free, no card needed</p>
               <div className="space-y-3 mb-8">
                 {['Access to 1 free subject', 'Preview MCQs per chapter', 'Basic progress tracking', 'Leaderboard access'].map(f => (
                   <div key={f} className="flex items-center gap-2.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span className={`text-sm ${isDark ? 'text-white/60' : 'text-slate-600'}`}>{f}</span>
+                    <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span className="text-[13px]" style={{ color: 'rgba(255,255,255,0.6)' }}>{f}</span>
                   </div>
                 ))}
               </div>
               <Link to="/register"
-                className={`block text-center py-3.5 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10' : 'bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200'}`}>
+                className="block text-center py-3.5 rounded-xl font-bold text-[14px] transition-all"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
                 Get Started Free
               </Link>
-            </motion.div>
+            </NeonCard>
 
-            {/* Premium plan */}
+            {/* Premium */}
             <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} viewport={{ once: true }}
-              className="rounded-2xl p-8 border relative overflow-hidden transition-all duration-300 hover:-translate-y-2"
-              style={{ background: 'linear-gradient(135deg,rgba(124,58,237,0.12),rgba(109,40,217,0.08))', border: '1px solid rgba(124,58,237,0.3)', boxShadow: isDark ? '0 0 40px rgba(124,58,237,0.12)' : '0 8px 40px rgba(124,58,237,0.15)' }}>
-              <div className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{ background: 'linear-gradient(90deg,#7c3aed,#ec4899,#7c3aed)' }} />
+              whileHover={{ y: -8, transition: { duration: 0.25 } }}
+              className="p-8 rounded-2xl relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(109,40,217,0.08) 100%)',
+                border: '1px solid rgba(124,58,237,0.35)',
+                boxShadow: '0 0 60px rgba(124,58,237,0.15), inset 0 1px 0 rgba(139,92,246,0.2)',
+              }}>
+              {/* Shine */}
+              <div className="absolute top-0 left-0 right-0 h-[1px]"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.8), rgba(236,72,153,0.5), transparent)' }} />
+              <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)' }} />
+
               <div className="flex items-start justify-between mb-4">
-                <div className="text-[11px] font-black uppercase tracking-widest text-violet-400">Premium Plan</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-violet-400">Premium Plan</div>
                 <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
-                  style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }}>Most Popular</span>
+                  style={{ background: 'linear-gradient(135deg,#7c3aed,#ec4899)', boxShadow: '0 0 16px rgba(124,58,237,0.5)' }}>Most Popular</span>
               </div>
-              <div className={`text-5xl font-black mb-1 ${headingPrimary}`}>৳499 <span className="text-base font-medium text-violet-400">/mo</span></div>
-              <p className={`text-sm mb-7 ${textMuted}`}>Full access to all ICAB subjects</p>
+              <div className="text-5xl font-black text-white mb-0.5">৳499 <span className="text-[16px] font-medium text-violet-400">/mo</span></div>
+              <p className="text-[13px] mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>Full access to all ICAB subjects</p>
               <div className="space-y-3 mb-8">
                 {['All ICAB subjects unlocked', 'Unlimited MCQ practice', 'Full mock exam access', 'Deep analytics & insights', 'Wrong answer review', 'Flash cards & short notes', 'Priority support'].map(f => (
                   <div key={f} className="flex items-center gap-2.5">
                     <CheckCircle className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                    <span className={`text-sm ${isDark ? 'text-white/70' : 'text-slate-700'}`}>{f}</span>
+                    <span className="text-[13px]" style={{ color: 'rgba(255,255,255,0.7)' }}>{f}</span>
                   </div>
                 ))}
               </div>
               <Link to="/register"
-                className="block text-center py-3.5 rounded-xl font-bold text-sm text-white transition-all duration-300"
-                style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 8px 24px rgba(124,58,237,0.35)' }}>
+                className="block text-center py-3.5 rounded-xl font-bold text-[14px] text-white transition-all duration-300 hover:brightness-110"
+                style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 8px 30px rgba(124,58,237,0.45)' }}>
                 Start Free Trial
               </Link>
             </motion.div>
@@ -608,63 +700,72 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ FAQ ════════════════════════════════════════════════════════════ */}
-      <section className={`py-24 px-4 ${sectionMuted}`}>
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* FAQ                                                               */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <section className="py-28 px-4" style={{ background: '#0b1026' }}>
         <div className="max-w-3xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="text-center mb-14">
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-5 ${labelBg}`}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 text-[12px] font-bold uppercase tracking-wider"
+              style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)', color: '#a78bfa' }}>
               Frequently Asked
             </div>
-            <h2 className={`text-4xl font-black ${headingPrimary}`}>
-              Questions & <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Answers</span>
+            <h2 className="font-black text-white" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+              Questions &{' '}
+              <span style={{ background: 'linear-gradient(135deg,#8b5cf6,#c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Answers</span>
             </h2>
           </motion.div>
           <div className="flex flex-col gap-3">
-            {FAQS.map((f, i) => <FAQ key={i} {...f} isDark={isDark} />)}
+            {FAQS.map((f, i) => <FAQ key={i} {...f} />)}
           </div>
         </div>
       </section>
 
-      {/* ═══ CTA ════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* CTA BANNER                                                        */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
       {!user && (
-        <section className="py-24 px-4">
+        <section className="py-28 px-4" style={{ background: '#050816' }}>
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="relative overflow-hidden rounded-3xl p-12 text-center border"
+              className="relative overflow-hidden rounded-3xl p-14 text-center"
               style={{
-                background: isDark
-                  ? 'linear-gradient(135deg,#0e1a4a 0%,#120b2e 50%,#0e1a4a 100%)'
-                  : 'linear-gradient(135deg,#f5f3ff 0%,#ede9fe 50%,#f5f3ff 100%)',
-                border: `1px solid ${isDark ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.25)'}`,
-                boxShadow: isDark ? '0 0 80px rgba(124,58,237,0.08)' : '0 20px 60px rgba(124,58,237,0.1)',
+                background: 'linear-gradient(135deg, #0e1a4a 0%, #120b2e 50%, #0e1a4a 100%)',
+                border: '1px solid rgba(124,58,237,0.25)',
+                boxShadow: '0 0 100px rgba(124,58,237,0.12)',
               }}>
-              {isDark && (
-                <>
-                  <div className="orb w-80 h-80 opacity-20" style={{ background: '#7c3aed', top: '-30%', right: '-10%' }} />
-                  <div className="orb w-60 h-60 opacity-12" style={{ background: '#ec4899', bottom: '-20%', left: '-5%', animationDelay: '4s' }} />
-                </>
-              )}
-              <div className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{ background: 'linear-gradient(90deg,transparent,#7c3aed,#ec4899,#7c3aed,transparent)' }} />
+              {/* Ambient blobs */}
+              <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)', filter: 'blur(1px)' }} />
+              <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.15) 0%, transparent 70%)' }} />
+              <div className="absolute top-0 left-0 right-0 h-[1px]"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.8), rgba(236,72,153,0.6), rgba(249,115,22,0.4), transparent)' }} />
+
               <div className="relative z-10">
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 ${labelBg}`}>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-[12px] font-bold uppercase tracking-wider"
+                  style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', color: '#fde68a' }}>
                   <Award className="w-3.5 h-3.5" /> Join Today — It's Free
                 </div>
-                <h2 className={`text-4xl md:text-5xl font-black mb-4 ${headingPrimary}`}>
-                  Ready to Pass Your <span style={{ background: 'linear-gradient(135deg,#f59e0b,#fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ICAB CA?</span>
+                <h2 className="font-black text-white mb-5" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
+                  Ready to Pass Your{' '}
+                  <span style={{ background: 'linear-gradient(135deg,#fde68a,#f59e0b,#f97316)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ICAB CA?</span>
                 </h2>
-                <p className={`text-lg mb-10 max-w-xl mx-auto ${textMuted}`}>
-                  Join 20,000+ Bangladeshi CA students who are preparing smarter with CA Aspire BD — the platform built specifically for ICAB aspirants.
+                <p className="text-lg mb-12 max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  Join 20,000+ Bangladeshi CA students preparing smarter with CA Aspire BD — the platform built exclusively for ICAB aspirants.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/register"
-                    className="inline-flex items-center justify-center gap-2.5 text-base py-4 px-10 rounded-2xl font-bold text-white transition-all duration-300"
-                    style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', boxShadow: '0 8px 30px rgba(245,158,11,0.4)' }}>
+                    className="inline-flex items-center justify-center gap-2.5 text-base py-4 px-10 rounded-2xl font-bold text-white transition-all duration-300 hover:-translate-y-1"
+                    style={{ background: 'linear-gradient(135deg,#f59e0b,#f97316)', boxShadow: '0 0 50px rgba(245,158,11,0.4)' }}>
                     Create Free Account <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link to="/login"
-                    className={`inline-flex items-center justify-center gap-2.5 text-base py-4 px-8 rounded-2xl font-semibold transition-all ${isDark ? 'text-white/70 border border-white/10 hover:border-white/20 hover:bg-white/5' : 'text-violet-700 border border-violet-300 hover:bg-violet-50'}`}>
+                    className="inline-flex items-center justify-center gap-2.5 text-base py-4 px-8 rounded-2xl font-semibold transition-all"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.1)'; e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
                     Already registered? Sign In
                   </Link>
                 </div>
@@ -674,46 +775,60 @@ export default function Home() {
         </section>
       )}
 
-      {/* ═══ FOOTER ═════════════════════════════════════════════════════════ */}
-      <footer className={`border-t py-16 px-4 ${isDark ? 'border-white/[0.05]' : 'border-slate-200'}`}>
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* FOOTER                                                            */}
+      {/* ══════════════════════════════════════════════════════════════════ */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: '#0b1026' }} className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-14">
             <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#7c3aed,#6d28d9)', boxShadow: '0 0 20px rgba(124,58,237,0.4)' }}>
                   <GraduationCap className="w-[18px] h-[18px] text-white" />
                 </div>
                 <div>
-                  <div className={`font-bold text-base ${headingPrimary}`}>CA Aspire BD</div>
-                  <div className="text-amber-500 text-[9px] font-semibold tracking-widest uppercase">Premium ICAB Platform</div>
+                  <div className="text-white font-bold text-base">CA Aspire BD</div>
+                  <div className="text-[9px] font-bold tracking-widest uppercase text-amber-500">Premium ICAB Platform</div>
                 </div>
               </div>
-              <p className={`text-sm leading-relaxed max-w-xs ${textMuted}`}>
+              <p className="text-[13px] leading-relaxed max-w-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 Bangladesh's most focused CA exam preparation platform — built specifically for ICAB aspirants preparing for Certificate and Professional Level examinations.
               </p>
             </div>
             <div>
-              <p className={`text-xs font-black uppercase tracking-wider mb-4 ${textSubtle}`}>Platform</p>
-              <div className="flex flex-col gap-2.5">
-                {[{ to: '/', label: 'Home' }, { to: '/register', label: 'Sign Up Free' }, { to: '/login', label: 'Sign In' }, { to: '/dashboard', label: 'Dashboard' }].map(l => (
-                  <Link key={l.to} to={l.to} className={`text-sm transition-colors ${footerLinkColor}`}>{l.label}</Link>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>Platform</p>
+              <div className="flex flex-col gap-3">
+                {[{ to: '/', l: 'Home' }, { to: '/register', l: 'Sign Up Free' }, { to: '/login', l: 'Sign In' }, { to: '/dashboard', l: 'Dashboard' }].map(({ to, l }) => (
+                  <Link key={to} to={to} className="text-[13px] transition-colors" style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}>
+                    {l}
+                  </Link>
                 ))}
               </div>
             </div>
             <div>
-              <p className={`text-xs font-black uppercase tracking-wider mb-4 ${textSubtle}`}>Exam Levels</p>
-              <div className="flex flex-col gap-2.5">
+              <p className="text-[10px] font-black uppercase tracking-widest mb-5" style={{ color: 'rgba(255,255,255,0.2)' }}>Exam Levels</p>
+              <div className="flex flex-col gap-3">
                 {['CA Certificate Level', 'CA Professional Level', 'Chapter-wise MCQs', 'Mock Tests', 'Analytics'].map(l => (
-                  <span key={l} className={`text-sm ${footerLinkColor}`}>{l}</span>
+                  <span key={l} className="text-[13px] cursor-default" style={{ color: 'rgba(255,255,255,0.35)' }}>{l}</span>
                 ))}
               </div>
             </div>
           </div>
-          <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t ${dividerColor}`}>
-            <p className={`text-xs ${textSubtle}`}>© {new Date().getFullYear()} CA Aspire BD. All rights reserved.</p>
-            <div className="flex items-center gap-4">
+
+          {/* Bottom bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+              © {new Date().getFullYear()} CA Aspire BD. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
               {['Privacy Policy', 'Terms of Service', 'Contact'].map(l => (
-                <span key={l} className={`text-xs cursor-pointer transition-colors ${footerLinkColor}`}>{l}</span>
+                <span key={l} className="text-[12px] cursor-pointer transition-colors" style={{ color: 'rgba(255,255,255,0.25)' }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}>
+                  {l}
+                </span>
               ))}
             </div>
           </div>
