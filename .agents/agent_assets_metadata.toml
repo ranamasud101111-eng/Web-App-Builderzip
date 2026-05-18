@@ -5,4 +5,4 @@ generated = []
 id = "JFSKBXBHyfOgD9HG1dc2X"
 uri = "file://dist-cpanel.tar.gz"
 type = "unspecified"
-title = "cPanel Frontend — dist-cpanel.tar.gz"
+title = "cPanel Frontend — dist-cpanel.tar.gz (CORS fixed for optireachhub.com)"

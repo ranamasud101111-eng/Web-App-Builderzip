@@ -35,23 +35,32 @@ if (IS_PRODUCTION) {
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-// If ALLOWED_ORIGINS is set (comma-separated), only those origins are allowed.
-// Otherwise all origins are allowed (open API — safe for a learning platform).
-const allowedOrigins = process.env.ALLOWED_ORIGINS
+// Always-allowed origins (hardcoded). Additional origins can be added via the
+// ALLOWED_ORIGINS environment variable (comma-separated) on Render.
+const HARDCODED_ORIGINS = [
+  'https://optireachhub.com',
+  'https://www.optireachhub.com',
+  'http://optireachhub.com',
+  'http://www.optireachhub.com',
+];
+
+const envOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
 
+const allowedOrigins = [...new Set([...HARDCODED_ORIGINS, ...envOrigins])];
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (allowedOrigins.length === 0) return callback(null, true);
     if (!origin) return callback(null, true);
-    if (allowedOrigins.some(o => origin === o || origin.endsWith(o.replace(/^https?:\/\//, '')))) {
-      return callback(null, true);
-    }
-    console.warn(`CORS blocked request from origin: ${origin}`);
-    callback(new Error(`Origin ${origin} not allowed by CORS policy`));
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (!IS_PRODUCTION) return callback(null, true);
+    console.warn(`CORS blocked: ${origin}`);
+    callback(new Error(`Origin ${origin} not allowed`));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json({ limit: '50mb' }));
