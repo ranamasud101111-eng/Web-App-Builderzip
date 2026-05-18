@@ -35,17 +35,19 @@ if (IS_PRODUCTION) {
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-// Development: allow all origins.
-// Production: only allow origins listed in ALLOWED_ORIGINS (comma-separated).
+// If ALLOWED_ORIGINS is set (comma-separated), only those origins are allowed.
+// Otherwise all origins are allowed (open API — safe for a learning platform).
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!IS_PRODUCTION) return callback(null, true);
+    if (allowedOrigins.length === 0) return callback(null, true);
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (allowedOrigins.some(o => origin === o || origin.endsWith(o.replace(/^https?:\/\//, '')))) {
+      return callback(null, true);
+    }
     console.warn(`CORS blocked request from origin: ${origin}`);
     callback(new Error(`Origin ${origin} not allowed by CORS policy`));
   },
