@@ -44,6 +44,8 @@ import Bookmarks from './pages/Bookmarks';
 import CustomExam from './pages/CustomExam';
 import QuizHub from './pages/QuizHub';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import ProgressTracker from './pages/ProgressTracker';
 import AdminSettings from './pages/AdminSettings';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
@@ -89,6 +91,8 @@ const AppRoutes = () => {
           <Route path="/admin-login" element={user ? <Navigate to={isAdmin ? '/admin' : '/dashboard'} /> : <div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><AdminLogin /></Wrap></div>} />
           <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><Register /></Wrap></div>} />
           <Route path="/verify-email" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><VerifyEmail /></Wrap></div>} />
+          <Route path="/forgot-password" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><ForgotPassword /></Wrap></div>} />
+          <Route path="/reset-password" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><ResetPassword /></Wrap></div>} />
 
           {/* Authenticated pages — sidebar layout */}
           <Route path="/dashboard" element={<ProtectedRoute><AuthWrap><Dashboard /></AuthWrap></ProtectedRoute>} />

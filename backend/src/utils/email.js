@@ -83,3 +83,44 @@ export async function sendWelcomeEmail(name, email) {
     `,
   });
 }
+
+export async function sendPasswordResetEmail(name, email, token) {
+  const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`;
+
+  if (!isConfigured) {
+    console.log(`\n[EMAIL - DEV] Password reset link for ${email}:\n${resetUrl}\n`);
+    return;
+  }
+
+  await transporter.sendMail({
+    from: SMTP_FROM,
+    to: email,
+    subject: 'Reset your CA Aspire BD password',
+    html: `
+      <div style="font-family:Inter,sans-serif;max-width:520px;margin:0 auto;background:#06112e;color:#fff;border-radius:16px;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px 40px;">
+          <h1 style="margin:0;font-size:24px;font-weight:800;">CA Aspire BD</h1>
+          <p style="margin:4px 0 0;font-size:12px;opacity:0.7;letter-spacing:2px;text-transform:uppercase;">Password Reset</p>
+        </div>
+        <div style="padding:40px;">
+          <h2 style="margin:0 0 12px;font-size:20px;">Hi ${name}, reset your password</h2>
+          <p style="color:rgba(255,255,255,0.6);line-height:1.6;margin:0 0 28px;">
+            We received a request to reset the password for your CA Aspire BD account. Click the button below to choose a new password.
+          </p>
+          <a href="${resetUrl}"
+            style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;">
+            Reset Password
+          </a>
+          <p style="color:rgba(255,255,255,0.35);font-size:12px;margin:24px 0 0;">
+            This link expires in <strong style="color:rgba(255,255,255,0.5);">1 hour</strong>. If you didn't request a password reset, you can safely ignore this email — your password won't change.
+          </p>
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:24px 0;" />
+          <p style="color:rgba(255,255,255,0.25);font-size:11px;margin:0;">
+            Can't click the button? Copy this link:<br/>
+            <span style="color:rgba(255,255,255,0.4);word-break:break-all;">${resetUrl}</span>
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}

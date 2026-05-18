@@ -46,3 +46,5 @@ run = ["bash", "-c", "cd /home/runner/workspace/server && node src/index.js & cd
 
 [userenv.shared]
 FRONTEND_URL = "https://a8e3e8f4-dc8d-4f99-a821-512047cb2853-00-1e52iisgsit16.sisko.replit.dev"
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = "587"

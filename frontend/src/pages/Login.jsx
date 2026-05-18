@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, ChevronRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, ChevronRight, KeyRound } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -157,7 +157,11 @@ export default function Login() {
                 </button>
               </div>
               <div className="flex justify-end">
-                <span className={`text-xs cursor-default ${textMuted}`}>Forgot password? Contact your administrator</span>
+                <Link to="/forgot-password"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-500 hover:text-violet-400 transition-colors">
+                  <KeyRound className="w-3 h-3" />
+                  Forgot password?
+                </Link>
               </div>
               <button type="submit" disabled={loading}
                 className="btn-primary flex items-center justify-center gap-2 py-3.5 mt-1 disabled:opacity-50 disabled:cursor-not-allowed">

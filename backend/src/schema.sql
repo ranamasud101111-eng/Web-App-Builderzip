@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;
 -- Existing users (admin) are pre-verified
 UPDATE users SET email_verified = TRUE WHERE email_verified IS NULL OR (role = 'admin' AND email_verified = FALSE);
 

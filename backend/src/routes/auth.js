@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import pool from '../db.js';
 import { JWT_SECRET } from '../middleware/auth.js';
-import { sendVerificationEmail, sendWelcomeEmail } from '../utils/email.js';
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -229,6 +229,92 @@ router.get('/me', async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// ── Forgot password ───────────────────────────────────────────────────────────
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const result = await pool.query(
+      'SELECT id, name, email, role, email_verified FROM users WHERE email = $1',
+      [email]
+    );
+
+    // Always respond with success to prevent email enumeration
+    if (result.rows.length === 0 || result.rows[0].role === 'admin') {
+      return res.json({ message: 'If that email is registered, a reset link has been sent.' });
+    }
+
+    const user = result.rows[0];
+
+    if (!user.email_verified) {
+      return res.json({ message: 'If that email is registered, a reset link has been sent.' });
+    }
+
+    const token   = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await pool.query(
+      'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+      [token, expires, user.id]
+    );
+
+    await sendPasswordResetEmail(user.name, user.email, token);
+
+    res.json({ message: 'If that email is registered, a reset link has been sent.' });
+  } catch (err) {
+    console.error('Forgot password error:', err.message);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// ── Reset password ─────────────────────────────────────────────────────────────
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const result = await pool.query(
+      'SELECT id, role, reset_token_expires FROM users WHERE reset_token = $1',
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: 'Invalid or already used reset link. Please request a new one.' });
+    }
+
+    const user = result.rows[0];
+
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'This reset method is not available for admin accounts.' });
+    }
+
+    if (new Date() > new Date(user.reset_token_expires)) {
+      return res.status(400).json({
+        error: 'This reset link has expired. Please request a new one.',
+        code: 'TOKEN_EXPIRED',
+      });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+      [hashed, user.id]
+    );
+
+    res.json({ message: 'Password reset successfully. You can now log in.' });
+  } catch (err) {
+    console.error('Reset password error:', err.message);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 
