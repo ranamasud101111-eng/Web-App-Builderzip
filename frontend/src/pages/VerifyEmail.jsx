@@ -58,7 +58,7 @@ export default function VerifyEmail() {
 
   const pageBg = isDark
     ? { background: 'linear-gradient(160deg, #020818 0%, #060c24 100%)' }
-    : { background: '#f5f3ff' };
+    : { background: 'radial-gradient(ellipse 70% 50% at 20% 10%, rgba(139,92,246,0.12) 0%, transparent 50%), radial-gradient(ellipse 60% 45% at 80% 90%, rgba(236,72,153,0.08) 0%, transparent 50%), #f7f5ff' };
 
   const cardStyle = isDark
     ? { background: 'rgba(10,15,46,0.85)', backdropFilter: 'blur(20px)', borderColor: 'rgba(255,255,255,0.07)' }
@@ -72,10 +72,15 @@ export default function VerifyEmail() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-16 transition-colors duration-300" style={pageBg}>
-      {isDark && (
+      {isDark ? (
         <>
           <div className="orb w-96 h-96 top-[-10%] right-[-10%] opacity-10" style={{ background: '#4f46e5' }} />
           <div className="orb w-72 h-72 bottom-[-5%] left-[-5%] opacity-8" style={{ background: '#7c3aed', animationDelay: '4s' }} />
+        </>
+      ) : (
+        <>
+          <div className="absolute top-[-10%] right-[-8%] w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          <div className="absolute bottom-[-6%] left-[-5%] w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
         </>
       )}
 

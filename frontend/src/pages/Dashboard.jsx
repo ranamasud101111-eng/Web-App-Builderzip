@@ -16,10 +16,11 @@ import {
 import api from '../api';
 
 /* ─── Animated progress ring ──────────────────────────────────────────────── */
-const GlowRing = ({ pct = 0, size = 120, stroke = 8, color = '#8b5cf6', glow = true }) => {
+const GlowRing = ({ pct = 0, size = 120, stroke = 8, color = '#8b5cf6', glow = true, isDark = true }) => {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (pct / 100) * circ;
+  const trackColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(139,92,246,0.08)';
   return (
     <div className="relative" style={{ width: size, height: size }}>
       {glow && (
@@ -28,7 +29,7 @@ const GlowRing = ({ pct = 0, size = 120, stroke = 8, color = '#8b5cf6', glow = t
       )}
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'relative' }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="rgba(255,255,255,0.05)" strokeWidth={stroke} />
+          stroke={trackColor} strokeWidth={stroke} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke={color} strokeWidth={stroke}
           strokeDasharray={circ} strokeDashoffset={offset}
@@ -122,7 +123,7 @@ const SubjectCard = ({ subject, index }) => {
           </div>
         </div>
         <div className="relative flex-shrink-0">
-          <GlowRing pct={pct} size={48} stroke={4} color={color} glow={false} />
+          <GlowRing pct={pct} size={48} stroke={4} color={color} glow={false} isDark={true} />
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-[10px] font-black text-white">{pct}%</span>
           </div>
@@ -336,7 +337,7 @@ export default function Dashboard() {
                   ? { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }
                   : { background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.12)' }}>
                 <div className="relative">
-                  <GlowRing pct={overallPct} size={100} stroke={8} color="#8b5cf6" glow />
+                  <GlowRing pct={overallPct} size={100} stroke={8} color="#8b5cf6" glow isDark={isDark} />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-xl font-black leading-none" style={{ color: isDark ? 'white' : '#1e1b4b' }}>{overallPct}%</span>
                     <span className="text-[9px] font-bold mt-0.5" style={{ color: isDark ? 'rgba(255,255,255,0.35)' : '#9ca3af' }}>Done</span>

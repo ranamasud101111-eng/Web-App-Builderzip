@@ -58,7 +58,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex overflow-hidden pt-16 transition-colors duration-300"
-      style={{ background: isDark ? undefined : '#f5f3ff' }}>
+      style={isDark ? undefined : { background: 'radial-gradient(ellipse 70% 50% at 20% 0%, rgba(139,92,246,0.13) 0%, transparent 50%), radial-gradient(ellipse 60% 45% at 90% 100%, rgba(236,72,153,0.09) 0%, transparent 50%), #f7f5ff' }}>
 
       {/* Left decorative panel — always dark */}
       <div className="hidden lg:flex flex-col justify-between w-[42%] relative overflow-hidden p-12"
@@ -115,8 +115,13 @@ export default function Login() {
 
       {/* Right form panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
-        {isDark && (
+        {isDark ? (
           <div className="orb w-96 h-96 top-[-10%] right-[-5%] opacity-10" style={{ background: '#7c3aed', animationDelay: '2s' }} />
+        ) : (
+          <>
+            <div className="absolute top-[-12%] right-[-8%] w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+            <div className="absolute bottom-[-8%] left-[10%] w-64 h-64 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          </>
         )}
 
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}

@@ -39,7 +39,7 @@ export default function AdminLogin() {
 
   const rightBg = isDark
     ? 'linear-gradient(160deg, #020818 0%, #060c24 100%)'
-    : '#f5f3ff';
+    : 'radial-gradient(ellipse 70% 55% at 20% 5%, rgba(139,92,246,0.13) 0%, transparent 50%), radial-gradient(ellipse 60% 45% at 85% 95%, rgba(236,72,153,0.09) 0%, transparent 50%), #f7f5ff';
 
   const cardBg = isDark
     ? { background: 'rgba(10,15,46,0.8)', backdropFilter: 'blur(20px)', boxShadow: '0 24px 64px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)' }
@@ -130,10 +130,15 @@ export default function AdminLogin() {
       {/* Right login panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative transition-colors duration-300"
         style={{ background: rightBg }}>
-        {isDark && (
+        {isDark ? (
           <>
             <div className="orb w-80 h-80 top-[-8%] right-[-5%] opacity-8" style={{ background: '#4f46e5', animationDelay: '2s' }} />
             <div className="orb w-56 h-56 bottom-[-5%] left-[5%] opacity-6" style={{ background: '#7c3aed', animationDelay: '5s' }} />
+          </>
+        ) : (
+          <>
+            <div className="absolute top-[-10%] right-[-6%] w-72 h-72 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+            <div className="absolute bottom-[-8%] left-[8%] w-56 h-56 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.09) 0%, transparent 70%)', filter: 'blur(40px)' }} />
           </>
         )}
 

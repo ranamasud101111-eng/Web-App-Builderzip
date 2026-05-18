@@ -63,7 +63,7 @@ export default function Register() {
 
   const pageStyle = isDark
     ? { background: 'linear-gradient(160deg, #020818 0%, #060c24 100%)' }
-    : { background: '#f5f3ff' };
+    : { background: 'radial-gradient(ellipse 70% 50% at 20% 10%, rgba(139,92,246,0.12) 0%, transparent 50%), radial-gradient(ellipse 60% 45% at 80% 90%, rgba(236,72,153,0.08) 0%, transparent 50%), #f7f5ff' };
 
   if (submitted) {
     return (
@@ -109,7 +109,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex overflow-hidden pt-16 transition-colors duration-300"
-      style={{ background: isDark ? undefined : '#f5f3ff' }}>
+      style={isDark ? undefined : { background: 'radial-gradient(ellipse 70% 50% at 20% 0%, rgba(139,92,246,0.13) 0%, transparent 50%), radial-gradient(ellipse 60% 45% at 90% 100%, rgba(236,72,153,0.09) 0%, transparent 50%), #f7f5ff' }}>
 
       {/* Left panel — always dark */}
       <div className="hidden lg:flex flex-col justify-between w-[42%] relative overflow-hidden p-12"
@@ -164,8 +164,13 @@ export default function Register() {
 
       {/* Right form panel */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
-        {isDark && (
+        {isDark ? (
           <div className="orb w-80 h-80 bottom-[-5%] left-[-5%] opacity-10" style={{ background: '#7c3aed' }} />
+        ) : (
+          <>
+            <div className="absolute top-[-8%] right-[-10%] w-72 h-72 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.11) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+            <div className="absolute bottom-[-6%] left-[5%] w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.09) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          </>
         )}
 
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
