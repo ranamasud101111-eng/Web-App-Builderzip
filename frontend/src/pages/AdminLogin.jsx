@@ -154,13 +154,13 @@ export default function AdminLogin() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-medium text-white/40 mb-1.5 ml-1">Admin Email</label>
+                <label className="block text-xs font-medium text-white/40 mb-1.5 ml-1">Username or Email</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                   <input
-                    type="email"
+                    type="text"
                     required
-                    placeholder="admin@example.com"
+                    placeholder="admin"
                     value={form.email}
                     onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                     className="w-full rounded-xl px-4 py-3 pl-11 text-sm text-white placeholder-white/20 outline-none transition-all border border-white/[0.07] focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20"
