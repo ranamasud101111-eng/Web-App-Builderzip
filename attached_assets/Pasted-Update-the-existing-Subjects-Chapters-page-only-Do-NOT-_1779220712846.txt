@@ -1,0 +1,102 @@
+Update the existing “Subjects & Chapters” page only.
+Do NOT rebuild the whole page from scratch.
+Keep all current backend/API/database functionality working.
+
+========================
+SUBJECTS & CHAPTERS UPDATE
+==========================
+
+Current flow:
+Subject → Chapter → MCQ
+
+Update the existing system professionally so admin can easily manage chapters and MCQs from inside subjects.
+
+========================
+REQUIRED FEATURES
+=================
+
+1. Subject Card Improvement
+
+* Modern card design
+* Better spacing and alignment
+* Subject statistics:
+
+  * Total Chapters
+  * Total MCQs
+  * Published MCQs
+  * Draft MCQs
+* Better action buttons
+* Smooth hover effect
+* Responsive design
+
+2. Chapter Management
+   When admin opens a subject:
+
+* Show all chapters in left sidebar/list
+* Clicking a chapter loads MCQs instantly
+* Highlight active chapter
+* Add chapter search
+* Add chapter pagination if needed
+* Add “Add Chapter” button
+* Add Edit/Delete chapter option
+* Add chapter-wise MCQ count
+
+3. MCQ Management Section
+   Inside selected chapter show:
+
+* All MCQs in table/card view
+* Question title
+* Question type
+* Marks
+* Difficulty
+* Publish status
+* Created date
+
+Actions:
+
+* View MCQ
+* Edit MCQ
+* Delete MCQ
+* Publish/Unpublish MCQ
+* Duplicate MCQ
+
+4. Add MCQ Features
+
+* Add MCQ button
+* Bulk import MCQ
+* Filter by:
+
+  * Published
+  * Draft
+  * Difficulty
+  * Type
+* Search MCQ instantly
+
+5. Analytics Section
+   Add right side analytics panel:
+
+* Total MCQs
+* Published MCQs
+* Draft MCQs
+* Question type breakdown
+* Completion percentage
+
+6. UI/UX Improvements
+
+* Keep current purple-white theme
+* Better table design
+* Better typography
+* Smooth shadows
+* Rounded cards
+* Better mobile responsiveness
+* Empty states
+* Loading skeleton
+* Better pagination UI
+
+7. IMPORTANT
+
+* Do NOT remove existing functions
+* Do NOT rebuild backend
+* Do NOT change database unnecessarily
+* Only improve and extend the current existing system
+* Keep all old routes and APIs working
