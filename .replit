@@ -46,5 +46,6 @@ run = ["bash", "-c", "cd /home/runner/workspace/server && node src/index.js & cd
 
 [userenv.shared]
 FRONTEND_URL = "https://optireachhub.com"
-SMTP_HOST = "smtp.gmail.com"
-SMTP_PORT = "587"
+SMTP_HOST = "mail.optireachhub.com"
+SMTP_PORT = "465"
+SMTP_FROM = "CA Aspire BD <noreply@optireachhub.com>"
