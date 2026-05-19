@@ -33,7 +33,10 @@ const PAGE_TITLES = {
   '/admin/enrollments': { title: 'Enrollments', sub: 'Student enrollments' },
   '/admin/completions': { title: 'Completions', sub: 'Chapter completions' },
   '/admin/settings': { title: 'Settings', sub: 'Feature visibility controls' },
+  '/admin/quiz-manager': { title: 'Quiz Manager', sub: 'Build chapter quizzes' },
   '/progress-tracker': { title: 'Progress Tracker', sub: 'Full learning analytics' },
+  '/daily-progress': { title: 'Daily Progress', sub: 'Your performance history' },
+  '/settings': { title: 'Account Settings', sub: 'Profile & security' },
 };
 
 function getPageMeta(pathname) {

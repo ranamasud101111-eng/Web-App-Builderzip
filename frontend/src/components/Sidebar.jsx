@@ -41,12 +41,19 @@ const STUDENT_SECTIONS = [
     label: 'Performance',
     items: [
       { to: '/progress', icon: TrendingUp, label: 'Analytics' },
+      { to: '/daily-progress', icon: Activity, label: 'Daily Progress' },
       { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
       { to: '/bookmarks', icon: Bookmark, label: 'Bookmarks' },
       { to: '/wrong-answers', icon: XCircle, label: 'Wrong Answers' },
     ],
     moduleItems: [
-      { to: '/progress-tracker', icon: Activity, label: 'Progress Tracker', moduleKey: 'progressTracker' },
+      { to: '/progress-tracker', icon: BarChart3, label: 'Progress Tracker', moduleKey: 'progressTracker' },
+    ],
+  },
+  {
+    label: 'Account',
+    items: [
+      { to: '/settings', icon: Settings, label: 'Settings' },
     ],
   },
 ];
@@ -64,9 +71,10 @@ const ADMIN_SECTIONS = [
     items: [
       { to: '/admin/subjects', icon: BookOpen, label: 'Subjects' },
       { to: '/admin/mcqs', icon: Brain, label: 'MCQs' },
+      { to: '/admin/quiz-manager', icon: Zap, label: 'Quiz Manager' },
       { to: '/admin/exams', icon: Target, label: 'Exams' },
       { to: '/admin/classes', icon: Video, label: 'Classes' },
-      { to: '/admin/flashcards', icon: Zap, label: 'Flash Cards' },
+      { to: '/admin/flashcards', icon: ClipboardList, label: 'Flash Cards' },
       { to: '/admin/shortnotes', icon: FileText, label: 'Short Notes' },
       { to: '/admin/question-bank', icon: HelpCircle, label: 'Question Bank' },
     ],

@@ -86,6 +86,44 @@ router.get('/my-progress', authenticate, async (req, res) => {
   }
 });
 
+router.put('/me/profile', authenticate, async (req, res) => {
+  try {
+    const { name, email, class_level } = req.body;
+    if (!name || !email) return res.status(400).json({ error: 'Name and email are required' });
+    const result = await pool.query(
+      `UPDATE users SET name = $1, email = $2, class_level = $3 WHERE id = $4
+       RETURNING id, name, email, role, class_level, avatar_url, email_verified, created_at`,
+      [name.trim(), email.trim(), class_level || null, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.code === '23505' ? 'Email already in use' : 'Failed to update profile' });
+  }
+});
+
+router.post('/me/change-password', authenticate, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'All fields are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+    const { default: bcrypt } = await import('bcryptjs');
+    const result = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+    if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
+
+    const valid = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashed, req.user.id]);
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Change password error:', err.message);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 router.post('/enroll/:subjectId', authenticate, async (req, res) => {
   try {
     await pool.query(

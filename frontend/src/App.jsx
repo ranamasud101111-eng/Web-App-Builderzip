@@ -56,6 +56,10 @@ import TermsConditions from './pages/TermsConditions';
 import HelpCenter from './pages/HelpCenter';
 import { ModuleSettingsProvider, useModuleSettings } from './context/ModuleSettingsContext';
 import { ThemeProvider } from './context/ThemeContext';
+import ScrollToTop from './components/ScrollToTop';
+import AccountSettings from './pages/AccountSettings';
+import DailyProgress from './pages/DailyProgress';
+import AdminQuizManager from './pages/AdminQuizManager';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -89,6 +93,7 @@ const AppRoutes = () => {
 
   return (
     <>
+      <ScrollToTop />
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
           {/* Public pages — keep top navbar */}
@@ -134,6 +139,10 @@ const AppRoutes = () => {
 
           <Route path="/admin/settings" element={<ProtectedRoute adminOnly><AuthWrap><AdminSettings /></AuthWrap></ProtectedRoute>} />
           <Route path="/admin/subscription" element={<ProtectedRoute adminOnly><AuthWrap><AdminSubscription /></AuthWrap></ProtectedRoute>} />
+          <Route path="/admin/quiz-manager" element={<ProtectedRoute adminOnly><AuthWrap><AdminQuizManager /></AuthWrap></ProtectedRoute>} />
+
+          <Route path="/settings" element={<ProtectedRoute><AuthWrap><AccountSettings /></AuthWrap></ProtectedRoute>} />
+          <Route path="/daily-progress" element={<ProtectedRoute><AuthWrap><DailyProgress /></AuthWrap></ProtectedRoute>} />
 
           <Route path="/about" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><AboutUs /></Wrap></div>} />
           <Route path="/contact" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><ContactUs /></Wrap></div>} />

@@ -1,0 +1,235 @@
+Update the existing website (frontend + backend) WITHOUT breaking current features. Keep all existing design, login system, admin system, and database structure unless necessary for the new features below.
+
+IMPORTANT:
+
+* Do not remove any existing working functionality.
+* Only improve and add the requested features.
+* After implementation, test all pages and fix any bugs.
+* Final project must be ready for Render deployment (backend) and cPanel deployment (frontend build).
+
+========================
+STUDENT DASHBOARD UPDATES
+=========================
+
+1. Enrolled Subjects
+
+* In student dashboard, when clicking "Enrolled Subjects", show all subjects the student is enrolled in.
+* Clicking a subject should open subject details.
+
+2. Chapter Progress
+
+* In "Chapter Done", show chapter-wise progress report.
+* Each chapter should display:
+
+  * completed chapters
+  * incomplete chapters
+  * completion percentage
+  * performance summary
+
+3. Overall Progress
+
+* In "Overall Progress":
+
+  * show all subject-wise progress
+  * when clicking a subject → show chapter-wise progress
+  * include charts / progress bars
+
+4. MCQ Practice Flow
+   MCQ practice should follow:
+   Level → Subject → Chapter → Start Practice
+
+* Student selects level first
+* Then subject
+* Then chapter
+* Then starts MCQ practice
+
+Also add:
+
+* chapter-wise MCQ completion percentage
+* chapter-wise attempted count
+* correct/wrong count
+
+5. Quiz System
+   Quiz should also follow:
+   Level → Subject → Chapter → Start Quiz
+
+6. Mock Exam
+   Mock exam should follow:
+   Level → Subject → Chapter → Available Mock Tests
+
+* Show available mock exams
+* Student can start exam directly
+
+7. Wrong Questions
+   Add Wrong Questions section:
+   Level → Subject → Chapter
+
+* Show wrong MCQs from previous MCQ practice
+* Student can re-practice those wrong questions
+* Save retry progress
+
+8. Bookmark Questions
+
+* MCQs bookmarked during practice should appear in Bookmark section
+* Student can revise bookmarked questions later
+
+9. Custom Exam
+   Custom Exam flow:
+   Level → Subject → Chapter → Options select → Generate Exam
+
+* Pull questions from MCQ practice database
+* Allow custom number of questions
+* Allow timer selection
+
+10. Daily Progress Report
+    Add new section:
+    Daily Progress Report
+
+Show:
+
+* daily MCQ attempted
+* correct %
+* wrong %
+* performance analysis
+* suggestion engine
+
+Rules:
+
+* if correct rate < 50%, show suggestion:
+  "You should study this chapter manually again"
+* show subject-wise and chapter-wise weak areas
+* show progress history (daily/weekly/monthly)
+
+11. Account Settings
+    Add Account Settings page for students:
+
+* change password
+* update name
+* update email
+* update profile info
+
+12. Sidebar Fix
+    Current issue:
+    When scrolling down and clicking sidebar menu, page auto jumps to top.
+
+Fix:
+
+* sidebar navigation should stay at selected section
+* no auto scroll jump
+* smooth navigation
+
+========================
+ADMIN PANEL UPDATES
+===================
+
+Admin panel should have full control over all dashboard features.
+
+1. Admin Dashboard
+   Admin can access:
+
+* total students
+* total subjects
+* total exams
+* progress reports
+* system stats
+
+2. Subject Management
+   Flow:
+   Level → Subject
+
+Admin can:
+
+* create subject
+* edit subject
+* delete subject
+* view subject
+
+3. MCQ Management
+
+* all MCQs added in MCQ section should automatically appear under corresponding subject
+* admin can create/edit/delete MCQs
+
+4. Exam Management
+   Admin can:
+
+* create exam
+* edit exam
+* check exam
+* assign exam
+* update exam settings
+
+5. Quiz Manager (NEW)
+   Add new section:
+   Quiz Manager
+
+Flow:
+Level → Subject → Chapter
+
+* Admin can select 10 MCQs from practice MCQ bank
+* generate chapter-wise quiz
+
+6. Flashcard / Notes / Question Bank
+   For each:
+   Level → Subject → Chapter
+
+Allow direct upload:
+
+* PDF
+* DOCS
+* Text
+
+IMPORTANT:
+
+* no URL input
+* direct file upload only
+* store files in backend properly
+
+7. Admin Settings
+   Add settings page like student:
+
+* change password
+* change email
+* update admin profile
+* system settings
+
+8. Sidebar Fix
+   Same sidebar fix as student dashboard.
+
+========================
+FINAL TASKS
+===========
+
+After completing:
+
+1. Check all pages
+2. Find and fix all bugs
+3. Ensure responsive design
+4. Keep existing database data safe
+5. Tell me if database migration/update is required
+6. Tell me exactly what needs to be updated in database
+7. Deploy backend to Render
+8. Prepare frontend production build for cPanel upload
+9. Generate ready-to-upload frontend build package
+10. Give demo credentials:
+
+Demo Student Login:
+
+* email:
+* password:
+
+Demo Admin Login:
+
+* email:
+* password:
+
+IMPORTANT:
+Before finishing:
+
+* test all routes
+* test login
+* test admin panel
+* test student panel
+* test file uploads
+* test progress tracking
+* test MCQ practice
+* fix all discovered problems automatically

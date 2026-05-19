@@ -377,6 +377,41 @@ router.get('/sessions/:id', authenticate, async (req, res) => {
   }
 });
 
+/* ─── ADMIN: POST /api/mcqs/quiz-template ─── */
+router.post('/quiz-template', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { chapter_id, mcq_ids, title } = req.body;
+    if (!chapter_id || !mcq_ids || !Array.isArray(mcq_ids) || mcq_ids.length === 0)
+      return res.status(400).json({ error: 'chapter_id and mcq_ids are required' });
+    if (mcq_ids.length > 10)
+      return res.status(400).json({ error: 'Maximum 10 MCQs per quiz template' });
+
+    // Create quiz_templates table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quiz_templates (
+        id SERIAL PRIMARY KEY,
+        chapter_id INTEGER REFERENCES chapters(id) ON DELETE CASCADE,
+        title TEXT NOT NULL,
+        mcq_ids INTEGER[] NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(chapter_id)
+      )
+    `);
+
+    const result = await pool.query(`
+      INSERT INTO quiz_templates (chapter_id, title, mcq_ids)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (chapter_id) DO UPDATE SET title = EXCLUDED.title, mcq_ids = EXCLUDED.mcq_ids, created_at = NOW()
+      RETURNING *
+    `, [chapter_id, title || 'Chapter Quiz', mcq_ids]);
+
+    res.json({ success: true, template: result.rows[0] });
+  } catch (err) {
+    console.error('Quiz template error:', err.message);
+    res.status(500).json({ error: 'Failed to save quiz template' });
+  }
+});
+
 /* ─── ADMIN: GET /api/mcqs ─── */
 router.get('/', authenticate, requireAdmin, async (req, res) => {
   try {
