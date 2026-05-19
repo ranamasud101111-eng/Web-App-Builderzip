@@ -25,14 +25,28 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
+    const userId = req.query.user_id || null;
     const subjectResult = await pool.query('SELECT * FROM subjects WHERE id = $1', [req.params.id]);
     if (subjectResult.rows.length === 0) return res.status(404).json({ error: 'Subject not found' });
-    const chaptersResult = await pool.query(
-      'SELECT * FROM chapters WHERE subject_id = $1 ORDER BY order_index',
-      [req.params.id]
-    );
+
+    const chaptersResult = await pool.query(`
+      SELECT
+        c.*,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.is_active = TRUE) AS total_mcqs,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.is_active = TRUE AND msa.is_correct = TRUE AND ms.user_id = $2 AND ms.status = 'completed') AS correct_mcqs,
+        COUNT(DISTINCT msa.mcq_id) FILTER (WHERE ms.user_id = $2 AND ms.status = 'completed') AS attempted_mcqs
+      FROM chapters c
+      LEFT JOIN mcqs m ON m.chapter_id = c.id
+      LEFT JOIN mcq_session_answers msa ON msa.mcq_id = m.id
+      LEFT JOIN mcq_sessions ms ON ms.id = msa.session_id
+      WHERE c.subject_id = $1
+      GROUP BY c.id
+      ORDER BY c.order_index
+    `, [req.params.id, userId]);
+
     res.json({ ...subjectResult.rows[0], chapters: chaptersResult.rows });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch subject' });
   }
 });

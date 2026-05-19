@@ -8,7 +8,8 @@ import {
   GraduationCap, LayoutDashboard, BookOpen, Brain, FileText, Zap,
   Trophy, BarChart3, Bookmark, XCircle, Shuffle, HelpCircle, Layers,
   LogOut, Shield, Video, TrendingUp, Award, Settings, User,
-  HeadphonesIcon, Target, Flame, ClipboardList, Activity, CreditCard
+  HeadphonesIcon, Target, Flame, ClipboardList, Activity, CreditCard,
+  CheckSquare
 } from 'lucide-react';
 
 const STUDENT_SECTIONS = [
@@ -48,6 +49,12 @@ const STUDENT_SECTIONS = [
     ],
     moduleItems: [
       { to: '/progress-tracker', icon: BarChart3, label: 'Progress Tracker', moduleKey: 'progressTracker' },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { to: '/todo', icon: CheckSquare, label: 'To-Do & Pomodoro' },
     ],
   },
   {
@@ -93,6 +100,7 @@ const ADMIN_SECTIONS = [
       { to: '/admin/notifications', icon: Flame, label: 'Notifications' },
       { to: '/admin/settings', icon: Settings, label: 'Settings' },
       { to: '/admin/subscription', icon: CreditCard, label: 'Subscription' },
+      { to: '/todo', icon: CheckSquare, label: 'To-Do & Pomodoro' },
     ],
   },
 ];

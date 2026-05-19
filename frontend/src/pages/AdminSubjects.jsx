@@ -442,33 +442,288 @@ export default function AdminSubjects() {
 
 function SubjectChapters({ subjectId, color, onDeleteChapter }) {
   const [chapters, setChapters] = useState([]);
+  const [activeTab, setActiveTab] = useState('chapters');
+  const [mcqChapter, setMcqChapter] = useState(null);
+  const [mcqs, setMcqs] = useState([]);
+  const [mcqLoading, setMcqLoading] = useState(false);
+  const [showMcqForm, setShowMcqForm] = useState(false);
+  const [mcqForm, setMcqForm] = useState({ question: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 'A', explanation: '', difficulty: 'medium' });
+  const [mcqSaving, setMcqSaving] = useState(false);
+  const [editMcq, setEditMcq] = useState(null);
+  const [deleteMcqId, setDeleteMcqId] = useState(null);
+
   useEffect(() => {
     api.get(`/subjects/${subjectId}/chapters`).then(r => setChapters(r.data)).catch(() => {});
   }, [subjectId]);
+
+  const loadMcqs = async (ch) => {
+    setMcqChapter(ch);
+    setMcqLoading(true);
+    setShowMcqForm(false);
+    setEditMcq(null);
+    try { const r = await api.get(`/chapters/${ch.id}/mcqs`); setMcqs(r.data); }
+    catch { setMcqs([]); }
+    finally { setMcqLoading(false); }
+  };
+
+  const emptyMcqForm = { question: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 'A', explanation: '', difficulty: 'medium' };
+
+  const handleSaveMcq = async (e) => {
+    e.preventDefault();
+    setMcqSaving(true);
+    try {
+      if (editMcq) {
+        await api.put(`/mcqs/${editMcq.id}`, mcqForm);
+        toast.success('MCQ updated!');
+      } else {
+        await api.post('/mcqs', { ...mcqForm, chapter_id: mcqChapter.id });
+        toast.success('MCQ added!');
+      }
+      setShowMcqForm(false);
+      setEditMcq(null);
+      setMcqForm(emptyMcqForm);
+      const r = await api.get(`/chapters/${mcqChapter.id}/mcqs`);
+      setMcqs(r.data);
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to save MCQ'); }
+    finally { setMcqSaving(false); }
+  };
+
+  const handleDeleteMcq = async (id) => {
+    try {
+      await api.delete(`/mcqs/${id}`);
+      toast.success('MCQ deleted');
+      setMcqs(prev => prev.filter(m => m.id !== id));
+      setDeleteMcqId(null);
+    } catch { toast.error('Failed to delete MCQ'); }
+  };
+
+  const openEditMcq = (mcq) => {
+    setEditMcq(mcq);
+    setMcqForm({ question: mcq.question, option_a: mcq.option_a, option_b: mcq.option_b, option_c: mcq.option_c, option_d: mcq.option_d, correct_answer: mcq.correct_answer, explanation: mcq.explanation || '', difficulty: mcq.difficulty || 'medium' });
+    setShowMcqForm(true);
+  };
 
   if (chapters.length === 0) return (
     <p className="text-white/25 text-sm px-2 py-2">No chapters yet — add the first one below.</p>
   );
 
   return (
-    <div className="flex flex-col gap-2">
-      {chapters.map((ch, i) => (
-        <div key={ch.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors group">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-            style={{ background: `${color || '#7c3aed'}18`, color: color || '#a78bfa' }}>
-            {i + 1}
-          </div>
-          <span className="text-sm text-white/65 flex-1 truncate">{ch.title}</span>
-          <div className="flex items-center gap-2">
-            {ch.is_preview && <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-lg">Preview</span>}
-            {ch.duration_minutes > 0 && <span className="text-xs text-white/25">{ch.duration_minutes}m</span>}
-            <button onClick={() => onDeleteChapter?.(ch)}
-              className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/[0.12] text-white/20 hover:text-red-400 transition-all">
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </div>
+    <div>
+      {/* Tab switcher */}
+      <div className="flex gap-2 mb-3">
+        {[
+          { key: 'chapters', label: 'Chapters' },
+          { key: 'mcqs', label: 'Chapter MCQ Manager' },
+        ].map(t => (
+          <button key={t.key} onClick={() => setActiveTab(t.key)}
+            className="px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all"
+            style={activeTab === t.key
+              ? { background: `${color || '#7c3aed'}20`, color: color || '#a78bfa', border: `1px solid ${color || '#7c3aed'}35` }
+              : { background: 'transparent', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'chapters' && (
+        <div className="flex flex-col gap-2">
+          {chapters.map((ch, i) => (
+            <div key={ch.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors group">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                style={{ background: `${color || '#7c3aed'}18`, color: color || '#a78bfa' }}>
+                {i + 1}
+              </div>
+              <span className="text-sm text-white/65 flex-1 truncate">{ch.title}</span>
+              <div className="flex items-center gap-2">
+                {ch.is_preview && <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-lg">Preview</span>}
+                {ch.duration_minutes > 0 && <span className="text-xs text-white/25">{ch.duration_minutes}m</span>}
+                <button onClick={() => onDeleteChapter?.(ch)}
+                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/[0.12] text-white/20 hover:text-red-400 transition-all">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+
+      {activeTab === 'mcqs' && (
+        <div>
+          {/* Chapter picker */}
+          {!mcqChapter ? (
+            <div className="space-y-2">
+              <p className="text-xs text-white/35 mb-3">Select a chapter to manage its MCQs:</p>
+              {chapters.map((ch, i) => (
+                <button key={ch.id} onClick={() => loadMcqs(ch)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors text-left"
+                  style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                    style={{ background: `${color || '#7c3aed'}18`, color: color || '#a78bfa' }}>
+                    {i + 1}
+                  </div>
+                  <span className="text-sm text-white/70 flex-1">{ch.title}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-white/25 -rotate-90" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              {/* Chapter header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setMcqChapter(null); setShowMcqForm(false); setEditMcq(null); }}
+                    className="text-xs text-violet-400 hover:text-violet-300 font-semibold transition-colors">
+                    ← Back
+                  </button>
+                  <span className="text-white/20 text-xs">|</span>
+                  <span className="text-xs text-white/60 font-semibold truncate max-w-[200px]">{mcqChapter.title}</span>
+                  <span className="text-[10px] text-white/30 bg-white/[0.05] px-2 py-0.5 rounded-full">{mcqs.length} MCQs</span>
+                </div>
+                <button onClick={() => { setShowMcqForm(true); setEditMcq(null); setMcqForm(emptyMcqForm); }}
+                  className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl transition-all"
+                  style={{ background: `${color || '#7c3aed'}15`, color: color || '#a78bfa', border: `1px solid ${color || '#7c3aed'}25` }}>
+                  <Plus className="w-3 h-3" /> Add MCQ
+                </button>
+              </div>
+
+              {/* MCQ form */}
+              <AnimatePresence>
+                {showMcqForm && (
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    className="glass-navy rounded-2xl p-5 mb-4 border border-purple-500/15">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-semibold text-white">{editMcq ? 'Edit MCQ' : 'New MCQ'}</h4>
+                      <button onClick={() => { setShowMcqForm(false); setEditMcq(null); }}
+                        className="p-1.5 rounded-lg hover:bg-white/[0.08] transition-colors">
+                        <X className="w-3.5 h-3.5 text-white/40" />
+                      </button>
+                    </div>
+                    <form onSubmit={handleSaveMcq} className="flex flex-col gap-3">
+                      <textarea required placeholder="Question text..." value={mcqForm.question}
+                        onChange={e => setMcqForm(p => ({ ...p, question: e.target.value }))}
+                        className="input-field resize-none text-sm" rows={2} />
+                      <div className="grid grid-cols-2 gap-2">
+                        {['A','B','C','D'].map(opt => (
+                          <div key={opt} className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold"
+                              style={{ color: mcqForm.correct_answer === opt ? '#10b981' : 'rgba(255,255,255,0.3)' }}>
+                              {opt}.
+                            </span>
+                            <input required placeholder={`Option ${opt}`}
+                              value={mcqForm[`option_${opt.toLowerCase()}`]}
+                              onChange={e => setMcqForm(p => ({ ...p, [`option_${opt.toLowerCase()}`]: e.target.value }))}
+                              className="input-field pl-8 text-sm"
+                              style={mcqForm.correct_answer === opt ? { borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' } : {}} />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-semibold text-white/40 uppercase tracking-wide mb-1.5">Correct Answer</label>
+                          <div className="flex gap-1.5">
+                            {['A','B','C','D'].map(opt => (
+                              <button key={opt} type="button" onClick={() => setMcqForm(p => ({ ...p, correct_answer: opt }))}
+                                className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
+                                style={mcqForm.correct_answer === opt
+                                  ? { background: 'rgba(16,185,129,0.2)', color: '#10b981', border: '1px solid rgba(16,185,129,0.4)' }
+                                  : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-white/40 uppercase tracking-wide mb-1.5">Difficulty</label>
+                          <select value={mcqForm.difficulty} onChange={e => setMcqForm(p => ({ ...p, difficulty: e.target.value }))}
+                            className="input-field text-sm">
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                          </select>
+                        </div>
+                      </div>
+                      <textarea placeholder="Explanation (optional)..." value={mcqForm.explanation}
+                        onChange={e => setMcqForm(p => ({ ...p, explanation: e.target.value }))}
+                        className="input-field resize-none text-sm" rows={2} />
+                      <div className="flex gap-2 mt-1">
+                        <button type="button" onClick={() => { setShowMcqForm(false); setEditMcq(null); }}
+                          className="flex-1 btn-outline py-2 text-sm">Cancel</button>
+                        <button type="submit" disabled={mcqSaving}
+                          className="flex-1 btn-primary py-2 text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+                          {mcqSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : editMcq ? 'Save Changes' : 'Add MCQ'}
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* MCQ list */}
+              {mcqLoading ? (
+                <div className="flex justify-center py-6">
+                  <div className="w-7 h-7 border-2 border-t-purple-500 rounded-full animate-spin" />
+                </div>
+              ) : mcqs.length === 0 ? (
+                <div className="text-center py-8 text-white/25 text-sm">
+                  No MCQs yet — click "Add MCQ" to create the first one.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                  {mcqs.map((mcq, i) => (
+                    <div key={mcq.id} className="flex items-start gap-3 p-3 rounded-xl group hover:bg-white/[0.025] transition-colors"
+                      style={{ border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div className="w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                        style={{ background: `${color || '#7c3aed'}18`, color: color || '#a78bfa' }}>
+                        {i + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/75 text-xs font-medium line-clamp-2">{mcq.question}</p>
+                        <div className="flex items-center gap-3 mt-1.5 text-[10px]">
+                          <span className="text-emerald-400 font-bold">✓ {mcq.correct_answer}</span>
+                          <span className="text-white/25">{mcq.difficulty || 'medium'}</span>
+                          {!mcq.is_active && <span className="text-red-400">Inactive</span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button onClick={() => openEditMcq(mcq)}
+                          className="p-1.5 rounded-lg hover:bg-blue-500/15 text-white/30 hover:text-blue-400 transition-colors">
+                          <Edit2 className="w-3 h-3" />
+                        </button>
+                        <button onClick={() => setDeleteMcqId(mcq.id)}
+                          className="p-1.5 rounded-lg hover:bg-red-500/15 text-white/20 hover:text-red-400 transition-colors">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Delete MCQ confirm */}
+              <AnimatePresence>
+                {deleteMcqId && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+                      className="glass-navy rounded-2xl p-6 w-full max-w-sm border border-red-500/20">
+                      <Trash2 className="w-8 h-8 text-red-400 mb-3" />
+                      <h3 className="text-white font-bold mb-1">Delete this MCQ?</h3>
+                      <p className="text-white/40 text-sm mb-4">This cannot be undone.</p>
+                      <div className="flex gap-3">
+                        <button onClick={() => setDeleteMcqId(null)} className="flex-1 btn-outline py-2.5 text-sm">Cancel</button>
+                        <button onClick={() => handleDeleteMcq(deleteMcqId)}
+                          className="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/25 transition-colors">
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

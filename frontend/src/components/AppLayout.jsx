@@ -34,6 +34,7 @@ const PAGE_TITLES = {
   '/admin/completions': { title: 'Completions', sub: 'Chapter completions' },
   '/admin/settings': { title: 'Settings', sub: 'Feature visibility controls' },
   '/admin/quiz-manager': { title: 'Quiz Manager', sub: 'Build chapter quizzes' },
+  '/todo': { title: 'To-Do & Pomodoro', sub: 'Tasks and focus timer' },
   '/progress-tracker': { title: 'Progress Tracker', sub: 'Full learning analytics' },
   '/daily-progress': { title: 'Daily Progress', sub: 'Your performance history' },
   '/settings': { title: 'Account Settings', sub: 'Profile & security' },
@@ -114,7 +115,7 @@ export default function AppLayout({ children }) {
             </div>
           </div>
         </header>
-        <main className="flex-1 py-7">
+        <main id="main-scroll" className="flex-1 py-7 overflow-y-auto" style={{ height: 'calc(100vh - 56px)' }}>
           {children}
         </main>
       </div>

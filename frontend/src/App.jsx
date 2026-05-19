@@ -60,6 +60,7 @@ import ScrollToTop from './components/ScrollToTop';
 import AccountSettings from './pages/AccountSettings';
 import DailyProgress from './pages/DailyProgress';
 import AdminQuizManager from './pages/AdminQuizManager';
+import TodoPomodoro from './pages/TodoPomodoro';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { user, loading } = useAuth();
@@ -143,6 +144,7 @@ const AppRoutes = () => {
 
           <Route path="/settings" element={<ProtectedRoute><AuthWrap><AccountSettings /></AuthWrap></ProtectedRoute>} />
           <Route path="/daily-progress" element={<ProtectedRoute><AuthWrap><DailyProgress /></AuthWrap></ProtectedRoute>} />
+          <Route path="/todo" element={<ProtectedRoute><AuthWrap><TodoPomodoro /></AuthWrap></ProtectedRoute>} />
 
           <Route path="/about" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><AboutUs /></Wrap></div>} />
           <Route path="/contact" element={<div className="min-h-screen bg-animated-navy"><Navbar /><Wrap><ContactUs /></Wrap></div>} />

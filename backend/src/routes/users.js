@@ -148,6 +148,28 @@ router.get('/enrolled/:subjectId', authenticate, async (req, res) => {
   }
 });
 
+router.get('/:id/enrollments', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT e.id, e.subject_id, e.enrolled_at,
+        s.name AS subject_name, s.icon AS subject_icon, s.color AS subject_color,
+        COUNT(DISTINCT up.chapter_id) FILTER (WHERE up.completed = true) AS completed_chapters
+      FROM enrollments e
+      JOIN subjects s ON s.id = e.subject_id
+      LEFT JOIN user_progress up ON up.user_id = e.user_id AND up.chapter_id IN (
+        SELECT id FROM chapters WHERE subject_id = e.subject_id
+      )
+      WHERE e.user_id = $1
+      GROUP BY e.id, e.subject_id, e.enrolled_at, s.name, s.icon, s.color
+      ORDER BY e.enrolled_at DESC
+    `, [req.params.id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch enrollments' });
+  }
+});
+
 router.get('/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(`

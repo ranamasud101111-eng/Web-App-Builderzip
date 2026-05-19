@@ -1,0 +1,198 @@
+Continue updating the existing website (frontend + backend) WITHOUT breaking current features. Keep all previous functionality working and integrate the following advanced updates.
+
+IMPORTANT:
+
+* Do not remove any existing working features.
+* Maintain current database compatibility.
+* Test all pages after changes.
+* Fix all hidden bugs automatically.
+* Final output must be deployment-ready for Render (backend) and cPanel (frontend dist build).
+
+========================
+SUBJECT & MCQ SYSTEM UPDATE
+===========================
+
+1. Student Subject Section
+   Inside student dashboard:
+
+* when entering a subject, show chapter-wise chapters
+* each chapter should show:
+
+  * total MCQ
+  * completed MCQ
+  * remaining MCQ
+  * progress %
+
+Student can:
+
+* enter chapter
+* start MCQ practice directly
+
+2. Admin Subject Section
+   Admin panel → Subject section:
+
+Flow:
+Level → Subject → Chapter
+
+Admin should be able to:
+
+* see all chapter-wise MCQs
+* manage chapter-wise MCQs
+* add/remove/edit MCQs
+* control all chapter data
+
+IMPORTANT:
+When admin adds MCQ from MCQ section:
+
+* it must save chapter-wise automatically
+* same MCQs must appear in subject section chapter manager
+
+Add:
+NEW "Chapter-wise MCQ Manager"
+inside Subject section:
+
+* manage all MCQs chapter-wise
+* full CRUD access
+
+========================
+QUIZ MANAGER UPDATE
+===================
+
+Admin panel → Quiz Manager:
+
+Flow:
+Level → Subject → Chapter
+
+Admin can:
+
+* select MCQs from practice MCQ bank
+* choose chapter-wise MCQs
+* add selected MCQs to quiz
+* create quiz from existing practice questions
+
+========================
+EXAM MANAGER UPDATE
+===================
+
+Update exam manager:
+
+* full access to all exam functions
+* create/edit/delete/check exams
+* manage chapter exams
+* random exam generation
+
+NEW:
+Full Exam Mode:
+
+* 15 minutes timer
+* 15 questions
+* questions auto-randomly selected from chapter MCQs
+
+Student can start full exam directly.
+
+========================
+ENROLLMENT UPDATE
+=================
+
+Enrollment section:
+
+* all enrollment details must be accessible
+* student list clickable
+* subject enrollment visible
+* enrolled student details visible
+
+========================
+STUDENT DASHBOARD EXTRA
+=======================
+
+1. Daily Progress
+   Improve daily progress report:
+
+* more detailed analytics
+* daily performance graph
+* chapter weak points
+* recommendations
+
+2. To-Do + Pomodoro
+   Add new section:
+
+* To-do list
+* Pomodoro timer
+
+Student can:
+
+* create tasks
+* mark completed
+* use pomodoro timer
+
+Admin panel should also have same:
+
+* To-do section
+* Pomodoro section
+* manage/view
+
+3. Notifications
+   Add notification center in student dashboard:
+
+* system notifications
+* exam reminders
+* admin announcements
+
+4. All dashboard functions
+   Ensure:
+
+* every student dashboard section is fully clickable
+* no dead pages
+* all routes working
+
+========================
+BUG FIXES
+=========
+
+1. Sidebar issue
+   Current problem:
+   Clicking lower sidebar items causes sidebar/page to jump back to top.
+
+Fix:
+
+* no jump
+* preserve current scroll
+* smooth sidebar navigation
+
+2. Forgot Password
+   Current problem:
+   Forgot password email is not sending.
+
+Fix:
+
+* make reset email fully functional
+* verify SMTP config
+* test real email delivery
+
+========================
+DEPLOYMENT OUTPUT
+=================
+
+After all updates:
+
+1. Build frontend production
+
+* generate dist folder
+* ready for cPanel upload
+
+2. Prepare backend
+
+* ready for Render deployment
+
+3. Check backend environment variables
+4. Tell me if database migration/update needed
+5. Tell me exact DB changes required
+6. Test all APIs
+7. Test all student/admin routes
+8. Fix all discovered issues automatically
+
+Finally provide:
+
+* demo student login
+* demo admin login
+* deployment instructions
