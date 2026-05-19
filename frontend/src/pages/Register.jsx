@@ -4,8 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import api from '../api';
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle, ChevronRight, Send } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle, ChevronRight } from 'lucide-react';
 
 const benefits = [
   'Access to all CA subjects and chapters',
@@ -22,37 +21,18 @@ export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', class_level: '' });
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState('');
-  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
     try {
-      await register(form.name, form.email, form.password, form.class_level);
-      setRegisteredEmail(form.email);
-      setSubmitted(true);
+      const data = await register(form.name, form.email, form.password, form.class_level);
+      toast.success(`Welcome to CA Aspire BD, ${form.name.split(' ')[0]}!`);
+      navigate('/dashboard');
     } catch (err) {
-      const data = err.response?.data;
-      if (data?.code === 'EMAIL_NOT_VERIFIED') {
-        setRegisteredEmail(form.email);
-        setSubmitted(true);
-      } else {
-        toast.error(data?.error || 'Registration failed');
-      }
+      toast.error(err.response?.data?.error || 'Registration failed');
     } finally { setLoading(false); }
-  };
-
-  const handleResend = async () => {
-    setResending(true);
-    try {
-      await api.post('/auth/resend-verification', { email: registeredEmail });
-      toast.success('Verification email resent! Check your inbox.');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to resend');
-    } finally { setResending(false); }
   };
 
   const textPrimary = isDark ? 'text-white' : 'text-slate-900';
@@ -60,52 +40,6 @@ export default function Register() {
   const textMuted = isDark ? 'text-white/35' : 'text-slate-400';
   const iconColor = isDark ? 'text-white/25' : 'text-slate-400';
   const eyeColor = isDark ? 'text-white/25 hover:text-white/60' : 'text-slate-400 hover:text-slate-600';
-
-  const pageStyle = isDark
-    ? { background: 'linear-gradient(160deg, #020818 0%, #060c24 100%)' }
-    : { background: 'radial-gradient(ellipse 70% 50% at 20% 10%, rgba(139,92,246,0.12) 0%, transparent 50%), radial-gradient(ellipse 60% 45% at 80% 90%, rgba(236,72,153,0.08) 0%, transparent 50%), #f7f5ff' };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 pt-16 transition-colors duration-300" style={pageStyle}>
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-          className="w-full max-w-md">
-          <div className="rounded-3xl p-8 border text-center transition-colors duration-300"
-            style={{
-              background: isDark ? 'rgba(10,15,46,0.85)' : 'rgba(255,255,255,0.97)',
-              backdropFilter: 'blur(20px)',
-              borderColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(124,58,237,0.12)',
-              boxShadow: isDark ? 'none' : '0 8px 40px rgba(0,0,0,0.08)',
-            }}>
-            <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-5">
-              <Mail className="w-7 h-7 text-indigo-500" />
-            </div>
-            <h2 className={`text-2xl font-bold mb-3 ${textPrimary}`}>Check your email</h2>
-            <p className={`text-sm leading-relaxed mb-2 ${textSecondary}`}>We sent a verification link to</p>
-            <p className="text-indigo-500 font-semibold text-sm mb-6">{registeredEmail}</p>
-            <p className={`text-xs leading-relaxed mb-7 ${textMuted}`}>
-              Click the link in the email to activate your account. The link expires in 24 hours. Check your spam folder if you don't see it.
-            </p>
-            <button onClick={handleResend} disabled={resending}
-              className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 mb-4 disabled:opacity-50 border transition-colors"
-              style={{
-                background: isDark ? 'rgba(79,70,229,0.15)' : 'rgba(124,58,237,0.08)',
-                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(124,58,237,0.2)',
-                color: isDark ? 'white' : '#6d28d9',
-              }}>
-              {resending
-                ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                : <Send className="w-4 h-4" />}
-              Resend verification email
-            </button>
-            <Link to="/login" className={`text-sm transition-colors ${isDark ? 'text-white/35 hover:text-white/60' : 'text-slate-400 hover:text-slate-600'}`}>
-              Back to Login
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex overflow-hidden pt-16 transition-colors duration-300"

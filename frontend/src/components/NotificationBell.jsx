@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, X, CheckCheck, AlertCircle, Info, BookOpen, Megaphone, Star } from 'lucide-react';
+import { Bell, X, CheckCheck, AlertCircle, Info, BookOpen, Megaphone, Star, Trash2 } from 'lucide-react';
 import api from '../api';
 
 const TYPE_CONFIG = {
@@ -67,6 +67,18 @@ export default function NotificationBell() {
     } catch {}
   };
 
+  const deleteNotification = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/notifications/${id}`);
+      setNotifications(p => {
+        const n = p.find(x => x.id === id);
+        if (n && !n.is_read) setUnreadCount(c => Math.max(0, c - 1));
+        return p.filter(x => x.id !== id);
+      });
+    } catch {}
+  };
+
   return (
     <div className="relative" ref={panelRef}>
       <button ref={bellRef} onClick={handleOpen}
@@ -118,7 +130,7 @@ export default function NotificationBell() {
                 const cfg = TYPE_CONFIG[n.type] || TYPE_CONFIG.info;
                 return (
                   <div key={n.id} onClick={() => !n.is_read && markRead(n.id)}
-                    className={`px-5 py-4 border-b border-white/[0.04] cursor-pointer transition-all duration-200 ${!n.is_read ? 'bg-purple-500/[0.04] hover:bg-purple-500/[0.07]' : 'hover:bg-white/[0.03]'}`}>
+                    className={`px-5 py-4 border-b border-white/[0.04] cursor-pointer transition-all duration-200 group/item ${!n.is_read ? 'bg-purple-500/[0.04] hover:bg-purple-500/[0.07]' : 'hover:bg-white/[0.03]'}`}>
                     <div className="flex items-start gap-3">
                       <div className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center border ${cfg.bg} ${cfg.color}`}>
                         {cfg.icon}
@@ -129,7 +141,15 @@ export default function NotificationBell() {
                             {n.is_important && <Star className="w-3 h-3 inline mr-1 fill-gold-400 text-gold-400" />}
                             {n.title}
                           </p>
-                          {!n.is_read && <div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0 mt-1.5"></div>}
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {!n.is_read && <div className="w-2 h-2 rounded-full bg-purple-400 mt-0.5"></div>}
+                            <button
+                              onClick={(e) => deleteNotification(e, n.id)}
+                              className="opacity-0 group-hover/item:opacity-100 p-1 rounded-md hover:bg-red-500/15 transition-all"
+                              title="Delete notification">
+                              <Trash2 className="w-3 h-3 text-red-400/60 hover:text-red-400" />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-xs text-white/40 mt-0.5 line-clamp-2 leading-relaxed">{n.message}</p>
                         <p className="text-[10px] text-white/25 mt-1.5 font-medium">{formatTime(n.created_at)}</p>
@@ -140,6 +160,12 @@ export default function NotificationBell() {
               })
             )}
           </div>
+
+          {notifications.length > 0 && (
+            <div className="px-5 py-3 border-t border-white/[0.06] flex justify-center">
+              <span className="text-[11px] text-white/25">{notifications.length} notification{notifications.length !== 1 ? 's' : ''}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

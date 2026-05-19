@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, ChevronRight, KeyRound } from 'lucide-react';
 
+
 export default function Login() {
   const { login } = useAuth();
   const { isDark } = useTheme();
@@ -13,24 +14,8 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [unverifiedEmail, setUnverifiedEmail] = useState('');
-  const [resending, setResending] = useState(false);
-
-  const handleResend = async () => {
-    if (!unverifiedEmail) return;
-    setResending(true);
-    try {
-      const { default: api } = await import('../api');
-      await api.post('/auth/resend-verification', { email: unverifiedEmail });
-      toast.success('Verification email sent! Check your inbox.');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to resend');
-    } finally { setResending(false); }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setUnverifiedEmail('');
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
@@ -39,10 +24,7 @@ export default function Login() {
     } catch (err) {
       const data = err.response?.data || {};
       const status = err.response?.status;
-      if (status === 403 && data.code === 'EMAIL_NOT_VERIFIED') {
-        setUnverifiedEmail(data.email || form.email);
-        toast.error('Please verify your email before logging in.');
-      } else if (status === 403) {
+      if (status === 403) {
         toast.error('Admin accounts must use the Admin Login portal');
       } else {
         toast.error(data.error || 'Invalid credentials');
@@ -171,21 +153,6 @@ export default function Login() {
               </button>
             </form>
 
-            {unverifiedEmail && (
-              <div className="mt-4 rounded-xl p-4 border border-amber-500/20"
-                style={{ background: isDark ? 'rgba(245,158,11,0.07)' : 'rgba(245,158,11,0.08)' }}>
-                <p className="text-amber-600 text-xs mb-2 leading-relaxed">
-                  Your email <strong>{unverifiedEmail}</strong> hasn't been verified yet.
-                </p>
-                <button onClick={handleResend} disabled={resending}
-                  className="text-amber-600 text-xs font-semibold flex items-center gap-1.5 hover:text-amber-700 transition-colors disabled:opacity-50">
-                  {resending
-                    ? <div className="w-3 h-3 border border-amber-500 border-t-transparent rounded-full animate-spin" />
-                    : <Mail className="w-3 h-3" />}
-                  Resend verification email
-                </button>
-              </div>
-            )}
           </div>
 
           <p className={`text-center mt-6 text-sm ${textMuted}`}>

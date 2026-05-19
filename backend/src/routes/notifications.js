@@ -60,6 +60,19 @@ router.put('/read-all', authenticate, async (req, res) => {
   }
 });
 
+// User: Dismiss/delete notification (removes from their inbox only)
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    await pool.query(
+      'DELETE FROM user_notifications WHERE user_id = $1 AND notification_id = $2',
+      [req.user.id, req.params.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete notification' });
+  }
+});
+
 // Admin: Get all notifications
 router.get('/admin/all', authenticate, requireAdmin, async (req, res) => {
   try {

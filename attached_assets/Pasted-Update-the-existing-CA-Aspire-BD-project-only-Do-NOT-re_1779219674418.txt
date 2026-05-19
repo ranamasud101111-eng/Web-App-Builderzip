@@ -1,0 +1,183 @@
+Update the existing CA Aspire BD project only.
+Do NOT rebuild the entire project from scratch.
+Keep all current functionality, routes, APIs, database structure, and existing features working exactly as they are.
+
+========================
+IMPORTANT UPDATE INSTRUCTION
+============================
+
+Only improve and upgrade the existing UI/UX, features, and dashboard system professionally while keeping the current project structure intact.
+
+Do NOT:
+
+* rebuild the whole app
+* change core backend logic unnecessarily
+* remove existing working functions
+* redesign unrelated pages
+* break old routes or APIs
+
+========================
+UPDATE EXISTING ADMIN DASHBOARD
+===============================
+
+Improve the current Admin Dashboard professionally:
+
+1. Dashboard
+
+* Better stats cards design
+* Modern analytics section
+* Improved responsive layout
+* Activity timeline
+* Better charts and spacing
+* Smooth hover effects
+* Better mobile support
+
+2. Subjects & Chapters
+   Currently existing flow:
+   Subject → Chapter → MCQ
+
+Update existing system so admin can:
+
+* Open a subject
+* Open chapter inside subject
+* View all MCQs under chapter
+* Manage MCQs easily
+* Add/Edit/Delete MCQs
+* Publish/Unpublish MCQs
+* Search/filter MCQs
+* Better table UI
+* Add pagination
+* Add chapter statistics
+
+Do NOT remove existing functionality.
+
+3. Exams Manager
+   Update current exam manager UI:
+
+* Better cards
+* Better exam list table
+* Add filters/search
+* Better publish/draft status UI
+* Improve action buttons
+* Add analytics section
+* Improve responsiveness
+
+4. Question Bank
+   Update existing Question Bank:
+
+* Better alignment and spacing
+* Fix all text/grammar
+* Add modern table/cards
+* Add subject/chapter statistics
+* Better quick actions panel
+* Improve expand/collapse UI
+* Better responsive design
+
+5. Flash Cards
+   Update current Flash Card page:
+
+* Modern flashcard design
+* Better management UI
+* Search/filter
+* Better spacing
+* Progress indicators
+
+6. Short Notes
+   Update current notes page:
+
+* Better note cards/table
+* Improved editor layout
+* Better subject/chapter organization
+* Better responsive UI
+
+7. To-Do & Pomodoro
+   Update current page professionally:
+
+* Working Pomodoro timer UI
+* Better task management layout
+* Task priority colors
+* Better statistics cards
+* Weekly productivity section
+* Smooth modern UI
+
+========================
+UPDATE EXISTING STUDENT DASHBOARD
+=================================
+
+Update student dashboard UI professionally while keeping all existing functionality working.
+
+Add:
+
+* Better homepage UI
+* Better performance cards
+* Continue learning section
+* Upcoming exam cards
+* Study progress section
+* Responsive improvements
+* Better navigation
+* Modern cards and spacing
+
+========================
+ADD STUDENT NOTIFICATION SYSTEM
+===============================
+
+Add notification feature for students:
+
+Features:
+
+* Notification bell icon
+* Unread notification counter
+* Notification dropdown
+* Notification page
+* Mark as read
+* Delete notification
+* Exam alerts
+* Result published alerts
+* New MCQ alerts
+* New note alerts
+* Admin announcements
+
+Keep it integrated with existing backend system.
+
+========================
+AUTHENTICATION UPDATE
+=====================
+
+Disable email verification only.
+
+Requirements:
+
+* Remove email verification requirement
+* Users can login directly after registration
+* Remove verification popup/messages
+* Keep forgot password/reset password working
+
+========================
+UI/UX IMPROVEMENTS
+==================
+
+Apply across existing project:
+
+* Better spacing
+* Cleaner typography
+* Modern buttons
+* Smooth shadows
+* Rounded cards
+* Better hover effects
+* Responsive fixes
+* Sidebar improvements
+* Better tables
+* Better empty states
+* Better loading states
+
+Keep current purple-white branding theme.
+
+========================
+FINAL REQUIREMENT
+=================
+
+Update only existing features and pages professionally.
+Do not rebuild the project from zero.
+Do not change database structure unnecessarily.
+Do not remove current working systems.
+Keep all old functions working while improving the UI/UX and usability.

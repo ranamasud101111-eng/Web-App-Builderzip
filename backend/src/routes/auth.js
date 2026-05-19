@@ -32,22 +32,25 @@ router.post('/register', async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const token  = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     const result = await pool.query(
-      `INSERT INTO users (name, email, password_hash, role, class_level, email_verified, verification_token, verification_token_expires)
-       VALUES ($1, $2, $3, 'student', $4, FALSE, $5, $6)
+      `INSERT INTO users (name, email, password_hash, role, class_level, email_verified)
+       VALUES ($1, $2, $3, 'student', $4, TRUE)
        RETURNING id, name, email, role, class_level, email_verified, created_at`,
-      [name, email, hashed, class_level || null, token, expires]
+      [name, email, hashed, class_level || null]
     );
     const user = result.rows[0];
 
-    await sendVerificationEmail(name, email, token);
+    const jwtToken = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.status(201).json({
-      message: 'Account created. Please check your email to verify your account before logging in.',
-      email: user.email,
+      message: 'Account created successfully.',
+      user,
+      token: jwtToken,
     });
   } catch (err) {
     console.error(err);
