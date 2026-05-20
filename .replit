@@ -45,7 +45,9 @@ run = ["bash", "-c", "cd /home/runner/workspace/server && node src/index.js & cd
 [userenv]
 
 [userenv.shared]
-FRONTEND_URL = "https://optireachhub.com"
+FRONTEND_URL = "https://009acac8-06ff-4498-a77c-aa83d22c58ac-00-klm4v8x5hwtv.pike.replit.dev"
 SMTP_HOST = "mail.optireachhub.com"
 SMTP_PORT = "465"
 SMTP_FROM = "CA Aspire BD <noreply@optireachhub.com>"
+JWT_SECRET = "cf07b99163d3716e0d735172c173cfbc0102818b2b9ab9e3f8855554cab74ef52654828d9bc2c901205f4e956481a94737061ae48100036836614f483e0cc4cc"
+NODE_ENV = "development"
