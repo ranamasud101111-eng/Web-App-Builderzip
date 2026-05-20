@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -176,23 +177,71 @@ function BulkImportPanel({ subjects, onImported }) {
     } else { setChapters([]); }
   }, [targetSubject]);
 
+  const parseSpreadsheet = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        const questions = [];
+        const errs = [];
+        const normalize = (v) => (v || '').toString().trim();
+        const findCol = (row, ...keys) => {
+          for (const k of keys) {
+            const found = Object.keys(row).find(r => r.toLowerCase().replace(/[_ ]/g,'') === k.toLowerCase().replace(/[_ ]/g,''));
+            if (found && row[found] !== '') return normalize(row[found]);
+          }
+          return '';
+        };
+        rows.forEach((row, i) => {
+          const question = findCol(row, 'question', 'q', 'Question');
+          const option_a = findCol(row, 'optiona', 'option_a', 'a', 'OptionA', 'opt_a');
+          const option_b = findCol(row, 'optionb', 'option_b', 'b', 'OptionB', 'opt_b');
+          const option_c = findCol(row, 'optionc', 'option_c', 'c', 'OptionC', 'opt_c');
+          const option_d = findCol(row, 'optiond', 'option_d', 'd', 'OptionD', 'opt_d');
+          const correct_option = findCol(row, 'correctoption', 'correct_option', 'answer', 'correct', 'CorrectOption', 'Answer').toUpperCase().charAt(0);
+          const explanation = findCol(row, 'explanation', 'explain', 'Explanation');
+          const difficulty = findCol(row, 'difficulty', 'level', 'Difficulty').toLowerCase() || 'medium';
+          if (!question || !option_a || !option_b || !option_c || !option_d || !['A','B','C','D'].includes(correct_option)) {
+            errs.push(`Row ${i + 2}: Missing required fields`);
+            return;
+          }
+          questions.push({ question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty: ['easy','medium','hard'].includes(difficulty) ? difficulty : 'medium' });
+        });
+        resolve({ questions, errors: errs });
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsBinaryString(file);
+  });
+
   const handleParse = async () => {
     setParsing(true); setPreviewing(false); setImportResult(null);
     try {
-      let response;
-      if (inputType === 'text') {
-        response = await api.post('/mcqs/bulk-import/parse', { text });
+      if (inputType === 'csv' || inputType === 'xlsx') {
+        if (!file) { toast.error('Please upload a file'); setParsing(false); return; }
+        const result = await parseSpreadsheet(file);
+        setParsed(result.questions);
+        setErrors(result.errors || []);
+        setPreviewing(true);
+        toast.success(`Parsed ${result.questions.length} questions from ${file.name}`);
       } else {
-        const fd = new FormData();
-        fd.append('file', file);
-        response = await api.post('/mcqs/bulk-import/parse', fd, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        let response;
+        if (inputType === 'text') {
+          response = await api.post('/mcqs/bulk-import/parse', { text });
+        } else {
+          const fd = new FormData();
+          fd.append('file', file);
+          response = await api.post('/mcqs/bulk-import/parse', fd, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
+        setParsed(response.data.questions);
+        setErrors(response.data.errors || []);
+        setPreviewing(true);
+        toast.success(`Parsed ${response.data.total_parsed} questions`);
       }
-      setParsed(response.data.questions);
-      setErrors(response.data.errors || []);
-      setPreviewing(true);
-      toast.success(`Parsed ${response.data.total_parsed} questions`);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Parsing failed');
     } finally { setParsing(false); }
@@ -246,14 +295,16 @@ Explanation: Ind AS 1 prescribes the basis for presentation of general purpose f
       {/* Input type selector */}
       <div>
         <label className="text-xs text-white/40 mb-2.5 block font-medium uppercase tracking-wide">Import Source</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           {[
             { val: 'text', label: 'Paste Text', icon: <Type className="w-4 h-4" /> },
-            { val: 'pdf', label: 'PDF File', icon: <FileText className="w-4 h-4" /> },
-            { val: 'docx', label: 'DOCX File', icon: <FileText className="w-4 h-4" /> },
+            { val: 'pdf',  label: 'PDF',        icon: <FileText className="w-4 h-4" /> },
+            { val: 'docx', label: 'DOCX',       icon: <FileText className="w-4 h-4" /> },
+            { val: 'csv',  label: 'CSV',         icon: <Filter className="w-4 h-4" /> },
+            { val: 'xlsx', label: 'Excel',       icon: <BarChart3 className="w-4 h-4" /> },
           ].map(t => (
-            <button type="button" key={t.val} onClick={() => { setInputType(t.val); setPreviewing(false); }}
-              className={`flex flex-col items-center gap-2 py-4 rounded-xl border text-xs font-semibold transition-all ${inputType === t.val ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'glass border-white/[0.06] text-white/40 hover:border-white/15'}`}>
+            <button type="button" key={t.val} onClick={() => { setInputType(t.val); setPreviewing(false); setFile(null); }}
+              className={`flex flex-col items-center gap-2 py-3 rounded-xl border text-xs font-semibold transition-all ${inputType === t.val ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'glass border-white/[0.06] text-white/40 hover:border-white/15'}`}>
               {t.icon} {t.label}
             </button>
           ))}
@@ -273,8 +324,21 @@ Explanation: Ind AS 1 prescribes the basis for presentation of general purpose f
         </div>
       )}
 
-      {(inputType === 'pdf' || inputType === 'docx') && (
+      {(inputType === 'pdf' || inputType === 'docx' || inputType === 'csv' || inputType === 'xlsx') && (
         <div>
+          {(inputType === 'csv' || inputType === 'xlsx') && (
+            <div className="mb-3 p-3 rounded-xl bg-blue-500/[0.07] border border-blue-500/15">
+              <p className="text-xs text-blue-300 font-semibold mb-1">
+                {inputType === 'csv' ? 'CSV Format' : 'Excel Format'} — Required columns:
+              </p>
+              <p className="text-[11px] text-blue-300/70 font-mono">
+                Question | OptionA | OptionB | OptionC | OptionD | CorrectOption | Explanation | Difficulty
+              </p>
+              <p className="text-[10px] text-white/30 mt-1.5">
+                CorrectOption = A, B, C, or D &nbsp;·&nbsp; Difficulty = easy, medium, or hard
+              </p>
+            </div>
+          )}
           <label className="text-xs text-white/40 mb-2 block font-medium">Upload File</label>
           <div onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${file ? 'border-purple-500/40 bg-purple-500/[0.06]' : 'border-white/[0.1] hover:border-purple-500/30'}`}>
@@ -292,7 +356,7 @@ Explanation: Ind AS 1 prescribes the basis for presentation of general purpose f
             )}
           </div>
           <input ref={fileRef} type="file" className="hidden"
-            accept={inputType === 'pdf' ? '.pdf' : '.docx'}
+            accept={inputType === 'pdf' ? '.pdf' : inputType === 'docx' ? '.docx' : inputType === 'csv' ? '.csv' : '.xlsx,.xls'}
             onChange={e => setFile(e.target.files[0])} />
         </div>
       )}
@@ -415,7 +479,7 @@ function MCQList({ subjects, onEdit }) {
   const [mcqs, setMcqs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState({ subject_id: '', chapter_id: '' });
+  const [filters, setFilters] = useState({ subject_id: '', chapter_id: '', status: '' });
   const [chapters, setChapters] = useState([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -434,11 +498,28 @@ function MCQList({ subjects, onEdit }) {
       const params = new URLSearchParams({ page, limit: 30 });
       if (filters.subject_id) params.set('subject_id', filters.subject_id);
       if (filters.chapter_id) params.set('chapter_id', filters.chapter_id);
+      if (filters.status) params.set('status', filters.status);
       const r = await api.get(`/mcqs?${params}`);
       setMcqs(r.data.mcqs);
       setTotal(r.data.total);
     } catch { toast.error('Failed to load MCQs'); }
     finally { setLoading(false); }
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      await api.put(`/mcqs/${id}/approve`);
+      toast.success('MCQ approved!');
+      loadMCQs();
+    } catch { toast.error('Failed to approve'); }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await api.put(`/mcqs/${id}/reject`);
+      toast.success('MCQ rejected');
+      loadMCQs();
+    } catch { toast.error('Failed to reject'); }
   };
 
   const handleDelete = async (id) => {
@@ -471,6 +552,14 @@ function MCQList({ subjects, onEdit }) {
             {chapters.map(c => <option key={c.id} value={c.id} style={{ background: '#06112e' }}>{c.title}</option>)}
           </select>
         )}
+        <select value={filters.status} onChange={e => setFilters(p => ({ ...p, status: e.target.value }))}
+          className="input-field py-2.5 text-sm" style={{ background: 'rgba(255,255,255,0.04)', color: 'white', minWidth: 130 }}>
+          <option value="" style={{ background: '#06112e' }}>All Statuses</option>
+          <option value="approved" style={{ background: '#06112e' }}>Approved</option>
+          <option value="pending" style={{ background: '#06112e' }}>Pending</option>
+          <option value="draft" style={{ background: '#06112e' }}>Draft</option>
+          <option value="rejected" style={{ background: '#06112e' }}>Rejected</option>
+        </select>
         <button onClick={loadMCQs} className="glass border border-white/[0.08] p-2.5 rounded-xl hover:bg-white/[0.06] transition-colors">
           <RefreshCw className="w-4 h-4 text-white/40" />
         </button>
@@ -517,11 +606,26 @@ function MCQList({ subjects, onEdit }) {
                   </div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold capitalize ${diffColor[q.difficulty] || diffColor.medium}`}>{q.difficulty}</span>
+                    {(() => {
+                      const st = q.status || 'approved';
+                      const sc = { approved: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', pending: 'text-amber-400 bg-amber-500/10 border-amber-500/20', draft: 'text-gray-400 bg-gray-500/10 border-gray-500/20', rejected: 'text-red-400 bg-red-500/10 border-red-500/20' }[st] || 'text-gray-400 bg-gray-500/10 border-gray-500/20';
+                      return <span className={`text-[10px] px-2 py-0.5 rounded-md border font-semibold capitalize ${sc}`}>{st}</span>;
+                    })()}
                     {q.subject_name && <span className="text-[10px] text-white/30">{q.subject_name}</span>}
                     {q.chapter_title && <span className="text-[10px] text-white/25">· {q.chapter_title}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {(q.status || 'approved') === 'pending' && (
+                    <>
+                      <button onClick={() => handleApprove(q.id)} title="Approve" className="p-2 glass rounded-xl hover:bg-emerald-500/15 transition-colors text-white/35 hover:text-emerald-400">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => handleReject(q.id)} title="Reject" className="p-2 glass rounded-xl hover:bg-red-500/15 transition-colors text-white/35 hover:text-red-400">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                   <button onClick={() => onEdit(q)} className="p-2 glass rounded-xl hover:bg-white/[0.08] transition-colors text-white/35 hover:text-purple-400">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>

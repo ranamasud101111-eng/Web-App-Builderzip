@@ -455,3 +455,11 @@ CREATE TABLE IF NOT EXISTS pomodoro_sessions (
     completed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- MCQ status workflow (migration — idempotent)
+ALTER TABLE mcqs ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'approved';
+ALTER TABLE mcqs ADD COLUMN IF NOT EXISTS created_by INTEGER;
+ALTER TABLE mcqs ADD COLUMN IF NOT EXISTS approved_by INTEGER;
+ALTER TABLE mcqs ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP;
+-- Sync: MCQs marked inactive → draft status
+UPDATE mcqs SET status = 'draft' WHERE is_active = false AND status = 'approved';

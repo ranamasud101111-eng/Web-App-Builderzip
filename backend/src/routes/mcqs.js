@@ -188,7 +188,7 @@ router.get('/chapter/:chapterId', authenticate, async (req, res) => {
         `SELECT id, question, option_a, option_b, option_c, option_d,
                 correct_option, explanation, difficulty, order_index
          FROM mcqs
-         WHERE chapter_id = $1 AND is_active = true
+         WHERE chapter_id = $1 AND status = 'approved'
          ORDER BY RANDOM()
          LIMIT 10`,
         [chapterId]
@@ -200,7 +200,7 @@ router.get('/chapter/:chapterId', authenticate, async (req, res) => {
       `SELECT id, question, option_a, option_b, option_c, option_d,
               correct_option, explanation, difficulty, order_index
        FROM mcqs
-       WHERE chapter_id = $1 AND is_active = true
+       WHERE chapter_id = $1 AND status = 'approved'
        ORDER BY order_index ASC, id ASC`,
       [chapterId]
     );
@@ -415,12 +415,13 @@ router.post('/quiz-template', authenticate, requireAdmin, async (req, res) => {
 /* ─── ADMIN: GET /api/mcqs ─── */
 router.get('/', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { chapter_id, subject_id, page = 1, limit = 50 } = req.query;
+    const { chapter_id, subject_id, status, page = 1, limit = 50 } = req.query;
     const offset = (page - 1) * limit;
     let where = 'WHERE 1=1';
     const args = [];
     if (chapter_id) { args.push(chapter_id); where += ` AND m.chapter_id = $${args.length}`; }
     if (subject_id) { args.push(subject_id); where += ` AND m.subject_id = $${args.length}`; }
+    if (status && status !== 'all') { args.push(status); where += ` AND m.status = $${args.length}`; }
     args.push(limit); args.push(offset);
 
     const result = await pool.query(
@@ -449,14 +450,15 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
 /* ─── ADMIN: POST /api/mcqs ─── */
 router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, order_index } = req.body;
+    const { subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, order_index, status } = req.body;
     if (!question || !option_a || !option_b || !option_c || !option_d || !correct_option)
       return res.status(400).json({ error: 'Missing required fields' });
 
+    const mcqStatus = status || 'approved';
     const result = await pool.query(
-      `INSERT INTO mcqs (subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, order_index)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-      [subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option.toUpperCase(), explanation || '', difficulty || 'medium', order_index || 0]
+      `INSERT INTO mcqs (subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, order_index, status, created_by, approved_by, approved_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
+      [subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option.toUpperCase(), explanation || '', difficulty || 'medium', order_index || 0, mcqStatus, req.user.id, mcqStatus === 'approved' ? req.user.id : null, mcqStatus === 'approved' ? new Date() : null]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -468,7 +470,7 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
 /* ─── ADMIN: PUT /api/mcqs/:id ─── */
 router.put('/:id', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, is_active, order_index, subject_id, chapter_id } = req.body;
+    const { question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, is_active, order_index, subject_id, chapter_id, status } = req.body;
     const result = await pool.query(
       `UPDATE mcqs SET
          subject_id = COALESCE($2, subject_id),
@@ -481,14 +483,62 @@ router.put('/:id', authenticate, requireAdmin, async (req, res) => {
          difficulty = COALESCE($11, difficulty),
          is_active = COALESCE($12, is_active),
          order_index = COALESCE($13, order_index),
+         status = COALESCE($14, status),
          updated_at = NOW()
        WHERE id = $1 RETURNING *`,
-      [req.params.id, subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option?.toUpperCase(), explanation, difficulty, is_active, order_index]
+      [req.params.id, subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option?.toUpperCase(), explanation, difficulty, is_active, order_index, status]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'MCQ not found' });
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update MCQ' });
+  }
+});
+
+/* ─── ADMIN: PUT /api/mcqs/:id/approve ─── */
+router.put('/:id/approve', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `UPDATE mcqs SET status = 'approved', is_active = true, approved_by = $2, approved_at = NOW(), updated_at = NOW()
+       WHERE id = $1 RETURNING *`,
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'MCQ not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to approve MCQ' });
+  }
+});
+
+/* ─── ADMIN: PUT /api/mcqs/:id/reject ─── */
+router.put('/:id/reject', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const result = await pool.query(
+      `UPDATE mcqs SET status = 'rejected', is_active = false, updated_at = NOW()
+       WHERE id = $1 RETURNING *`,
+      [req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'MCQ not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reject MCQ' });
+  }
+});
+
+/* ─── ADMIN: PUT /api/mcqs/bulk-approve ─── */
+router.put('/bulk-approve', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids?.length) return res.status(400).json({ error: 'No IDs provided' });
+    await pool.query(
+      `UPDATE mcqs SET status = 'approved', is_active = true, approved_by = $2, approved_at = NOW()
+       WHERE id = ANY($1)`,
+      [ids, req.user.id]
+    );
+    res.json({ success: true, count: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to bulk approve' });
   }
 });
 
@@ -554,10 +604,10 @@ router.post('/bulk-import/save', authenticate, requireAdmin, async (req, res) =>
             continue;
           }
           await client.query(
-            `INSERT INTO mcqs (subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+            `INSERT INTO mcqs (subject_id, chapter_id, question, option_a, option_b, option_c, option_d, correct_option, explanation, difficulty, status, created_by, approved_by, approved_at)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'approved',$11,$11,NOW())`,
             [subject_id, chapter_id, q.question, q.option_a, q.option_b, q.option_c, q.option_d,
-             q.correct_option.toUpperCase(), q.explanation || '', q.difficulty || 'medium']
+             q.correct_option.toUpperCase(), q.explanation || '', q.difficulty || 'medium', req.user.id]
           );
           imported++;
         } catch (e) {
@@ -631,7 +681,7 @@ router.post('/custom-exam/generate', authenticate, async (req, res) => {
     const { level, subject_ids, chapter_ids, question_count, duration_minutes } = req.body;
     if (!question_count || question_count < 1) return res.status(400).json({ error: 'Invalid question count' });
 
-    let whereClause = 'WHERE m.is_active = true';
+    let whereClause = "WHERE m.status = 'approved'";
     const args = [];
 
     if (chapter_ids && chapter_ids.length > 0) {

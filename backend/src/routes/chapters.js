@@ -18,6 +18,27 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
+router.get('/:id/mcqs', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const args = [req.params.id];
+    let statusFilter = '';
+    if (status && status !== 'all') {
+      args.push(status);
+      statusFilter = ` AND m.status = $${args.length}`;
+    }
+    const result = await pool.query(
+      `SELECT m.* FROM mcqs m
+       WHERE m.chapter_id = $1${statusFilter}
+       ORDER BY m.order_index ASC, m.id ASC`,
+      args
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch chapter MCQs' });
+  }
+});
+
 router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
     const { subject_id, title, content, video_url, duration_minutes, order_index, is_preview } = req.body;

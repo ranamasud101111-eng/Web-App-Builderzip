@@ -1,0 +1,260 @@
+Build a modern, premium-looking ICAAB prep platform admin + student system using React + TypeScript + Tailwind + Supabase/PostgreSQL.
+
+Current module already has:
+- Subjects
+- Chapters
+- MCQ
+- Students
+- Exams
+
+Now redesign and upgrade the full “Subjects & MCQ Management System” with professional UX/UI similar to modern SaaS dashboards.
+
+========================
+MAIN GOAL
+========================
+
+I want students to:
+1. Open Subject section
+2. Select Subject
+3. Select Chapter
+4. Instantly see all approved MCQs
+5. Practice MCQs beautifully
+6. See result, explanation, correct answer, timer, progress
+
+I want admins to:
+1. Add/Edit/Delete Subjects
+2. Add/Edit/Delete Chapters
+3. Add/Edit/Delete MCQs
+4. Bulk upload MCQs
+5. Approve MCQs before publishing
+6. Manage MCQs from Subject section
+7. Filter/search/sort MCQs easily
+
+========================
+SYSTEM FLOW
+========================
+
+ADMIN FLOW:
+
+MCQ Manager:
+- Admin can add MCQ individually
+- Admin can bulk upload MCQ using:
+  - CSV
+  - Excel
+  - JSON
+- MCQ status:
+  - Draft
+  - Pending Approval
+  - Approved
+  - Rejected
+
+Subject Section:
+- When admin opens a Subject
+- Then opens a Chapter
+- Admin can:
+  - View all MCQs
+  - Approve pending MCQs
+  - Edit MCQs
+  - Delete MCQs
+  - Move MCQs to another chapter
+  - Search/filter MCQs
+
+IMPORTANT:
+Only APPROVED MCQs will appear for students.
+
+========================
+STUDENT FLOW
+========================
+
+Student opens:
+Subjects → Chapter → Practice MCQ
+
+Features:
+- MCQ card design
+- Next/Previous question
+- Select answer
+- Instant feedback
+- Correct/Wrong indicator
+- Explanation section
+- Progress bar
+- Question palette
+- Timer mode
+- Practice mode
+- Mock test mode
+- Mobile responsive UI
+
+========================
+DATABASE DESIGN
+========================
+
+Create proper relational schema:
+
+subjects
+- id
+- name
+- slug
+- description
+- icon
+- created_at
+
+chapters
+- id
+- subject_id
+- name
+- description
+- order_no
+- created_at
+
+mcqs
+- id
+- subject_id
+- chapter_id
+- question
+- option_a
+- option_b
+- option_c
+- option_d
+- correct_answer
+- explanation
+- difficulty
+- tags
+- status
+- created_by
+- approved_by
+- created_at
+- updated_at
+
+mcq_attempts
+- id
+- student_id
+- mcq_id
+- selected_answer
+- is_correct
+- attempted_at
+
+========================
+ADMIN DASHBOARD FEATURES
+========================
+
+Subject Page UI:
+- Beautiful cards
+- Subject statistics
+- Total chapters
+- Total MCQs
+- Pending approval count
+- Student count
+
+Chapter Page:
+- Chapter accordion/grid
+- MCQ counts
+- Quick manage buttons
+
+MCQ Table:
+- Search
+- Filter by:
+  - status
+  - difficulty
+  - subject
+  - chapter
+- Pagination
+- Bulk actions
+- Approve selected
+- Delete selected
+
+========================
+BULK MCQ IMPORT
+========================
+
+Create bulk import system:
+- Upload CSV/Excel
+- Preview before import
+- Validate fields
+- Show errors
+- Save as pending approval
+- Approve from subject section
+
+========================
+UI/UX DESIGN
+========================
+
+Design must look:
+- Premium
+- Clean
+- Minimal
+- Modern SaaS
+- Glassmorphism/light gradient UI
+
+Use:
+- Soft shadows
+- Rounded cards
+- Smooth animations
+- Purple gradient theme
+- Responsive layout
+- Sticky sidebar
+- Beautiful typography
+- Loading skeletons
+- Empty states
+
+Add:
+- Framer Motion animations
+- Toast notifications
+- Confirmation modals
+- Search with debounce
+- Dark/light mode
+
+========================
+TECH STACK
+========================
+
+Use:
+- React
+- TypeScript
+- TailwindCSS
+- shadcn/ui
+- Supabase/PostgreSQL
+- React Query
+- Zustand or Context API
+
+========================
+IMPORTANT FEATURES
+========================
+
+- Role-based access
+- Admin only approval system
+- Optimized database queries
+- Proper API structure
+- Reusable components
+- Clean folder structure
+- Fully responsive
+- Fast performance
+- Error handling
+- Validation
+
+========================
+EXTRA
+========================
+
+Also create:
+1. Subject details page
+2. Chapter details page
+3. Student practice analytics
+4. MCQ statistics
+5. Recently added MCQs
+6. Dashboard widgets
+7. MCQ review history
+
+========================
+FINAL OUTPUT
+========================
+
+Generate:
+- Full frontend UI
+- Backend logic
+- Database schema
+- API routes
+- Reusable components
+- Responsive pages
+- Professional design
+- Seed/demo data
+
+The final result should feel like a premium EdTech SaaS platform.

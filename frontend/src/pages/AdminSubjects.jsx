@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import {
   BookOpen, Plus, X, ChevronRight,
   Edit2, Trash2, Check, Search, Eye, Copy, ArrowLeft,
-  Users, CheckCircle2, Hash, BookMarked,
+  Users, CheckCircle2, Hash, BookMarked, XCircle, Clock, AlertCircle,
 } from 'lucide-react';
 import api from '../api';
 
@@ -66,7 +66,7 @@ export default function AdminSubjects() {
   const [editMcq, setEditMcq]             = useState(null);
   const [mcqSaving, setMcqSaving]         = useState(false);
   const [deleteMcqId, setDeleteMcqId]     = useState(null);
-  const emptyMcqForm = { question: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 'A', explanation: '', difficulty: 'medium' };
+  const emptyMcqForm = { question: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A', explanation: '', difficulty: 'medium' };
   const [mcqForm, setMcqForm]             = useState(emptyMcqForm);
 
   useEffect(() => { fetchSubjects(); }, []);
@@ -212,12 +212,12 @@ export default function AdminSubjects() {
         await api.put(`/mcqs/${editMcq.id}`, mcqForm);
         toast.success('MCQ updated!');
       } else {
-        await api.post('/mcqs', { ...mcqForm, chapter_id: selectedChapter.id });
+        await api.post('/mcqs', { ...mcqForm, chapter_id: selectedChapter.id, subject_id: managingSubject.id });
         toast.success('MCQ added!');
       }
       setShowMcqForm(false); setEditMcq(null); setMcqForm(emptyMcqForm);
       const r = await api.get(`/chapters/${selectedChapter.id}/mcqs`);
-      setChapterMcqs(r.data);
+      setChapterMcqs(r.data || []);
       await refreshChapters();
     } catch (err) { toast.error(err.response?.data?.error || 'Failed to save MCQ'); }
     finally { setMcqSaving(false); }
@@ -225,7 +225,7 @@ export default function AdminSubjects() {
 
   const openEditMcq = (mcq) => {
     setEditMcq(mcq);
-    setMcqForm({ question: mcq.question, option_a: mcq.option_a, option_b: mcq.option_b, option_c: mcq.option_c, option_d: mcq.option_d, correct_answer: mcq.correct_answer, explanation: mcq.explanation || '', difficulty: mcq.difficulty || 'medium' });
+    setMcqForm({ question: mcq.question, option_a: mcq.option_a, option_b: mcq.option_b, option_c: mcq.option_c, option_d: mcq.option_d, correct_option: mcq.correct_option, explanation: mcq.explanation || '', difficulty: mcq.difficulty || 'medium' });
     setShowMcqForm(true);
   };
 
@@ -241,11 +241,30 @@ export default function AdminSubjects() {
 
   const handleToggleMcqPublish = async (mcq) => {
     try {
-      await api.put(`/mcqs/${mcq.id}`, { ...mcq, is_active: !mcq.is_active });
-      setChapterMcqs(prev => prev.map(m => m.id === mcq.id ? { ...m, is_active: !m.is_active } : m));
-      toast.success(mcq.is_active ? 'MCQ unpublished' : 'MCQ published');
+      const newStatus = mcq.status === 'approved' ? 'draft' : 'approved';
+      await api.put(`/mcqs/${mcq.id}`, { status: newStatus, is_active: newStatus === 'approved' });
+      setChapterMcqs(prev => prev.map(m => m.id === mcq.id ? { ...m, status: newStatus, is_active: newStatus === 'approved' } : m));
+      toast.success(newStatus === 'approved' ? 'MCQ published' : 'MCQ set to draft');
       await refreshChapters();
     } catch { toast.error('Failed to update MCQ status'); }
+  };
+
+  const handleApproveMcq = async (mcq) => {
+    try {
+      const r = await api.put(`/mcqs/${mcq.id}/approve`);
+      setChapterMcqs(prev => prev.map(m => m.id === mcq.id ? { ...m, ...r.data } : m));
+      toast.success('MCQ approved!');
+      await refreshChapters();
+    } catch { toast.error('Failed to approve MCQ'); }
+  };
+
+  const handleRejectMcq = async (mcq) => {
+    try {
+      const r = await api.put(`/mcqs/${mcq.id}/reject`);
+      setChapterMcqs(prev => prev.map(m => m.id === mcq.id ? { ...m, ...r.data } : m));
+      toast.success('MCQ rejected');
+      await refreshChapters();
+    } catch { toast.error('Failed to reject MCQ'); }
   };
 
   const handleDuplicateMcq = async (mcq) => {
@@ -254,14 +273,15 @@ export default function AdminSubjects() {
         question: `${mcq.question} (copy)`,
         option_a: mcq.option_a, option_b: mcq.option_b,
         option_c: mcq.option_c, option_d: mcq.option_d,
-        correct_answer: mcq.correct_answer,
+        correct_option: mcq.correct_option,
         explanation: mcq.explanation || '',
         difficulty: mcq.difficulty || 'medium',
         chapter_id: selectedChapter.id,
+        subject_id: managingSubject.id,
       });
       toast.success('MCQ duplicated');
       const r = await api.get(`/chapters/${selectedChapter.id}/mcqs`);
-      setChapterMcqs(r.data);
+      setChapterMcqs(r.data || []);
       await refreshChapters();
     } catch { toast.error('Failed to duplicate MCQ'); }
   };
@@ -280,20 +300,21 @@ export default function AdminSubjects() {
   const filteredMcqs = useMemo(() => {
     let list = chapterMcqs;
     if (mcqFilter.difficulty !== 'all') list = list.filter(m => m.difficulty === mcqFilter.difficulty);
-    if (mcqFilter.status === 'published') list = list.filter(m => m.is_active !== false);
-    if (mcqFilter.status === 'draft') list = list.filter(m => m.is_active === false);
+    if (mcqFilter.status !== 'all') list = list.filter(m => (m.status || 'approved') === mcqFilter.status);
     if (mcqSearch) list = list.filter(m => m.question.toLowerCase().includes(mcqSearch.toLowerCase()));
     return list;
   }, [chapterMcqs, mcqFilter, mcqSearch]);
 
   const mcqStats = useMemo(() => {
-    const total     = chapterMcqs.length;
-    const published = chapterMcqs.filter(m => m.is_active !== false).length;
-    const draft     = chapterMcqs.filter(m => m.is_active === false).length;
-    const easy      = chapterMcqs.filter(m => m.difficulty === 'easy').length;
-    const medium    = chapterMcqs.filter(m => m.difficulty === 'medium').length;
-    const hard      = chapterMcqs.filter(m => m.difficulty === 'hard').length;
-    return { total, published, draft, easy, medium, hard };
+    const total    = chapterMcqs.length;
+    const approved = chapterMcqs.filter(m => (m.status || 'approved') === 'approved').length;
+    const pending  = chapterMcqs.filter(m => m.status === 'pending').length;
+    const draft    = chapterMcqs.filter(m => m.status === 'draft').length;
+    const rejected = chapterMcqs.filter(m => m.status === 'rejected').length;
+    const easy     = chapterMcqs.filter(m => m.difficulty === 'easy').length;
+    const medium   = chapterMcqs.filter(m => m.difficulty === 'medium').length;
+    const hard     = chapterMcqs.filter(m => m.difficulty === 'hard').length;
+    return { total, approved, pending, draft, rejected, easy, medium, hard };
   }, [chapterMcqs]);
 
   return (
@@ -396,11 +417,12 @@ export default function AdminSubjects() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 mb-4">
+                      <div className="grid grid-cols-4 gap-2 mb-4">
                         {[
                           { label: 'Chapters', value: s.chapter_count || 0, icon: BookMarked, color: '#8b5cf6' },
                           { label: 'Students', value: s.student_count || 0, icon: Users, color: '#06b6d4' },
                           { label: 'MCQs', value: parseInt(s.total_mcqs || 0), icon: Hash, color: '#10b981' },
+                          { label: 'Pending', value: parseInt(s.pending_mcqs || 0), icon: Clock, color: parseInt(s.pending_mcqs) > 0 ? '#f59e0b' : '#6b7280' },
                         ].map(stat => (
                           <div key={stat.label} className="rounded-xl px-3 py-2 text-center" style={{ background: `${stat.color}0d`, border: `1px solid ${stat.color}18` }}>
                             <div className="text-lg font-black" style={{ color: stat.color }}>{stat.value}</div>
@@ -615,15 +637,31 @@ export default function AdminSubjects() {
                             </button>
                           ))}
                           <div className="w-px h-4 bg-white/10" />
-                          {['all','published','draft'].map(s => (
-                            <button key={s} onClick={() => setMcqFilter(f => ({ ...f, status: s }))}
-                              className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold capitalize transition-all"
-                              style={mcqFilter.status === s
-                                ? { background: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.3)' }
-                                : { background: 'transparent', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                              {s}
-                            </button>
-                          ))}
+                          {[
+                            { key: 'all', label: 'All' },
+                            { key: 'approved', label: 'Approved' },
+                            { key: 'pending', label: 'Pending' },
+                            { key: 'draft', label: 'Draft' },
+                            { key: 'rejected', label: 'Rejected' },
+                          ].map(({ key, label }) => {
+                            const statusColors = {
+                              approved: { active: 'rgba(16,185,129,0.15)', color: '#10b981', border: 'rgba(16,185,129,0.3)' },
+                              pending:  { active: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: 'rgba(245,158,11,0.3)' },
+                              draft:    { active: 'rgba(107,114,128,0.15)', color: '#9ca3af', border: 'rgba(107,114,128,0.3)' },
+                              rejected: { active: 'rgba(239,68,68,0.15)', color: '#f87171', border: 'rgba(239,68,68,0.3)' },
+                              all:      { active: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
+                            };
+                            const sc = statusColors[key];
+                            return (
+                              <button key={key} onClick={() => setMcqFilter(f => ({ ...f, status: key }))}
+                                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold capitalize transition-all"
+                                style={mcqFilter.status === key
+                                  ? { background: sc.active, color: sc.color, border: `1px solid ${sc.border}` }
+                                  : { background: 'transparent', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                                {label}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -648,14 +686,14 @@ export default function AdminSubjects() {
                                   {['A','B','C','D'].map(opt => (
                                     <div key={opt} className="relative">
                                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold"
-                                        style={{ color: mcqForm.correct_answer === opt ? '#10b981' : 'rgba(255,255,255,0.3)' }}>
+                                        style={{ color: mcqForm.correct_option === opt ? '#10b981' : 'rgba(255,255,255,0.3)' }}>
                                         {opt}.
                                       </span>
                                       <input required placeholder={`Option ${opt}`}
                                         value={mcqForm[`option_${opt.toLowerCase()}`]}
                                         onChange={e => setMcqForm(p => ({ ...p, [`option_${opt.toLowerCase()}`]: e.target.value }))}
                                         className="input-field pl-8 text-sm"
-                                        style={mcqForm.correct_answer === opt ? { borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' } : {}} />
+                                        style={mcqForm.correct_option === opt ? { borderColor: 'rgba(16,185,129,0.35)', background: 'rgba(16,185,129,0.05)' } : {}} />
                                     </div>
                                   ))}
                                 </div>
@@ -664,9 +702,9 @@ export default function AdminSubjects() {
                                     <label className="block text-[10px] font-semibold text-white/40 uppercase tracking-wide mb-1.5">Correct Answer</label>
                                     <div className="flex gap-1.5">
                                       {['A','B','C','D'].map(opt => (
-                                        <button key={opt} type="button" onClick={() => setMcqForm(p => ({ ...p, correct_answer: opt }))}
+                                        <button key={opt} type="button" onClick={() => setMcqForm(p => ({ ...p, correct_option: opt }))}
                                           className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
-                                          style={mcqForm.correct_answer === opt
+                                          style={mcqForm.correct_option === opt
                                             ? { background: 'rgba(16,185,129,0.2)', color: '#10b981', border: '1px solid rgba(16,185,129,0.4)' }
                                             : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.07)' }}>
                                           {opt}
@@ -719,7 +757,13 @@ export default function AdminSubjects() {
                           <div className="divide-y divide-white/[0.04]">
                             {filteredMcqs.map((mcq, i) => {
                               const diff = DIFF_CONFIG[mcq.difficulty] || DIFF_CONFIG.medium;
-                              const isPublished = mcq.is_active !== false;
+                              const mcqStatus = mcq.status || 'approved';
+                              const statusCfg = {
+                                approved: { label: 'Approved', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+                                pending:  { label: 'Pending',  color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+                                draft:    { label: 'Draft',    color: '#9ca3af', bg: 'rgba(107,114,128,0.1)' },
+                                rejected: { label: 'Rejected', color: '#f87171', bg: 'rgba(239,68,68,0.1)' },
+                              }[mcqStatus] || { label: mcqStatus, color: '#9ca3af', bg: 'rgba(107,114,128,0.1)' };
                               return (
                                 <div key={mcq.id} className="flex items-start gap-3 px-4 py-3 group hover:bg-white/[0.02] transition-colors">
                                   <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
@@ -733,14 +777,27 @@ export default function AdminSubjects() {
                                         style={{ background: diff.bg, color: diff.color }}>
                                         {diff.label}
                                       </span>
-                                      <span className="text-[10px] font-bold text-emerald-400">✓ {mcq.correct_answer}</span>
-                                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isPublished ? 'text-emerald-400 bg-emerald-500/10' : 'text-orange-400 bg-orange-500/10'}`}>
-                                        {isPublished ? 'Published' : 'Draft'}
+                                      <span className="text-[10px] font-bold text-emerald-400">✓ {mcq.correct_option}</span>
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                        style={{ background: statusCfg.bg, color: statusCfg.color }}>
+                                        {statusCfg.label}
                                       </span>
                                       {mcq.explanation && <span className="text-[10px] text-white/25">Has explanation</span>}
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                    {mcqStatus === 'pending' && (
+                                      <>
+                                        <button onClick={() => handleApproveMcq(mcq)} title="Approve"
+                                          className="p-1.5 rounded-lg hover:bg-emerald-500/15 text-white/25 hover:text-emerald-400 transition-colors">
+                                          <CheckCircle2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button onClick={() => handleRejectMcq(mcq)} title="Reject"
+                                          className="p-1.5 rounded-lg hover:bg-red-500/15 text-white/25 hover:text-red-400 transition-colors">
+                                          <XCircle className="w-3.5 h-3.5" />
+                                        </button>
+                                      </>
+                                    )}
                                     <button onClick={() => openEditMcq(mcq)} title="Edit"
                                       className="p-1.5 rounded-lg hover:bg-blue-500/15 text-white/25 hover:text-blue-400 transition-colors">
                                       <Edit2 className="w-3.5 h-3.5" />
@@ -749,9 +806,10 @@ export default function AdminSubjects() {
                                       className="p-1.5 rounded-lg hover:bg-purple-500/15 text-white/25 hover:text-purple-400 transition-colors">
                                       <Copy className="w-3.5 h-3.5" />
                                     </button>
-                                    <button onClick={() => handleToggleMcqPublish(mcq)} title={isPublished ? 'Unpublish' : 'Publish'}
-                                      className={`p-1.5 rounded-lg transition-colors ${isPublished ? 'hover:bg-orange-500/15 text-white/25 hover:text-orange-400' : 'hover:bg-emerald-500/15 text-white/25 hover:text-emerald-400'}`}>
-                                      {isPublished ? <Eye className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                                    <button onClick={() => handleToggleMcqPublish(mcq)}
+                                      title={mcqStatus === 'approved' ? 'Set to Draft' : 'Publish'}
+                                      className={`p-1.5 rounded-lg transition-colors ${mcqStatus === 'approved' ? 'hover:bg-orange-500/15 text-white/25 hover:text-orange-400' : 'hover:bg-emerald-500/15 text-white/25 hover:text-emerald-400'}`}>
+                                      {mcqStatus === 'approved' ? <Eye className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
                                     </button>
                                     <button onClick={() => setDeleteMcqId(mcq.id)} title="Delete"
                                       className="p-1.5 rounded-lg hover:bg-red-500/15 text-white/20 hover:text-red-400 transition-colors">
@@ -804,8 +862,10 @@ export default function AdminSubjects() {
                     <div className="space-y-2 mb-3">
                       {[
                         { label: 'Total', value: mcqStats.total, color: '#8b5cf6' },
-                        { label: 'Published', value: mcqStats.published, color: '#10b981' },
-                        { label: 'Draft', value: mcqStats.draft, color: '#f59e0b' },
+                        { label: 'Approved', value: mcqStats.approved, color: '#10b981' },
+                        { label: 'Pending', value: mcqStats.pending, color: '#f59e0b' },
+                        { label: 'Draft', value: mcqStats.draft, color: '#9ca3af' },
+                        ...(mcqStats.rejected > 0 ? [{ label: 'Rejected', value: mcqStats.rejected, color: '#f87171' }] : []),
                       ].map(s => (
                         <div key={s.label} className="flex items-center justify-between">
                           <span className="text-xs text-white/40">{s.label}</span>
@@ -834,13 +894,19 @@ export default function AdminSubjects() {
                         ))}
                         <div className="h-px bg-white/[0.05] my-3" />
                         <div className="text-center">
-                          <div className="text-xl font-black text-white">{mcqStats.total > 0 ? Math.round((mcqStats.published / mcqStats.total) * 100) : 0}%</div>
-                          <div className="text-[10px] text-white/35">Published</div>
+                          <div className="text-xl font-black text-white">{mcqStats.total > 0 ? Math.round((mcqStats.approved / mcqStats.total) * 100) : 0}%</div>
+                          <div className="text-[10px] text-white/35">Approved</div>
                           <div className="h-1.5 rounded-full bg-white/[0.06] mt-2">
                             <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-emerald-500 transition-all"
-                              style={{ width: mcqStats.total ? `${(mcqStats.published / mcqStats.total) * 100}%` : '0%' }} />
+                              style={{ width: mcqStats.total ? `${(mcqStats.approved / mcqStats.total) * 100}%` : '0%' }} />
                           </div>
                         </div>
+                        {mcqStats.pending > 0 && (
+                          <div className="mt-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                            <span className="text-[11px] text-amber-400 font-semibold">{mcqStats.pending} pending review</span>
+                          </div>
+                        )}
                       </>
                     )}
                   </motion.div>

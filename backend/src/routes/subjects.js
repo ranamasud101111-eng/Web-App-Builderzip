@@ -7,12 +7,16 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT s.*, 
+      SELECT s.*,
         COUNT(DISTINCT c.id) as chapter_count,
-        COUNT(DISTINCT e.user_id) as student_count
+        COUNT(DISTINCT e.user_id) as student_count,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.status = 'approved') as total_mcqs,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.status = 'pending') as pending_mcqs,
+        COUNT(DISTINCT m.id) as all_mcqs
       FROM subjects s
       LEFT JOIN chapters c ON c.subject_id = s.id
       LEFT JOIN enrollments e ON e.subject_id = s.id
+      LEFT JOIN mcqs m ON m.subject_id = s.id
       GROUP BY s.id
       ORDER BY s.order_index, s.created_at
     `);
@@ -32,8 +36,10 @@ router.get('/:id', async (req, res) => {
     const chaptersResult = await pool.query(`
       SELECT
         c.*,
-        COUNT(DISTINCT m.id) FILTER (WHERE m.is_active = TRUE) AS total_mcqs,
-        COUNT(DISTINCT m.id) FILTER (WHERE m.is_active = TRUE AND msa.is_correct = TRUE AND ms.user_id = $2 AND ms.status = 'completed') AS correct_mcqs,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.status = 'approved') AS total_mcqs,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.status = 'pending') AS pending_mcqs,
+        COUNT(DISTINCT m.id) AS all_mcqs,
+        COUNT(DISTINCT m.id) FILTER (WHERE m.status = 'approved' AND msa.is_correct = TRUE AND ms.user_id = $2 AND ms.status = 'completed') AS correct_mcqs,
         COUNT(DISTINCT msa.mcq_id) FILTER (WHERE ms.user_id = $2 AND ms.status = 'completed') AS attempted_mcqs
       FROM chapters c
       LEFT JOIN mcqs m ON m.chapter_id = c.id
